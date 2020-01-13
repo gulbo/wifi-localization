@@ -1,0 +1,9 @@
+C: HI id(4B) MAC_ADDR(6B)
+S: OK n_mac(4B) list_of_mac(each is 6B) -> il server rimane in attesa di tutte le schedine e appena tutte si sono connesse e hanno inviato HELLO risponde con questo messaggio
+C: .... sniffing phase + ping (x1) to server, count number of mac identified. Insert a pause of 500ms between start sniffing and send ping .... -> espBoards invia un messaggio con scritto PING al server e sniffa tutti i pacchetti. Ad ogni MAC riscontrato non flaggato, incremento un contatore. Appena il contatore sale a n o scade un timer, vado avanti
+C: DE n_esp32_found (4B) list_of_not_found_mac(6B each) -> DE = detected. Invio schede rilevate
+S: alternative possibili
+	1. GO (lato server faccio la sync tra tutti i thread) timestamp(4B) -> procedura e sincronizzazione completata con successo
+	2. RT -> retry... Riparte dalla riga 3, dallo sniffing.
+	
+Tutti i testi inviati NON contengono il terminatore di stringa \0

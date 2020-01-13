@@ -1,0 +1,97 @@
+﻿<Window x:Class="PDSClient.StartConfiguration"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PDSClient"
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             xmlns:local1="clr-namespace:PDSClient.StatModule"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz"
+        
+       
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance local:MainWindow}" WindowStyle="None" Visibility="Visible"  
+        ResizeMode="NoResize"
+        Title="StartConfiguration" Height="215" Width="400">
+    <Grid>
+
+
+        <Grid Height="60" VerticalAlignment="Top" Background="#FF03A9F4">
+            <TextBlock Text="PDSClient" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" FontFamily="Champagne &amp; Limousines" />
+            <Button Name="Close" Click="Button_Close" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Height="26" Margin="0,16,16.2,20" Width="26" ScrollViewer.CanContentScroll="True" Padding="0" ToolTip="Close">
+                <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="24" Width="24" UseLayoutRounding="False" Foreground="#FFFAF4F4"/>
+                <Button.Style>
+                    <Style>
+                        <Style.Triggers>
+                            <Trigger Property="Button.IsMouseOver" Value="True">
+
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+
+        </Grid>
+
+        <Grid Margin="0 60 0 0">
+
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Margin="2,2,2,50">
+                    <TextBlock Text="Number of ESP boards: "
+                           Height="30"
+                           VerticalAlignment="Bottom"/>
+                    <TextBox x:Name="txt_boards"
+                           Height="30"
+                           Width="40"
+                         Margin="10"
+                         TextAlignment="Right"
+                           VerticalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom">
+                    <Button x:Name="btn_loadDB"
+                        FontSize="9"
+                        Height="40"
+                        Margin="2"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Click="ButtonLoadFromDB">
+                        <StackPanel>
+                            <TextBlock Text="Load" HorizontalAlignment="Center"/>
+                            <TextBlock Text="from DB" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="btn_loadJSON"
+                        FontSize="9"
+                        Height="40"
+                        Margin="2, 2, 25, 2"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Click="ButtonLoadFromJSON">
+                        <StackPanel>
+                            <TextBlock Text="Load" HorizontalAlignment="Center"/>
+                            <TextBlock Text="from JSON" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="btn_new"
+                        FontSize="9"
+                        Height="40"
+                        Margin="2,2,10,2"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Click="ButtonNewConfig">
+                        <StackPanel>
+                            <TextBlock Text="New" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Configuration" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

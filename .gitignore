@@ -8,6 +8,7 @@
 *.elf
 
 # Linker output
+build/
 *.ilk
 *.map
 *.exp
@@ -50,3 +51,9 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#VS code
+.vs
+.DS_Store
+
+
