@@ -55,6 +55,8 @@ typedef struct info_s{
     struct sockaddr_in server_addr;
 } info_t;
 
+
+
 static void config();
 void createTaskAndTimer();
 void wifi_sniffer_handler(void *buff, wifi_promiscuous_pkt_type_t type);
@@ -82,26 +84,6 @@ TimerHandle_t timerHandle;
 TimerHandle_t pingTimerHandle = NULL;
 TimerHandle_t sniffingHandle = NULL;
 SemaphoreHandle_t s1, flag_mutex, identificationTaskSemaphore;
-
-void app_main(void){
-    timerHandle = NULL;
-    taskHandle = NULL;
-    espIdentificationHandle = NULL;
-
-    config();
-    wifi_sniffer_set_channel(SNIFFER_CHANNEL);
-    xTaskNotifyGive(taskHandle);
-    //vTaskStartScheduler();
-    
-    /*
-    while (true) {
-		vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS);
-		wifi_sniffer_set_channel(channel);
-		channel = (channel % WIFI_CHANNEL_MAX) + 1;
-    }
-    */
-
-}
 
 static void config(){
     pkt_array_init();
@@ -170,7 +152,7 @@ void createTaskAndTimer(){
     }
     */
     
-    eTaskState state = eTaskGetState(sender_task);
+    eTaskState state = eTaskGetState(taskHandle);
     printf("sender task: ");
     print_task_state(state);
     /*
@@ -747,4 +729,27 @@ void printmac(uint8_t* mac){
             mac[3],
             mac[4],
             mac[5]);
+}
+
+int main(){
+    timerHandle = NULL;
+    taskHandle = NULL;
+    espIdentificationHandle = NULL;
+
+    config();
+    wifi_sniffer_set_channel(SNIFFER_CHANNEL);
+    xTaskNotifyGive(taskHandle);
+    //vTaskStartScheduler();
+    
+    /*
+    while (true) {
+		vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS);
+		wifi_sniffer_set_channel(channel);
+		channel = (channel % WIFI_CHANNEL_MAX) + 1;
+    }
+    */
+}
+
+extern "C" void app_main(void){
+    main();
 }
