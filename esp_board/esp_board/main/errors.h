@@ -1,6 +1,10 @@
 #ifndef ERRORS_H
 #define ERRORS_H
 
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
 //list of error code
 //error list
 #define INVALID_SOCKET -2
@@ -12,5 +16,9 @@
 #define NVS_ERROR -8
 #define SETTIME_ERROR -9
 #define PROTO_UNKNOWN_MSG -50
+
+#if defined (__cplusplus)
+}
+#endif
 
 #endif

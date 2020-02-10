@@ -14,6 +14,10 @@
 #include "errors.h"
 #define MAX_PKT 1000
 
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
 typedef int (*proc_pkt)(pkt_info* pkt, void* ctx);
 
 extern pkt_info pkt_array[MAX_PKT];
@@ -23,5 +27,9 @@ void pkt_array_init();
 int insert_pkt(const wifi_promiscuous_pkt_t* pkt);
 int array_process(proc_pkt func, void* ctx);
 int array_send(int socket);
+
+#if defined (__cplusplus)
+}
+#endif
 
 #endif

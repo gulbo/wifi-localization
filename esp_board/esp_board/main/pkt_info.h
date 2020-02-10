@@ -19,6 +19,10 @@
 #define TIMESTAMP_LEN (4)
 #define CHECKSUM_LEN (4)
 
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
 typedef struct {
     uint8_t mac_addr[6];
     signed rssi;
@@ -34,5 +38,9 @@ void pkt_info_display(pkt_info* pkt);
 int pkt_send(int socket, pkt_info* pkt);
 void extract_ssid(void* payload, pkt_info* dst);
 void extract_mac_src(void* payload, uint8_t* buf);
+
+#if defined (__cplusplus)
+}
+#endif
 
 #endif
