@@ -14,6 +14,10 @@
 
 #define MAX_MAC (15)
 
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
 typedef uint8_t** mac_list;
 typedef uint8_t* macflag_list;
 
@@ -26,5 +30,9 @@ int countEspFound(void);
 int cmp_mac(const wifi_promiscuous_pkt_t* pkt, uint8_t *mac);
 int recvmac(int s);
 void resetFlagList();
+
+#if defined (__cplusplus)
+}
+#endif
 
 #endif
