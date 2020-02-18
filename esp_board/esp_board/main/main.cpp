@@ -16,7 +16,6 @@
 #include "driver/gpio.h"
 #include "string.h"
 #include "pkt_info.h"
-#include "pkt_array.h"
 #include "wifi.h"
 #include <sys/time.h>
 #include <sys/types.h>
@@ -24,6 +23,7 @@
 #include <time.h>
 #include "my_nvs.h"
 #include "mac_manager.h"
+#include <vector>
 
 #define	WIFI_CHANNEL_MAX		(13)
 #define	WIFI_CHANNEL_SWITCH_INTERVAL	(500)
@@ -49,6 +49,7 @@
 #define PROTO_NUM_LEN (4)
 #define MAX_BOARDS (10)
 
+std::vector<pkt_info> pkt_array;
 
 typedef struct info_s{
     int idBoard;
@@ -85,8 +86,29 @@ TimerHandle_t pingTimerHandle = NULL;
 TimerHandle_t sniffingHandle = NULL;
 SemaphoreHandle_t s1, flag_mutex, identificationTaskSemaphore;
 
+int array_send(int socket){
+
+    if(socket <= 0){
+        printf("Invalid socket (%d)\n", socket);
+        return INVALID_SOCKET;
+    }
+
+    int packets_count = ntohl(pkt_array.size());
+    int res = send(socket, (void*)&packets_count, sizeof(packets_count), 0);
+
+    for(int i = 0; i < packets_count; i++){
+        res = pkt_send(socket, &(pkt_array[i]));
+
+        if(res < 0){
+            printf("Packet at index %d returned %d while sending\n", i, res);
+        }
+    }
+
+    return 0;
+}
+
 static void config(){
-    pkt_array_init();
+    pkt_array.clear();
     init_mac_structures();
 
     printf("creating semaphores and mutex...\n");
@@ -190,8 +212,8 @@ void wifi_sniffer_handler(void *buff, wifi_promiscuous_pkt_type_t type){
     if(frameSubType != 4)
         return;
     
-    insert_pkt(ppkt);
-    pkt_info_display(&pkt_array[head - 1]);
+    pkt_array.push_back(pkt_info_init_fromPkt(ppkt));
+    pkt_info_display(&pkt_array.back());
 }
 
 void sender_task(void *parameters){
@@ -236,7 +258,7 @@ void sender_task(void *parameters){
 
         printf("Sender task ended\n");
 
-        pkt_array_init();
+        pkt_array.clear();
         //restart del timer
         if(xTimerReset(timerHandle, 0) != pdPASS){
             printf("Error on timer restart\n");
