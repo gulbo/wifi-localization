@@ -56,3 +56,9 @@ dkms.conf
 .vs
 .DS_Store
 .vscode
+
+# Python venv
+.venv
+
+# Visual studio
+obj/
