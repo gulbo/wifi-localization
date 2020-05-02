@@ -17,6 +17,8 @@ void init_mac_structures(){
     }
 }
 
+/** @brief counts the number of devices found checking the flags set
+ */
 int countEspFound(void){
     int count = 0;
     for(int i = 0; i < nmacs; i++){
@@ -27,6 +29,11 @@ int countEspFound(void){
     return count;
 }
 
+/** @brief compare the mac address of a wifi_packet to a given address
+ * @param pkt the wifi packet to check
+ * @param mac the mac address to compare
+ * @return 1 if they are the same
+ */
 int cmp_mac(const wifi_promiscuous_pkt_t* pkt, uint8_t *mac){
     uint8_t pkt_mac[6];
 

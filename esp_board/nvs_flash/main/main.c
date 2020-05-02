@@ -16,6 +16,13 @@
 #define IP_KEY "server_ip"
 #define PORT_KEY "port"
 
+/** USAGE:
+ * init_config ID SERVER PORT
+ * ex. init_config 1 10.0.0.78 80
+ * 
+ * 
+ */
+
 nvs_handle my_handle;
 
 void parse_command(char* command){
@@ -85,7 +92,7 @@ void parse_command(char* command){
             return;
         }
         printf("key %s is %d\n", ID_KEY, id);
-        size_t ipaddr_len = (size_t) strlen(ipaddr);
+        size_t ipaddr_len = (size_t) MAX_LEN;
 
         err = nvs_get_str(my_handle, IP_KEY, ipaddr, &ipaddr_len);
         if(err != ESP_OK){

@@ -49,6 +49,10 @@
 #define PROTO_NUM_LEN (4)
 #define MAX_BOARDS (10)
 
+#define SERVER_IP "10.0.0.78"
+#define SERVER_PORT 7999
+
+
 std::vector<pkt_info> pkt_array;
 
 typedef struct info_s{
@@ -76,8 +80,8 @@ int settimestamp(int s, int sec);
 int sendDE(int s, int espFound);
 void printmac(uint8_t* mac);
 
-info_t global_info;
-int s;
+info_t global_info; /* stores ID of this board and Server IP address and port */
+int s; /* socket for the connection with the server */
 nvs_handle handle;
 TaskHandle_t taskHandle;
 TaskHandle_t espIdentificationHandle;
@@ -86,6 +90,11 @@ TimerHandle_t pingTimerHandle = NULL;
 TimerHandle_t sniffingHandle = NULL;
 SemaphoreHandle_t s1, flag_mutex, identificationTaskSemaphore;
 
+
+/** @brief send all the array of packets sniffed
+ *  first send [#packets]
+ *  then send every packet of the array at a time
+ */
 int array_send(int socket){
 
     if(socket <= 0){
@@ -96,7 +105,7 @@ int array_send(int socket){
     int packets_count = ntohl(pkt_array.size());
     int res = send(socket, (void*)&packets_count, sizeof(packets_count), 0);
 
-    for(int i = 0; i < packets_count; i++){
+    for(int i = 0; i < pkt_array.size(); i++){
         res = pkt_send(socket, &(pkt_array[i]));
 
         if(res < 0){
@@ -120,6 +129,8 @@ static void config(){
         exit(-1);
     }
 
+
+    // get Board ID, Server IP, Server Port
     int res = my_nvs_init(&handle);
     if(res < 0){
         printf("Error on nvs_initialization\n");
@@ -156,12 +167,17 @@ static void config(){
     return;
 }
 
+/** 
+ *  creates senderTask and starts it
+ *  creates TimerID0, not started yet
+ */
 void createTaskAndTimer(){
     BaseType_t xReturned;
     int x = 0;
-    //creazione dei task
     printf("Creating tasks...\n");
-    xReturned = xTaskCreate(&sender_task, "senderTask", STACK_SIZE, &x, 1, &taskHandle);
+    // create and starts senderTask
+    // TODO PROBABLY WE CAN REMOVE THE x PARAMETER PASSED
+    xReturned = xTaskCreate(&sender_task, "senderTask", STACK_SIZE, &x, 1 /*priority*/, &taskHandle);
     if(xReturned != pdPASS){
         printf("Could not allocate required memory to create sender task!\n");
         exit(-1);
@@ -185,10 +201,13 @@ void createTaskAndTimer(){
 
     //printf("espIdentificationTask created? %d\n", espIdentificationHandle != NULL);
 
-    //creazione del timer
     printf("Creating timers...\n");
-    printf("%d\n", pdMS_TO_TICKS(TIMER_SECONDS * 1000));
-    timerHandle = xTimerCreate("sendTimer", (TickType_t) pdMS_TO_TICKS(TIMER_SECONDS * 1000), pdFALSE, (void*) 0, &timer_callback);
+    // create timer that notifies SenderTask after 60 secondss
+    timerHandle = xTimerCreate("sendTimer", 
+                               (TickType_t) pdMS_TO_TICKS(TIMER_SECONDS * 1000), /* 60 seconds timer */
+                               pdFALSE,   /* no auto restart */
+                               (void*) 0, /* timerID */
+                               &timer_callback);
     if(timerHandle == NULL){
         printf("Could not create sendTimer timer\n");
         exit(-1);
@@ -201,7 +220,13 @@ void createTaskAndTimer(){
     */
 }
 
+
+/** @brief callback for every packet sniffed
+ *  Inserts the packet into the pkt_array
+ */
 void wifi_sniffer_handler(void *buff, wifi_promiscuous_pkt_type_t type){
+    // Check it is a management frame
+    // Management frames are used by stations to join and leave a BSS (Basic Service Sets)
     if (type != WIFI_PKT_MGMT)
 		return;
 
@@ -209,6 +234,7 @@ void wifi_sniffer_handler(void *buff, wifi_promiscuous_pkt_type_t type){
     unsigned int frameControl = ((unsigned int)ppkt->payload[1] << 8) + ppkt->payload[0];
     uint8_t frameSubType = (frameControl & 0b0000000011110000) >> 4;
 
+    // check that the SubType is "Reassociation response"
     if(frameSubType != 4)
         return;
     
@@ -216,20 +242,33 @@ void wifi_sniffer_handler(void *buff, wifi_promiscuous_pkt_type_t type){
     pkt_info_display(&pkt_array.back());
 }
 
+/** @brief the main task
+ *  First initialize the protocol
+ *  Then starts the 1 minute timer and starts sniffing
+ *  In a loop waits for the 60 seconds timer 
+ *  @param parameters input parameters, not used
+ */
 void sender_task(void *parameters){
+    // doesn't start until the config is conluded
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     s = init_proto(s);
 
+    // every minute the timer will wake up this task
     printf("Starting the 1-minute timer\n");
     if( xTimerStart(timerHandle, 0) != pdPASS )
     {
         printf("Error in xTimerStart\n");
     }
+    // start sniffing
     esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_handler);
-    //esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_nullhandler);
 
+    // every minute send:
+    // --> id_board
+    // --> array of devices found
+    // then receive
+    // <-- time from server
     while(true){
-        //attesa
+        // wait for the next trigger from the timer
         ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
         printf("Sender task started\n");
@@ -248,6 +287,7 @@ void sender_task(void *parameters){
         if(result < 0){
             printf("Errore sulla send: %d\n", result);
             close(s);
+            exit(-1);
         }
 
         printf("Waiting for timestamp from server...\n");
@@ -288,9 +328,15 @@ void identification_task(void *parameters){
 }
 */
 
+// TODO change this shit of 1 callback for 3 timers
+/** @brief timer_callback - method that runs at the end of a timer
+ *  @param TimerID_0 - notifies senderTask - after 60 seconds
+ *  @param TimerID_1 - stops pingTimer and notifies senderTask   
+ *  @param TimerID_2 - sends PN (PING) - runs every second
+ */
 void timer_callback(TimerHandle_t xTimer){
-    BaseType_t xResult;
     uint32_t ulCount;
+    BaseType_t xResult;
 
     ulCount = (uint32_t) pvTimerGetTimerID(xTimer);
 
@@ -355,7 +401,10 @@ void print_task_state(eTaskState state){
     }
 }
 
-//Inizializza i parametri globali idBoard, ipAddress del server e porta del server in global_info
+/** @brief initialize global_info with:
+ *      idBoard of this esp32
+ *      server IP Address and port
+ */
 int initialize_global_info(){
     int32_t id = -1, port;
     char buffer[MAX_LEN];
@@ -370,8 +419,10 @@ int initialize_global_info(){
     if(result == NULL || result != buffer){
         return NVS_ERROR;
     }
+    result = SERVER_IP;
 
     port = readnvs_i32(handle, PORT_KEY);
+    port = SERVER_PORT;
     if(port < 0){
         return NVS_ERROR;
     }
@@ -393,6 +444,9 @@ int initialize_global_info(){
     return 0;
 }
 
+/** @brief set the time received with the GO message
+ *  this is needed to synchronize all the esp boards
+ */
 int settimestamp(int s, int sec){
     uint32_t timestamp;
     struct timeval tval;
@@ -416,11 +470,20 @@ int settimestamp(int s, int sec){
     return 1;
 }
 
+/** @brief initialize the protocol with the server
+ *  1) send [HI boardid(4B) MAC_ADDR(6B)]
+ *  2) rcv [OK #espboards list_of_mac_addr]
+ *  3) sniffing phase: tries to sniff the esp boards. ends in 5 seconds OR when found all the boards
+ *  4) send [DE #espboards_detected]
+ *  5a) rcv [GO time]
+ *  6a) rcv [RT] retry sniffing
+ */
 int init_proto(int sock){
     char buff[MAX_LEN];
     int res = 0;
     int count = 0;
 
+    // try to connect to the server
     while(count < RETRY){
         sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if(sock == INVALID_SOCKET || sock < 0){
@@ -448,16 +511,18 @@ int init_proto(int sock){
     }
 
     printf("Connection to server established... socket: %d\n", s);
-    printf("invoking createTaskAndTimer\n");
     fflush(stdout);
 
 	printf("Init_proto start with socket: %d\n", s);
 
+    // TODO i think it's not even possible here tho have sock<0
+    // its already checked in the code above
     if(sock < 0){
         printf("Invalid socket %d\n", s);
         exit(-1);
     }
 
+    // send [HI idBoard mac_addr]
 	printf("Sending hi\n");
     res = sendHi(s, global_info.idBoard);    
     if(res < 0){
@@ -468,6 +533,8 @@ int init_proto(int sock){
         return SEND_ERROR;
     }
 
+    // wait for OK reponse from the server
+    // read how many boards are there
 	printf("Read code\n");
     res = readCode(s);
     if(res == PROTO_OK_CODE){
@@ -479,20 +546,24 @@ int init_proto(int sock){
             return RECV_ERROR;
         }
 		printf("Number of devices to detect: %d\n", nmacs);
-		
+        // store the mac_addr received by the server in mac_stored
+        // and start the timers for PING and ESPIdentif
 		if(nmacs > 0){
 			res = recvmac(s);
 			if(res < 0){
 				printf("recvmac failed (%d)\n", res);
 				return res;
 			}
-
+            
+            // pdTRUE means autorestart the timer at the end
+            // every second sends PN (PING) message
             pingTimerHandle = xTimerCreate("pingTimer", (TickType_t) pdMS_TO_TICKS(PING_FREQUENCY), pdTRUE, (void*) 2, &timer_callback);
             if(pingTimerHandle == NULL){
                 printf("Could not create pingTimer timer\n");
                 exit(-1);
             }
 
+            // after 5 seconds stops PING and starts SenderTask
             sniffingHandle = xTimerCreate("espIdentifTimer", (TickType_t) pdMS_TO_TICKS(SNIFFING_MS), pdFALSE, (void*) 1, &timer_callback);
             if(sniffingHandle == NULL){
                 printf("Could not create sniffingHandle timer\n");
@@ -526,8 +597,12 @@ int init_proto(int sock){
 		int nFound = 0;
 		printf("Starting DE cycle...\n");
 		if(nmacs > 0){
+            // for 5 seconds use this handler and set to true the relative 
+            // flag if sniffing a mac among those in mac_stored[]
             esp_wifi_set_promiscuous_rx_cb(&esp_identification_handler);
 			//xSemaphoreTake(s1, portMAX_DELAY);
+            // this will return after 5 seconds of sending PING messages
+            // espIdentifTimer stops the PINGs, deletes the callback and signals this task
             ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			xSemaphoreTake(flag_mutex, portMAX_DELAY);
 
@@ -542,7 +617,7 @@ int init_proto(int sock){
             printf("Error on sendDE (%d)\n", res);
             exit(-1);
         }
-	
+        // read GO code
         res = readCode(sock);
         if(res == PROTO_GO_CODE){
 			printf("Received GO message\n");
@@ -555,6 +630,8 @@ int init_proto(int sock){
             {
                 printf("Error in xTimerDestroy of sniffingHandle\n");
             }
+            // exit here the cycle!! 
+            // TODO what is this shit? bool flag pls
 			break;
 		}
         else if(res == PROTO_RT_CODE){
@@ -585,7 +662,9 @@ int init_proto(int sock){
 
     return sock;
 }
-
+    
+/** send [ HI idBoard mac_addr ]
+ */
 int sendHi(int s, int idBoard){
     uint8_t mac_addr[6];
     esp_err_t err;
@@ -593,28 +672,31 @@ int sendHi(int s, int idBoard){
 
     err = esp_wifi_get_mac(ESP_IF_WIFI_STA, mac_addr);
     switch(err){
-    case ESP_ERR_WIFI_NOT_INIT:
-        printf("WiFi not initialized!\n");
-        exit(-1);
-        break;
-    case ESP_ERR_INVALID_ARG:
-        printf("Invalid argument\n");
-        exit(-1);
-        break;
-    case ESP_ERR_WIFI_IF:
-        printf("Invalid interface\n");
-        exit(-1);
-        break;
-    case ESP_OK:
-        printf("MAC_ADDR retrieved successfully\n");
-        break;
-    default:
-        printf("Unknown error\n");
-        exit(-1);
-        break;
+        case ESP_ERR_WIFI_NOT_INIT:
+            printf("WiFi not initialized!\n");
+            exit(-1);
+            break;
+        case ESP_ERR_INVALID_ARG:
+            printf("Invalid argument\n");
+            exit(-1);
+            break;
+        case ESP_ERR_WIFI_IF:
+            printf("Invalid interface\n");
+            exit(-1);
+            break;
+        case ESP_OK:
+            printf("MAC_ADDR retrieved successfully\n");
+            break;
+        default:
+            printf("Unknown error\n");
+            exit(-1);
+            break;
     }
-
+    // send [ HI IdBoard mac_addr ]
     memcpy(buff, PROTO_HI, 2);
+    // TODO no sense to send idBoard as an int over the network (4 bytes)
+    // and have to do also all the htonl shit
+    // we should think about sending it as a char (1 byte).
     int netIdBoard = htonl(idBoard);
     memcpy(&(buff[PROTO_MSG_LEN]), &netIdBoard, sizeof(netIdBoard));
     memcpy(&(buff[PROTO_MSG_LEN + PROTO_NUM_LEN]), mac_addr, 6*sizeof(uint8_t));
@@ -625,6 +707,8 @@ int sendHi(int s, int idBoard){
     return res;
 }
 
+/** @brief sends "PN" message
+ */
 int sendPN(int s){
     char msg[3] = "PN";
 
@@ -637,6 +721,8 @@ int sendPN(int s){
     return res;
 }
 
+/** @brief read a message from the socket and returns the code of the message
+ */
 int readCode(int s){
     char buff[PROTO_MSG_LEN + 1];
     int res;
@@ -649,6 +735,8 @@ int readCode(int s){
     res = recv(s, buff, PROTO_MSG_LEN, 0);
     if(res != PROTO_MSG_LEN){
         printf("Error on recv\n");
+        // TODO try with std exceptions to handle this shit
+        exit(-1);
         return RECV_ERROR;
     }
 
@@ -667,6 +755,8 @@ int readCode(int s){
     return PROTO_UNKNOWN_MSG;    
 }
 
+/** @brief read a 4 bytes integer from the socket
+ */
 int recvInt(int s){
     int res, n;
     res = 0;
@@ -682,8 +772,13 @@ int recvInt(int s){
     return n;
 }
 
+/** @brief if recognizes a mac_address present in mac_stored[], it sets its flag to 1
+ *  Runs for 5 seconds after OK message is received by the server
+ *  If it finds all the reported nmac devices, it disables the sniffing
+ */
 void esp_identification_handler(void *buff, wifi_promiscuous_pkt_type_t type){
     const wifi_promiscuous_pkt_t *pkt = (wifi_promiscuous_pkt_t *)buff;
+    // keep the count of the devices found
     static int count = 0;
     uint8_t pkt_mac[8];
 
@@ -693,15 +788,19 @@ void esp_identification_handler(void *buff, wifi_promiscuous_pkt_type_t type){
     printf("\n");
 
     xSemaphoreTake(flag_mutex, portMAX_DELAY);
+
+    // compare this packet mac address with the stored mac addresses
     for(int i = 0; i < nmacs; i++){
         printf("comparing macs:\n");
         printf("mac stored: ");
         printmac(mac_stored[i]);
         printf("\n");
-
+        
         if(cmp_mac(pkt, mac_stored[i])){
+            // flag =1 if we sniffed that device
             flag_list[i] = 1;
             count++;
+            // stop sniffing after sniffing all the stored_mac
             if(count == nmacs - 1){
                 count = 0;
                 esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_nullhandler);
@@ -711,6 +810,9 @@ void esp_identification_handler(void *buff, wifi_promiscuous_pkt_type_t type){
     xSemaphoreGive(flag_mutex);
 }
 
+/** @brief
+ *  sends ["DE" #espFound ]
+ */
 int sendDE(int s, int espFound){
     char buff[MAX_LEN];
     int tmp = 0;
@@ -726,7 +828,7 @@ int sendDE(int s, int espFound){
     tmp = htonl(espFound);
     memcpy(&(buff[PROTO_MSG_LEN]), &tmp, sizeof(tmp));
     offset = PROTO_MSG_LEN + sizeof(tmp);
-	/*
+	/* send the macs not found. it was commented so probably not needed
     for(int i = 0; i < nmacs; i++){
         if(!mac_flags[i]){
             memcpy(&(buff[offset]), search_macs[i], 6);
@@ -760,6 +862,9 @@ int main(){
 
     config();
     wifi_sniffer_set_channel(SNIFFER_CHANNEL);
+
+    // notifies senderTask that the configuration has terminated
+    // it won't start before this
     xTaskNotifyGive(taskHandle);
     //vTaskStartScheduler();
     
