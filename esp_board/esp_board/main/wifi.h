@@ -13,8 +13,12 @@
 #include "string.h"
 #include "pkt_info.h"
 
-#define SSID "GULPO"
-#define PASSWORD "f117f117bagonghi"
+//#define SSID "GULPO"
+//#define PASSWORD "f117f117bagonghi"
+
+#define SSID "Help! I am Trapped in a Router!!"
+#define PASSWORD "sfsu1996"
+
 
 #define SUBTYPE_MASK (0x00F0)
 #define SUBTYPE_SHIFT (4)
