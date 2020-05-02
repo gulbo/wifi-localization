@@ -37,7 +37,9 @@ void wifi_config(){
 	printf("Subnet mask: %s\n", ip4addr_ntoa(&ip_info.netmask));
 	printf("Gateway:     %s\n", ip4addr_ntoa(&ip_info.gw));
 
+    // All packets of the currently joined 802.11 network (with a specific SSID and channel) are captured
     esp_wifi_set_promiscuous(true);
+    // Each time a packet is received, the registered callback function will be called
     esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_nullhandler);
 }
 
