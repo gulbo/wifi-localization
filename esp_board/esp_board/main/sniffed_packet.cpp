@@ -35,10 +35,10 @@ std::string SniffedPacket::toString() const{
                                                   mac_address[4],
                                                   mac_address[5]);
     char cksum[12];  
-    snprintf(cksum, 12, "%02x%02x%02x%02x", mac_address[0],
-                                            mac_address[1],
-                                            mac_address[2],
-                                            mac_address[3]);
+    snprintf(cksum, 12, "%02x%02x%02x%02x", checksum[0],
+                                            checksum[1],
+                                            checksum[2],
+                                            checksum[3]);
     ss << "MAC:" << mac << ",";
     ss << "SSID_LENGTH:" << std::to_string(ssid_length) << ",";
     ss << "SSID:" << ssid << ",";
