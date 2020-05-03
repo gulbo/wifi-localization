@@ -13,4 +13,4 @@ Tutti i testi inviati NON contengono il terminatore di stringa \0
 
 sender_task loop (after init):
 C: id(4B) #packets(4B)
-						MAC_LEN + RSSI_LEN + SSIDLEN_LEN + SSID_LEN + TIMESTAMP_LEN + CHECKSUM_LEN];
+						MAC_ADDRESS_BYTES + RSSI_BYTES + SSID_LENGTH_BYTES + SSID_BYTES + TIMESTAMP_BYTES + CHECKSUM_BYTES];
