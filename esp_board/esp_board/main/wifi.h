@@ -11,7 +11,6 @@
 #include "esp_event.h"
 #include "esp_event_loop.h"
 #include "string.h"
-#include "pkt_info.h"
 
 //#define SSID "GULPO"
 //#define PASSWORD "f117f117bagonghi"

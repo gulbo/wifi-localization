@@ -15,15 +15,16 @@
 #include "nvs_flash.h"
 #include "driver/gpio.h"
 #include "string.h"
-#include "pkt_info.h"
 #include "wifi.h"
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <time.h>
 #include "my_nvs.h"
-#include "mac_manager.h"
+#include "sniffed_packet.h"
 #include <vector>
+#include <string>
+#include <iostream>
 
 #define	WIFI_CHANNEL_MAX		(13)
 #define	WIFI_CHANNEL_SWITCH_INTERVAL	(500)
@@ -53,7 +54,7 @@
 #define SERVER_PORT 7999
 
 
-std::vector<pkt_info> pkt_array;
+std::vector<SniffedPacket> sniffed_packets;
 
 typedef struct info_s{
     int idBoard;
@@ -102,11 +103,11 @@ int array_send(int socket){
         return INVALID_SOCKET;
     }
 
-    int packets_count = ntohl(pkt_array.size());
+    int packets_count = ntohl(sniffed_packets.size());
     int res = send(socket, (void*)&packets_count, sizeof(packets_count), 0);
 
-    for(int i = 0; i < pkt_array.size(); i++){
-        res = pkt_send(socket, &(pkt_array[i]));
+    for(int i = 0; i < sniffed_packets.size(); i++){
+        res = SniffedPacket::sendSniffedPacket(sniffed_packets[i], socket);
 
         if(res < 0){
             printf("Packet at index %d returned %d while sending\n", i, res);
@@ -117,8 +118,8 @@ int array_send(int socket){
 }
 
 static void config(){
-    pkt_array.clear();
-    init_mac_structures();
+    sniffed_packets.clear();
+    //_DE_ init_mac_structures();
 
     printf("creating semaphores and mutex...\n");
     flag_mutex = xSemaphoreCreateMutex();
@@ -222,24 +223,29 @@ void createTaskAndTimer(){
 
 
 /** @brief callback for every packet sniffed
- *  Inserts the packet into the pkt_array
+ *  Inserts the packet into the sniffed_packets
  */
-void wifi_sniffer_handler(void *buff, wifi_promiscuous_pkt_type_t type){
-    // Check it is a management frame
+void wifi_sniffer_handler(void *buf, wifi_promiscuous_pkt_type_t type){
+    // parse only valid packets
+    if (buf == nullptr) 
+        return;
+
+    // Check that it is a management frame
     // Management frames are used by stations to join and leave a BSS (Basic Service Sets)
     if (type != WIFI_PKT_MGMT)
 		return;
 
-	const wifi_promiscuous_pkt_t *ppkt = (wifi_promiscuous_pkt_t *)buff;
-    unsigned int frameControl = ((unsigned int)ppkt->payload[1] << 8) + ppkt->payload[0];
-    uint8_t frameSubType = (frameControl & 0b0000000011110000) >> 4;
-
+	const wifi_promiscuous_pkt_t* wifi_pkt = (wifi_promiscuous_pkt_t*) buf;
+    
     // check that the SubType is "Reassociation response"
+    uint16_t frameControl = ((uint16_t)wifi_pkt->payload[1] << 8) + wifi_pkt->payload[0];
+    uint8_t frameSubType = (frameControl & 0b0000000011110000) >> 4;
     if(frameSubType != 4)
         return;
     
-    pkt_array.push_back(pkt_info_init_fromPkt(ppkt));
-    pkt_info_display(&pkt_array.back());
+    // add packet to the sniffed packets
+    sniffed_packets.emplace_back(wifi_pkt);
+    std::cout << sniffed_packets.back().toString() << std::endl;
 }
 
 /** @brief the main task
@@ -298,7 +304,7 @@ void sender_task(void *parameters){
 
         printf("Sender task ended\n");
 
-        pkt_array.clear();
+        sniffed_packets.clear();
         //restart del timer
         if(xTimerReset(timerHandle, 0) != pdPASS){
             printf("Error on timer restart\n");
@@ -536,6 +542,7 @@ int init_proto(int sock){
     // wait for OK reponse from the server
     // read how many boards are there
 	printf("Read code\n");
+    int nmacs;
     res = readCode(s);
     if(res == PROTO_OK_CODE){
         printf("Received OK from server... Parsing the list of devices\n");
@@ -549,7 +556,10 @@ int init_proto(int sock){
         // store the mac_addr received by the server in mac_stored
         // and start the timers for PING and ESPIdentif
 		if(nmacs > 0){
-			res = recvmac(s);
+            printf("ERROR SNIFFING PHASE SHOULD BE DEACTIVATED!");
+            printf("nmacs not zero: %d", nmacs);
+            exit(1);
+			//res = recvmac(s);
 			if(res < 0){
 				printf("recvmac failed (%d)\n", res);
 				return res;
@@ -578,7 +588,7 @@ int init_proto(int sock){
             {
                 printf("Error in xTimerStart of sniffingHandle\n");
             }
-            resetFlagList();
+            //resetFlagList();
         }
 		
 		//da este   re per il riconoscimento delle altre board
@@ -597,9 +607,12 @@ int init_proto(int sock){
 		int nFound = 0;
 		printf("Starting DE cycle...\n");
 		if(nmacs > 0){
+            printf("ERROR SNIFFING PHASE SHOULD BE DEACTIVATED!");
+            printf("nmacs not zero: %d", nmacs);
+            exit(1);
             // for 5 seconds use this handler and set to true the relative 
             // flag if sniffing a mac among those in mac_stored[]
-            esp_wifi_set_promiscuous_rx_cb(&esp_identification_handler);
+            //esp_wifi_set_promiscuous_rx_cb(&esp_identification_handler);
 			//xSemaphoreTake(s1, portMAX_DELAY);
             // this will return after 5 seconds of sending PING messages
             // espIdentifTimer stops the PINGs, deletes the callback and signals this task
@@ -607,7 +620,7 @@ int init_proto(int sock){
 			xSemaphoreTake(flag_mutex, portMAX_DELAY);
 
 			printf("Counting esp found...\n");
-			nFound = countEspFound();
+			//nFound = countEspFound();
             printf("Releasing flag_mutex\n");
             xSemaphoreGive(flag_mutex);
 		}
@@ -637,7 +650,7 @@ int init_proto(int sock){
         else if(res == PROTO_RT_CODE){
             printf("RT received... retry ESP identification\n");
             printf("Resetting the flag list\n");
-            resetFlagList();
+            //resetFlagList();
             printf("Restarting the ping timer...\n");
             if( xTimerReset(pingTimerHandle, 0) != pdPASS )
             {
@@ -734,7 +747,7 @@ int readCode(int s){
 
     res = recv(s, buff, PROTO_MSG_LEN, 0);
     if(res != PROTO_MSG_LEN){
-        printf("Error on recv\n");
+        printf("Error on recv read code\n");
         // TODO try with std exceptions to handle this shit
         exit(-1);
         return RECV_ERROR;
@@ -782,7 +795,7 @@ void esp_identification_handler(void *buff, wifi_promiscuous_pkt_type_t type){
     static int count = 0;
     uint8_t pkt_mac[8];
 
-    extract_mac_src((void*) pkt->payload, pkt_mac);
+    //extract_mac_src((void*) pkt->payload, pkt_mac);
     printf("pkt mac: ");
     printmac(pkt_mac);
     printf("\n");
@@ -790,23 +803,23 @@ void esp_identification_handler(void *buff, wifi_promiscuous_pkt_type_t type){
     xSemaphoreTake(flag_mutex, portMAX_DELAY);
 
     // compare this packet mac address with the stored mac addresses
-    for(int i = 0; i < nmacs; i++){
-        printf("comparing macs:\n");
-        printf("mac stored: ");
-        printmac(mac_stored[i]);
-        printf("\n");
+    // for(int i = 0; i < nmacs; i++){
+    //     printf("comparing macs:\n");
+    //     printf("mac stored: ");
+    //     //printmac(mac_stored[i]);
+    //     printf("\n");
         
-        if(cmp_mac(pkt, mac_stored[i])){
-            // flag =1 if we sniffed that device
-            flag_list[i] = 1;
-            count++;
-            // stop sniffing after sniffing all the stored_mac
-            if(count == nmacs - 1){
-                count = 0;
-                esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_nullhandler);
-            }
-        }
-    }
+    //     // if(cmp_mac(pkt, mac_stored[i])){
+    //     //     // flag =1 if we sniffed that device
+    //     //     flag_list[i] = 1;
+    //     //     count++;
+    //     //     // stop sniffing after sniffing all the stored_mac
+    //     //     if(count == nmacs - 1){
+    //     //         count = 0;
+    //     //         esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_nullhandler);
+    //     //     }
+    //     // }
+    // }
     xSemaphoreGive(flag_mutex);
 }
 
