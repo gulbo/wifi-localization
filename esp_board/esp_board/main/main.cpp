@@ -4,8 +4,6 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/timers.h"
-#include "freertos/semphr.h"
 #include "freertos/event_groups.h"
 #include "esp_wifi.h"
 #include "esp_wifi_types.h"
@@ -26,13 +24,10 @@
 #include <string>
 #include <iostream>
 
-#define	WIFI_CHANNEL_MAX		(13)
-#define	WIFI_CHANNEL_SWITCH_INTERVAL	(500)
-#define DEBUG (1)
-#define RETRY (15)
+#define MAX_RETRY (15)
 #define SNIFFER_CHANNEL (1)
 #define STACK_SIZE (50 * 1024)
-#define TIMER_SECONDS (61)
+#define SNIFFING_TIME_SEC (60)
 #define MAX_LEN (100)
 #define PROTO_HI ("HI")
 #define PROTO_HI_CODE (17)
@@ -62,10 +57,9 @@ typedef struct info_s{
 
 
 static void config();
-void createTaskAndTimer();
+void createTask();
 void wifi_sniffer_handler(void *buff, wifi_promiscuous_pkt_type_t type);
 void sendTask(void *parameters);
-void sendTimerCallback(TimerHandle_t xTimer);
 void print_task_state(eTaskState state);
 int initialize_global_info();
 int init_proto(int s);
@@ -80,7 +74,7 @@ info_t global_info; /* stores ID of this board and Server IP address and port */
 int s; /* socket for the connection with the server */
 nvs_handle handle;
 TaskHandle_t send_task_handle;
-TimerHandle_t send_timer_handle;
+const TickType_t send_task_delay = SNIFFING_TIME_SEC * 1000 / portTICK_PERIOD_MS;
 
 /** @brief send all the array of packets sniffed
  *  first send [#packets]
@@ -127,15 +121,6 @@ static void config(){
     printf("initializing tcip adapter and wifi config\n");
     wifi_config();
 
-    createTaskAndTimer();
-    return;
-}
-
-/** 
- *  creates sendTask and starts it (done automatically)
- *  creates sendTimer, not started yet
- */
-void createTaskAndTimer(){
     BaseType_t xReturned;
     int x = 0;
     printf("Creating tasks...\n");
@@ -150,20 +135,8 @@ void createTaskAndTimer(){
     eTaskState state = eTaskGetState(send_task_handle);
     printf("sendTask: ");
     print_task_state(state);
-
-    printf("Creating timers...\n");
-    // create timer that notifies SendTask after 60 secondss
-    send_timer_handle = xTimerCreate("sendTimer", 
-                               (TickType_t) pdMS_TO_TICKS(TIMER_SECONDS * 1000), /* 60 seconds timer */
-                               pdFALSE,   /* no auto restart */
-                               NULL, /* timerID */
-                               &sendTimerCallback);
-    if(send_timer_handle == NULL){
-        printf("Could not create sendTimer timer\n");
-        exit(-1);
-    }
+    return;
 }
-
 
 /**
  *  @brief callback for every packet sniffed
@@ -194,8 +167,8 @@ void wifi_sniffer_handler(void *buf, wifi_promiscuous_pkt_type_t type){
 
 /** @brief the main task
  *  First initialize the protocol
- *  Then starts the 1 minute timer and starts sniffing
- *  In a loop waits for the 60 seconds timer 
+ *  Then starts sniffing for send_task_delay
+ *  At the end sends the sniffed packets and starts sniffing again
  *  @param parameters input parameters, not used
  */
 void sendTask(void *parameters){
@@ -203,87 +176,45 @@ void sendTask(void *parameters){
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     s = init_proto(s);
 
-    // every minute the timer will wake up this task
-    printf("Starting the 1-minute timer\n");
-    if( xTimerStart(send_timer_handle, 0) != pdPASS )
-    {
-        printf("Error in xTimerStart\n");
-        exit(-1);
-    }
-    // start sniffing
-    esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_handler);
-
-    // every minute send:
+    // every send_task_delay send:
     // --> id_board
     // --> array of devices found
     // then receive
     // <-- time from server
     while(true){
-        // wait for the next trigger from the timer
-        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        // start sniffing
+        printf("New sniffing phase: starting data acquisition\n");
+        esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_handler);
+        
+        // sleep for sniffing
+        vTaskDelay(send_task_delay);
 
-        printf("sendTask started\n");
-        int result;
+        printf("New send phase: interrupting data acquisition\n");
+        esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_nullhandler);
 
-        result = ntohl(global_info.idBoard);
-        result = send(s, (void *) &result, (size_t) sizeof(int), 0);
-        if(result != sizeof(int)){
-            printf("Error on send: %d (%d)\n", result, errno);
+        int32_t id_board_net = ntohl(global_info.idBoard);
+        size_t sent = send(s, (void *) &id_board_net, (size_t) sizeof(int32_t), 0);
+        if(sent != sizeof(int)){
+            printf("Error on send: %d (%d)\n", sent, errno);
             if(errno == EPIPE){
                 printf("Connection closed by server\n");
             }
             close(s);
         }
-        result = array_send(s);
-        if(result < 0){
-            printf("Errore sulla send: %d\n", result);
+        sent = array_send(s);
+        if(sent < 0){
+            printf("Errore sulla send: %d\n", sent);
             close(s);
             exit(-1);
         }
 
         printf("Waiting for timestamp from server...\n");
-        result = settimestamp(s, 0);
-        if(result <= 0){
-            printf("Error on settimestamp (%d)\n", result);
+        sent = settimestamp(s, 0);
+        if(sent <= 0){
+            printf("Error on settimestamp (%d)\n", sent);
         }
-
-        printf("sendTask ended\n");
 
         sniffed_packets.clear();
-        //restart del timer
-        if(xTimerReset(send_timer_handle, 0) != pdPASS){
-            printf("Error on timer restart\n");
-        }
-
-        //sostituisco con la callback corretta
-        esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_handler);
-    }
-}
-
-// TODO change this shit of 1 callback for 3 timers
-/** @brief sendTimerCallback - method that runs at the end of a timer
- *  @param TimerID_0 - notifies sendTask - after 60 seconds
- */
-void sendTimerCallback(TimerHandle_t xTimer){
-    uint32_t ulCount;
-    BaseType_t xResult;
-
-    ulCount = (uint32_t) pvTimerGetTimerID(xTimer);
-
-    if(ulCount == 0){
-        //sostituisco la callback con una che non fa nulla
-        esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_nullhandler);
-        printf("Timer callback invoked: interrupting data acquisition\n");
-
-        //inviare notifica al task
-        xResult = xTaskNotifyGive(send_task_handle);
-        if(xResult != pdPASS){
-            printf("xTaskNotifyGive failed\n");
-        }
-    }
-    else
-    {
-        printf("ERROR! Timer callback for TimerID not known!\n");
     }
 }
 
@@ -391,7 +322,7 @@ int init_proto(int sock){
 
     // try to connect to the server
     bool is_connected = false;
-    while(count < RETRY && !is_connected){
+    while(count < MAX_RETRY && !is_connected){
         sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         if(sock == INVALID_SOCKET || sock < 0){
             printf("Error on socket\n");
@@ -411,7 +342,7 @@ int init_proto(int sock){
         }
     }
     
-    if(count >= RETRY){
+    if(count >= MAX_RETRY){
         printf("Could not connect to server... rebooting the system...\n");
         close(s);
         exit(-1);
@@ -604,7 +535,6 @@ int sendDE(int s, int32_t esp_found){
 }
 
 int main(){
-    send_timer_handle = NULL;
     send_task_handle = NULL;
 
     config();
@@ -613,15 +543,6 @@ int main(){
     // notifies sendTask that the configuration has terminated
     // it won't start before this
     xTaskNotifyGive(send_task_handle);
-    //vTaskStartScheduler();
-    
-    /*
-    while (true) {
-		vTaskDelay(WIFI_CHANNEL_SWITCH_INTERVAL / portTICK_PERIOD_MS);
-		wifi_sniffer_set_channel(channel);
-		channel = (channel % WIFI_CHANNEL_MAX) + 1;
-    }
-    */
 }
 
 extern "C" void app_main(void){
