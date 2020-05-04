@@ -52,26 +52,6 @@ void wifi_sniffer_set_channel(uint8_t channel)
 	esp_wifi_set_channel(channel, WIFI_SECOND_CHAN_NONE);
 }
 
-const char* wifi_sniffer_packet_type2str(wifi_promiscuous_pkt_type_t type)
-{
-	switch(type) {
-	case WIFI_PKT_MGMT: return "MGMT";
-	case WIFI_PKT_DATA: return "DATA";
-	default:	
-	case WIFI_PKT_MISC: return "MISC";
-	}
-}
-
-int check_probe_req(uint16_t frame_ctrl)
-{
-    uint16_t subtype = frame_ctrl;
-    subtype = subtype & SUBTYPE_MASK;
-    subtype = subtype >> SUBTYPE_SHIFT;
-    //printf("frame_ctrl:%04x - subtype:%04x \n", frame_ctrl, subtype);
-
-    return subtype == 0x0004;
-}
-
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
     switch(event->event_id) {
