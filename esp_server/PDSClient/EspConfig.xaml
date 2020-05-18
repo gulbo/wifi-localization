@@ -11,14 +11,22 @@
         xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance local:MainWindow}" WindowStyle="None" Visibility="Visible"  
-        ResizeMode="NoResize"
-        Title="ESP Board Configuration" Height="400" Width="500">
-    <Grid>
+		ResizeMode="NoResize"
+        Title="ESP Board Configuration" Height="600" Width="800">
+  
+  
+  <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
 
-        <Grid Grid.Row="0" Height="60" VerticalAlignment="Top" Background="#FF03A9F4">
-            <TextBlock Text="PDSClient" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" FontFamily="Champagne &amp; Limousines" />
-            <Button Name="Close" Click="Button_Close" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Height="26" Margin="0,16,16.2,20" Width="26" ScrollViewer.CanContentScroll="True" Padding="0" ToolTip="Close">
-                <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="24" Width="24" UseLayoutRounding="False" Foreground="#FFFAF4F4"/>
+      </Grid.RowDefinitions>
+    
+      <Grid Height="60" VerticalAlignment="Top" Background="#00867d" Grid.Row="1">
+            <TextBlock Text="PDS Server" Foreground="black" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" FontFamily="Champagne &amp; Limousines" />
+            <Button Name="Close" Click="closeButton" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Height="26" Margin="0,16,16.2,20" Width="26" ScrollViewer.CanContentScroll="True" Padding="0" ToolTip="Close">
+                <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="24" Width="24" UseLayoutRounding="False" Foreground="black"/>
                 <Button.Style>
                     <Style>
                         <Style.Triggers>
@@ -31,39 +39,112 @@
             </Button>
 
         </Grid>
+    
+      <Grid VerticalAlignment="Top" Background="#4db6ac" Grid.Row="2">
+        <TextBlock Text="Configuration" Foreground="black" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontFamily="Champagne &amp; Limousines" />
+      </Grid>
 
-        <Grid Grid.Row="1" Margin="0 60 0 0">
-            <Grid.RowDefinitions>
+      <Grid Grid.Row="3" Margin="0 60 0 0">
+        
+          <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="85*"/>
                 <RowDefinition Height="15*"/>
             </Grid.RowDefinitions>
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <StackPanel x:Name="parentPanel"
+        
+          <StackPanel x:Name="parentPanel"
                     Grid.Row="0"
-                    HorizontalAlignment="Center"  
-                    VerticalAlignment="Top" 
-                    Margin="10,10,0,0" 
-                    Orientation="Vertical" 
-                    RenderTransformOrigin="0.463,0.451" 
-                    CanVerticallyScroll="True">
-                    <TextBlock x:Name="lbl_Title" Text="Insert (x, y) parameters for each ESP board:" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                </StackPanel>
-            </ScrollViewer>
-
-            <StackPanel x:Name="ButtonPanel"
-                    Grid.Row="1"
-                    HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Margin="10,10,0,0"
                     Orientation="Horizontal"
-                    Margin="5">
-                <Button x:Name="btn_ok"
-                    Content="OK"
-                    Click="ButtonOk"/>
-                <Button x:Name="btn_cancel"
-                    Content="Cancel"
-                    Margin="5"
-                    Click="ButtonCancel"/>
-            </StackPanel>
+                    RenderTransformOrigin="0.463,0.451"
+                    CanVerticallyScroll="True">
+
+            <TextBlock x:Name="lbl_Title" Text="Insert new Board" FontSize =" 16" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <Button x:Name="btn_add"
+                    FontSize="20"
+                    Foreground="black"
+                    Width="40"
+                    Height="40"
+                    Margin="50,0,20,0"
+                    Content="+"
+                    Click="ButtonAdd">
+              <Button.Template>
+                <ControlTemplate TargetType="{x:Type Button}">
+                  <Grid>
+                    <Ellipse Fill="#ff9800"/>
+                    <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                  </Grid>
+                </ControlTemplate>
+              </Button.Template>
+            </Button>
+          </StackPanel>
+          
+          <ScrollViewer x:Name="BoardList"  Grid.Row="1" VerticalScrollBarVisibility="Auto" Height="Auto" MaxHeight="300">
+				<ListView x:Name="Boards_box" Height="Auto" Margin="12,0,12,10"  VerticalAlignment="Bottom">
+              <ListView.BindingGroup>
+              <BindingGroup Name="{x:Null}" NotifyOnValidationError="False" />
+              </ListView.BindingGroup>
+              <ListView.ItemTemplate>
+						<DataTemplate>
+                            <Grid>
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="*"/>
+                      <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="150"/>
+                      <ColumnDefinition Width="200"/>
+                      <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Name ="id_text" Grid.Column="0" Text="Board id:" Margin="12,6,0,0"/>
+                                <TextBox  Name ="id_box"  Grid.Column="0" Text="{Binding Path=Id}" Height="30" Width="40" Margin="30,0,0,0" TextAlignment="Right" VerticalAlignment="Center"/>
+                                <TextBlock Name ="x_text" Grid.Column="1" Text="x:" Margin="12,6,0,0"/>
+                                <TextBox  Name ="x_box" Grid.Column="1" Text="{Binding Path=P.X}" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center"/>
+                                <TextBlock Name ="y_text"  Grid.Column="1" Grid.Row="1" Text="y:" Margin="12,0,0,6"/>
+                                <TextBox  Name ="y_box" Grid.Column="1" Grid.Row="1" Text="{Binding Path=P.Y}" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center"/>
+                                <Button  Grid.Column="2" Name="Delete" Click="ButtonDelete"  Background="{x:Null}" BorderBrush="{x:Null}" Height="16" Margin="0,5,0,0" Width="26"  Padding="0" ToolTip="Close">
+                      <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="15" Width="15" UseLayoutRounding="False" Foreground="black"/>
+                      <Button.Style>
+                        <Style>
+                          <Style.Triggers>
+                            <Trigger Property="Button.IsMouseOver" Value="True">
+
+                            </Trigger>
+                          </Style.Triggers>
+                        </Style>
+                      </Button.Style>
+                    </Button>
+                  </Grid>
+                </DataTemplate>
+              </ListView.ItemTemplate>
+            </ListView>
+            
+              
+
+          </ScrollViewer>
+        
+        
+          
+          <StackPanel x:Name="ButtonPanel"
+              Grid.Row="2"
+              HorizontalAlignment="Right"
+              VerticalAlignment="Center"
+              Orientation="Horizontal"
+              Margin="5">
+            <Button x:Name="btn_ok"
+                Foreground="black"
+                Background ="#ff9800"
+                Content="OK"
+                Click="ButtonOk"/>
+            <Button x:Name="btn_back"
+                Foreground="black"
+                Background ="#ff9800"
+                Content="Cancel"
+                Margin="5"
+                Click="backButton"/>
+          </StackPanel>
 
         </Grid>
     </Grid>

@@ -12,6 +12,10 @@ namespace PDSClient.ConnectionManager
         public double Y { get; set; }
 
 
+        public Point()
+        {
+
+        }
 
         public Point(double x, double y) {
             X = x;
