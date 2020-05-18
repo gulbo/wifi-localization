@@ -11,10 +11,9 @@ namespace PDSClient.ConnectionManager
 
         public int Id { get; set; }
         public Point P { get; set; }
-
         public Board()
         {
-
+            P = new Point();
         }
 
         public Board(int id, double x, double y)
@@ -36,7 +35,8 @@ namespace PDSClient.ConnectionManager
 
         public override string ToString()
         {
-            return "BoardId: " + Id + " - " + "X: " + P.X + " - " + "Y: " + P.Y;
+             return "BoardId: " + Id + " - " + "X: " + P.X + " - " + "Y: " + P.Y;
+
         }
     }
 }

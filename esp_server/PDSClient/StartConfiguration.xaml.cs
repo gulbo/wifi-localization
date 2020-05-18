@@ -29,64 +29,35 @@ namespace PDSClient
 
         public StartConfiguration()
         {
+            //created and managed by Windows Forms designer and it defines everything you see on the form
             InitializeComponent();
-
+            //connection to database DBConnect(string server, string uid, string password) + pair key/value thread safe accessible from more thread at the same time for saving boards
             _dbConnection = new DBConnect("localhost", "root", "");
 
         }
 
-        private void Button_Close(object sender, System.Windows.RoutedEventArgs e)
+        //close each window objects
+        private void closeButton(object sender, System.Windows.RoutedEventArgs e)
         {
+            //for each objects in window
             for (int intCounter = App.Current.Windows.Count - 1; intCounter >= 0; intCounter--)
                 App.Current.Windows[intCounter].Close();
-
+            //close this process and tells the Operating system the exit code (usefull because if there might be other foreground threads running. They would stay running )
             Environment.Exit(Environment.ExitCode);
-
+            
         }
 
 
 
         private void ButtonNewConfig(object sender, RoutedEventArgs e)
-        {
-            int nBoards = 0;
-            try
-            {
-                String txt = txt_boards.Text.Trim();
-                if(txt.Length <= 0)
-                {
-                    System.Windows.MessageBox.Show("Invalid number inserted", "Invalid value", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-                }
-                nBoards = int.Parse(txt_boards.Text.Trim());
-            }
-            catch (OverflowException)
-            {
-                System.Windows.MessageBox.Show("Invalid number: overflow error. Please change it.", 
-                    "Overflow Error", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
-                return;
-            }
-            catch (Exception)
-            {
-                System.Windows.MessageBox.Show("Invalid number. Please insert a valid value.",
-                    "Invalid number",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return;
-            }
-
-            if(nBoards <= 0)
-            {
-                System.Windows.MessageBox.Show("Negative values and 0 are not accepted.", 
-                    "Invalid value", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
-                return;
-            }
-
-            EspConfig configurationWindow = new EspConfig(nBoards, _dbConnection, this);
-            configurationWindow.ShowDialog();
+        {           
+            //Hide the current window
+            this.Hide();
+            //call to boards configuration
+            EspConfig boardConfig = new EspConfig(_dbConnection, this);
+            //show boardConfig window
+            boardConfig.ShowDialog();
+            
         }
 
         private void ButtonLoadFromDB(object sender, RoutedEventArgs e)
@@ -133,70 +104,9 @@ namespace PDSClient
                 }
             }
 
-            EspConfig configWindow = EspConfig.GenerateFromList(boards, _dbConnection, this);
+            EspConfig configWindow = new EspConfig(boards, _dbConnection, this);
             configWindow.ShowDialog();
         }
-
-        private void ButtonLoadFromJSON(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-            bool? result = ofd.ShowDialog();
-
-            if(!result.HasValue || (result.HasValue && !result.Value))
-            {
-                return;
-            }
-
-            String path = ofd.FileName;
-            Board[] boards = LoadFromJson(path);
-            if(boards == null)
-            {
-                /*
-                System.Windows.MessageBox.Show("Unable to read the specified file",
-                    "Conversion error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                */
-                return;
-            }
-
-            EspConfig configWindow = EspConfig.GenerateFromList(boards.ToList(), _dbConnection, this);
-            configWindow.ShowDialog();
-        }
-
-        private Board[] LoadFromJson(String path)
-        {
-            FileInfo fi = new FileInfo(path);
-            Board[] result;
-
-            if (!fi.Exists)
-                return null;
-            try
-            {
-                using (StreamReader r = new StreamReader(path))
-                {
-                    String json = r.ReadToEnd();
-                    result = JsonConvert.DeserializeObject<Board[]>(json);
-                }
-            }
-            catch (JsonReaderException)
-            {
-                System.Windows.MessageBox.Show("Error parsing the JSON file",
-                    "JSON error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return null;
-            }
-            catch (Exception)
-            {
-                System.Windows.MessageBox.Show("Error reading the file",
-                    "File error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return null;
-            }
-
-            return result;
-        }
+      
     }
 }

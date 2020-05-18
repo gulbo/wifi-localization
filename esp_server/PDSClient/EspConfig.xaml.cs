@@ -14,6 +14,7 @@ using System.Windows.Shapes;
 using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using System.Globalization;
+using System.Collections.ObjectModel;
 
 namespace PDSClient.ConnectionManager
 {
@@ -29,149 +30,63 @@ namespace PDSClient.ConnectionManager
         private static double TextBoxWidth = 60;
         private static Thickness TextBlockMargin = new Thickness(0, 0, 0, 0);
         private static Thickness TextBoxMargin = new Thickness(10, 0, 30, 10);
+        private ObservableCollection<Board> Boards;
+        //private List<Board> boards;
 
         public int NBoards { get; private set; }
         private DBConnect _dbConnection { get; set; }
         private StartConfiguration _initialWindow { get; set; }
 
-        public EspConfig(int NBoards, DBConnect DBConnection, StartConfiguration initialWindow)
+        public EspConfig(List<Board> Boards, DBConnect DBConnection, StartConfiguration initialWindow)
         {
+            //Load the compiled page of a component.(because we use XAML)
             InitializeComponent();
-
-            Debug.Assert(NBoards > 0);
-
-            this.NBoards = NBoards;
+            if (Boards.Count > 0)
+            {
+                this.Boards = new ObservableCollection<Board>(Boards);
+                ListView boards = Boards_box;
+                boards.ItemsSource = this.Boards;
+                
+            }
+            else
+            {
+                System.Windows.MessageBox.Show("No boards found in database.",
+                        "Empty board list",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+            }
             this._dbConnection = DBConnection;
             this._initialWindow = initialWindow;
-
-            for(int i = 0; i < NBoards; i++)
-            {
-                parentPanel.Children.Add(EspLineConfig(i + 1));
-            }
         }
+        public EspConfig( DBConnect DBConnection, StartConfiguration initialWindow)
+        {
+            //Load the compiled page of a component.(because we use XAML)
+            InitializeComponent();
+
+            this.Boards = new ObservableCollection<Board>();
+            ListView boards = Boards_box;
+            boards.ItemsSource = Boards;
+            DataTemplate dataTemplate = Boards_box.ItemTemplate;
+             
+           
 
 
-        private void Button_Close(object sender, System.Windows.RoutedEventArgs e)
+            this._dbConnection = DBConnection;
+            this._initialWindow = initialWindow;
+            
+        }
+        private void backButton(object sender, System.Windows.RoutedEventArgs e)
         {
             this.Close();
+            _initialWindow.Show();
         }
-
-        public static EspConfig GenerateFromList(List<Board> boards, DBConnect dbConnect, StartConfiguration initialWindow)
+        private void closeButton(object sender, System.Windows.RoutedEventArgs e)
         {
-            EspConfig result = new EspConfig(boards.Count, dbConnect, initialWindow);
-
-            for(int i = 0; i < boards.Count; i++)
-            {
-                result.SetBoardAtLine(i + 1, boards[i]);
-                result.SetReadOnlyLine(i + 1);
-            }
-
-            return result;
-        }
-
-        private void SetReadOnlyLine(int idx)
-        {
-            TextBox id = FindChild<TextBox>(parentPanel, "txt_id" + idx);
-            TextBox x = FindChild<TextBox>(parentPanel, "txt_x" + idx);
-            TextBox y = FindChild<TextBox>(parentPanel, "txt_y" + idx);
-
-            id.IsReadOnly = true;
-            x.IsReadOnly = true;
-            y.IsReadOnly = true;
-        }
-
-        private void SetBoardAtLine(int idx, Board board)
-        {
-            TextBox id = FindChild<TextBox>(parentPanel, "txt_id" + idx);
-            TextBox x = FindChild<TextBox>(parentPanel, "txt_x" + idx);
-            TextBox y = FindChild<TextBox>(parentPanel, "txt_y" + idx);
-
-            id.Text = board.Id.ToString();
-            x.Text = board.P.X.ToString("0.00", CultureInfo.InvariantCulture);
-            y.Text = board.P.Y.ToString("0.00", CultureInfo.InvariantCulture);
-        }
-
-        private StackPanel EspLineConfig(int i)
-        {
-            var panel = new StackPanel {
-                Orientation = Orientation.Horizontal,
-                Height = 40,
-                VerticalAlignment = MyVerticalAlignment,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(10)
-            };
-            panel.Children.Add(new TextBlock {
-                Text = i.ToString() + ") Id: ",
-                Width = TextBlockWidth,
-                Height = ElementHeight,
-                VerticalAlignment = MyVerticalAlignment,
-                Margin = TextBlockMargin
-            });
-            panel.Children.Add(new TextBox { Name = "txt_id" + i,
-                Width = TextBoxWidth,
-                Height = ElementHeight,
-                VerticalAlignment = MyVerticalAlignment,
-                TextAlignment = TextBoxTextAlignment,
-                Margin = TextBoxMargin
-            });
-            panel.Children.Add(new TextBlock { Text = "x: ",
-                Width = TextBlockWidth,
-                Height = ElementHeight,
-                VerticalAlignment = MyVerticalAlignment,
-                Margin = TextBlockMargin
-            });
-            panel.Children.Add(new TextBox { Name = "txt_x" + i,
-                Width = TextBoxWidth,
-                Height = ElementHeight,
-                VerticalAlignment = MyVerticalAlignment,
-                TextAlignment = TextBoxTextAlignment,
-                Margin = TextBoxMargin
-            });
-            panel.Children.Add(new TextBlock { Text = "y: ",
-                Width = TextBlockWidth,
-                Height = ElementHeight,
-                VerticalAlignment = MyVerticalAlignment,
-                Margin = TextBlockMargin
-            });
-            panel.Children.Add(new TextBox { Name = "txt_y" + i,
-                Width = TextBoxWidth,
-                Height = ElementHeight,
-                VerticalAlignment = MyVerticalAlignment,
-                TextAlignment = TextBoxTextAlignment,
-                Margin = TextBoxMargin
-            });
-
-            return panel;
-        }
-
-        private List<Board> GetBoards()
-        {
-            List <Board> result = new List<Board>();
-
-            for(int i = 0; i < NBoards; i++)
-            {
-                var idBox = FindChild<TextBox>(parentPanel, "txt_id" + (i + 1));
-                var xBox = FindChild<TextBox>(parentPanel, "txt_x" + (i + 1));
-                var yBox = FindChild<TextBox>(parentPanel, "txt_y" + (i + 1));
-
-                if (!(idBox.Text.Length != 0) || !(xBox.Text.Length != 0) || !(yBox.Text.Length != 0))
-                    return null;
-                try
-                {
-                    int id = int.Parse(idBox.Text.Trim());
-                    double x = double.Parse(xBox.Text.Trim().Replace(",", "."), CultureInfo.InvariantCulture);
-                    double y = double.Parse(yBox.Text.Trim().Replace(",", "."), CultureInfo.InvariantCulture);
-               
-                    result.Add(new Board(id, x, y));
-                }
-                catch (Exception)
-                {
-                    return null;
-                }
-            }
-
-            return result;
-        }
+            for (int intCounter = App.Current.Windows.Count - 1; intCounter >= 0; intCounter--)
+                App.Current.Windows[intCounter].Close();
+            //close this process and tells the Operating system the exit code (usefull because if there might be other foreground threads running. They would stay running )
+            Environment.Exit(Environment.ExitCode);
+        }        
 
         private bool ValidPos(List<Board> boards)
         {
@@ -188,56 +103,20 @@ namespace PDSClient.ConnectionManager
 
         }
 
-        public static T FindChild<T>(DependencyObject parent, string childName)
-            where T : DependencyObject
+        private void ButtonAdd(object sender, RoutedEventArgs e)
         {
-            // Confirm parent and childName are valid. 
-            if (parent == null) return null;
-
-            T foundChild = null;
-
-            int childrenCount = VisualTreeHelper.GetChildrenCount(parent);
-            for (int i = 0; i < childrenCount; i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-                // If the child is not of the request child type child
-                T childType = child as T;
-                if (childType == null)
-                {
-                    // recursively drill down the tree
-                    foundChild = FindChild<T>(child, childName);
-
-                    // If the child is found, break so we do not overwrite the found child. 
-                    if (foundChild != null) break;
-                }
-                else if (!string.IsNullOrEmpty(childName))
-                {
-                    var frameworkElement = child as FrameworkElement;
-                    // If the child's name is set for search
-                    if (frameworkElement != null && frameworkElement.Name == childName)
-                    {
-                        // if the child's name is of the request name
-                        foundChild = (T)child;
-                        break;
-                    }
-                }
-                else
-                {
-                    // child element found.
-                    foundChild = (T)child;
-                    break;
-                }
-            }
-
-            return foundChild;
+            Board newBoard =new Board();
+            Boards.Add(newBoard);
+            
+            return;
         }
 
         private void ButtonOk(object sender, RoutedEventArgs e)
         {
-            List<Board> boards = GetBoards();
+            
             HashSet<int> idBoards = new HashSet<int>();
-
-            if(boards == null)
+            
+            if(Boards == null)
             {
                 System.Windows.MessageBox.Show("Invalid parameter(s) inserted.",
                     "Invalid parameters",
@@ -245,10 +124,13 @@ namespace PDSClient.ConnectionManager
                     MessageBoxImage.Error);
                 return;
             }
+            List<Board> boards = new List<Board>();
+            foreach (Board board in Boards_box.Items)
+            {
+                boards.Add(board);
+            }
 
-            Debug.Assert(boards.Count == NBoards);
-
-            foreach(Board board in boards)
+            foreach (Board board in boards)
             {
                 if (idBoards.Contains(board.Id))
                 {
@@ -280,7 +162,7 @@ namespace PDSClient.ConnectionManager
                         MessageBoxImage.Error);
                     return;
                 }
-                res = _dbConnection.InsertBoard(boards);
+                res = _dbConnection.InsertBoard(Boards);
                 if (!res)
                 {
                     System.Windows.MessageBox.Show("Unable to insert boards' information to the database. Please check the connection and retry.",
@@ -299,7 +181,6 @@ namespace PDSClient.ConnectionManager
                 return;
             }
             System.Diagnostics.Debug.WriteLine("Boards correctly inserted into db");
-
             MainWindow mw = new MainWindow(_dbConnection, boards);
 
             this.Close();
@@ -310,6 +191,12 @@ namespace PDSClient.ConnectionManager
         private void ButtonCancel(object sender, RoutedEventArgs e)
         {
             this.Close();
+        }
+        private void ButtonDelete(object sender, RoutedEventArgs e)
+        {
+            Button ClickedButton = (Button) sender;
+            Board DeletedBoard = (Board) ClickedButton.DataContext;
+            Boards.Remove(DeletedBoard);
         }
     }
 }
