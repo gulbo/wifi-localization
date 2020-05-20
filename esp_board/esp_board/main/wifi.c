@@ -1,4 +1,5 @@
 #include "wifi.h"
+#include "nvs_flash.h"
 
 static wifi_country_t wifi_country = {.cc="IT", .schan=1, .nchan=13, .policy=WIFI_COUNTRY_POLICY_AUTO};
 static const int CONNECTED_BIT = BIT0;
@@ -14,7 +15,8 @@ void wifi_config(){
     };
     printf("creating event group for wifi\n");
     wifi_event_group = xEventGroupCreate();
-
+    
+    nvs_flash_init();
     tcpip_adapter_init();
     ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
