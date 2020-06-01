@@ -58,6 +58,7 @@ namespace PDSClient.ConnectionManager
             for (int i = 0; i < nBoards; i++)
             {
                 var t = new Thread(new ParameterizedThreadStart(this.ControlledReceivePkt));
+                
                 mres1[i] = new ManualResetEvent(false);
                 mres2[i] = new ManualResetEvent(false);
                 countMRE[i] = new ManualResetEvent(false);
@@ -210,7 +211,7 @@ namespace PDSClient.ConnectionManager
 
                 pktLst.Clear();
             }
-
+               System.Diagnostics.Debug.WriteLine("End receiving");
         }
 
         public static bool MyRecv(Socket s, byte[] receiveBuffer, int nBytes, CancellationToken ct)

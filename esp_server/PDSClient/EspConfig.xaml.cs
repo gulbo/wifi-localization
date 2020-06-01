@@ -127,22 +127,17 @@ namespace PDSClient.ConnectionManager
             List<Board> boards = new List<Board>();
             foreach (Board board in Boards_box.Items)
             {
-                boards.Add(board);
-            }
-
-            foreach (Board board in boards)
-            {
                 if (idBoards.Contains(board.Id))
                 {
-                    System.Windows.MessageBox.Show("Duplicate id not allowed. Please check your configuration.", 
-                        "Conflict with ids detected", 
-                        MessageBoxButton.OK, 
+                    System.Windows.MessageBox.Show("Duplicate id not allowed. Please check your configuration.",
+                        "Conflict with ids detected",
+                        MessageBoxButton.OK,
                         MessageBoxImage.Warning);
                     return;
                 }
                 idBoards.Add(board.Id);
+                boards.Add(board);
             }
-
             if (!ValidPos(boards)) {
                 System.Windows.MessageBox.Show("Boards in the same position are not allowed",
                        "Conflict with position detected",

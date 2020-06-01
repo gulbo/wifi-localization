@@ -15,10 +15,10 @@
              MouseDown="Window_MouseDown">
 
     <Grid >
-        <Grid Height="60" VerticalAlignment="Top" Background="#FF03A9F4">
-            <TextBlock Text="PDSClient" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" FontFamily="Champagne &amp; Limousines" />
+        <Grid Height="60" VerticalAlignment="Top" Background="#FF00867D">
+            <TextBlock Text="Wifi Localization" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" FontFamily="Champagne &amp; Limousines" />
             <Button Name="Close" Click="Button_Close" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Height="26" Margin="0,16,16.2,20" Width="26" ScrollViewer.CanContentScroll="True" Padding="0" ToolTip="Close">
-                <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="24" Width="24" UseLayoutRounding="False" Foreground="#FFFAF4F4"/>
+                <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="24" Width="24" UseLayoutRounding="False" Foreground="Black"/>
                 <Button.Style>
                     <Style>
                         <Style.Triggers>
@@ -31,7 +31,7 @@
             </Button>
 
             <Button Name="Maximize"  Click="Button_Maximize" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Height="24" Margin="0,16,51.2,20" Width="24" BorderThickness="0" HorizontalContentAlignment="Center" Padding="0" RenderTransformOrigin="1.283,0.917" Foreground="#FFF5EFEF" ToolTip="Resize">
-                <materialDesign:PackIcon Kind="WindowMaximize" Height="26" Width="26" UseLayoutRounding="False" BorderThickness="1"/>
+                <materialDesign:PackIcon Kind="WindowMaximize" Height="26" Width="26" UseLayoutRounding="False" BorderThickness="1" Foreground="Black"/>
                 <Button.Style>
                     <Style>
                         <Style.Triggers>
@@ -45,7 +45,7 @@
             </Button>
 
             <Button Name="Minimize"  Click="Button_minimize" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Height="18" Margin="0,22,83.2,20" Width="24" Padding="0" Foreground="#FFFAF7F7" ToolTip="Minimize">
-                <materialDesign:PackIcon Kind="WindowMinimize" Height="24" Width="24" RenderTransformOrigin="0.567,1.1"/>
+                <materialDesign:PackIcon Kind="WindowMinimize" Height="24" Width="24" RenderTransformOrigin="0.567,1.1" Foreground="Black"/>
                 <Button.Style>
                     <Style>
                         <Style.Triggers>
@@ -61,7 +61,7 @@
         </Grid>
 
         <Grid Margin="0 60 0 0">
-            <dragablz:TabablzControl SelectionChanged="TabablzControl_SelectionChanged" FixedHeaderCount="4">
+            <dragablz:TabablzControl SelectionChanged="TabablzControl_SelectionChanged" FixedHeaderCount="4" BorderBrush="#FF00867D">
                 <dragablz:TabablzControl.InterTabController>
                     <dragablz:InterTabController/>
                 </dragablz:TabablzControl.InterTabController>
