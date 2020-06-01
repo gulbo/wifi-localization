@@ -522,12 +522,18 @@ namespace PDSClient.ConnectionManager
                     conn.Open();
                     //Create Query
                     StringBuilder builder = new StringBuilder();
-                    builder.Append("SELECT P1.MAC, P1.TIMESTAMP, P1.GLOBAL");
+                    builder.Append(@"SELECT DISTINCT p1.MAC, p1.TIMESTAMP, p1.GLOBAL,p1.HASH, p1.IDSCHEDA, p1.RSSI, p2.IDSCHEDA, p2.RSSI
+                                       FROM pacchetti p1, pacchetti p2
+                WHERE p1.IDSCHEDA > p2.IDSCHEDA
+AND ABS(p1.TIMESTAMP - p2.TIMESTAMP) <= 1
+and P1.MAC = p2.MAC
+and P1.HASH = p2.HASH
+and P1.TIMESTAMP > " + threshold + ";");
 
-                    for (int i = 0; i < nBoards; i++)
-                        builder.Append(", P").Append(i + 1).Append(".IDSCHEDA, P").Append(i + 1).Append(".RSSI");
+                    //for (int i = 0; i < nBoards; i++)
+                        //builder.Append(", P").Append(i + 1).Append(".IDSCHEDA, P").Append(i + 1).Append(".RSSI");
 
-                    builder.Append(VarQuery(nBoards, time, threshold));
+                    //builder.Append(VarQuery(nBoards, time, threshold));
 
                     //Create Command
                     cmd.CommandText = builder.ToString();
@@ -543,8 +549,8 @@ namespace PDSClient.ConnectionManager
                             List<Circle> circles = new List<Circle>();
                             for (int i = 0; i < nBoards; i++)
                             {
-                                int id = dataReader.GetInt32(3 + i * 2);
-                                int rssi = dataReader.GetInt32(4 + i * 2);
+                                int id = dataReader.GetInt32(4 + i * 2);
+                                int rssi = dataReader.GetInt32(5 + i * 2);
 
                                 circles.Add(new Circle(GetBoard(id).P, rssi));  
                             }
@@ -556,7 +562,7 @@ namespace PDSClient.ConnectionManager
                             }
                         }
                     }
-                    list = ReduceList(list, ReduceType.Mean);
+                    //list = ReduceList(list, ReduceType.Mean);
 
                     InsertPhones(list, conn);
                 }
@@ -570,7 +576,7 @@ namespace PDSClient.ConnectionManager
             }
             catch(MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("MySqlException catched.");
+                System.Diagnostics.Debug.WriteLine("MySqlException catched." + e.ToString());
                 this.Connected = false;
                 return null;
             }
@@ -639,6 +645,8 @@ namespace PDSClient.ConnectionManager
             //TIMESTAMP
             for (int i = 1; i < nBoards; i++)
                 builder.Append(" AND ABS(P1.TIMESTAMP - P").Append(i + 1).Append(".TIMESTAMP) <= ").Append(threshold);
+            //HASH 
+            builder.Append("and P1.HASH = P2.HASH AND P1.HASH <> 00000000");
             //MAC
             for (int i = 1; i < nBoards; i++)
                 builder.Append(" AND P").Append(i).Append(".MAC = P").Append(i + 1).Append(".MAC");
