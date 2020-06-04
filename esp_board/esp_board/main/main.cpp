@@ -25,7 +25,7 @@
 #define STACK_SIZE (50 * 1024)
 #define SNIFFING_TIME_SEC (60)
 
-#define SERVER_IP "10.0.0.78"
+#define SERVER_IP "192.168.1.17"
 #define SERVER_PORT 7999
 #define BOARD_ID 1
 
@@ -37,7 +37,7 @@ void createTask();
 void wifi_sniffer_handler(void *buff, wifi_promiscuous_pkt_type_t type);
 void sendTask(void *parameters);
 void print_task_state(eTaskState state);
-bool setTime(uint32_t epoch);
+bool setSystemTime(uint32_t epoch);
 
 TaskHandle_t send_task_handle;
 const TickType_t send_task_delay = SNIFFING_TIME_SEC * 1000 / portTICK_PERIOD_MS;
@@ -116,8 +116,19 @@ void sendTask(void *parameters){
     std::cout << "Connected to the server!" << std::endl;
 
     std::cout << "Starting client..." << std::endl;
-    uint32_t epoch = client.start();
-    if(!setTime(epoch))
+
+    uint32_t epoch;
+    try
+    {
+        epoch = client.start();
+    }
+    catch(const std::runtime_error& e)
+    {
+        std::cout << e.what() << std::endl;
+        exit(1);
+    }
+    
+    if(!setSystemTime(epoch))
         throw std::runtime_error("Error setting the first time from the server");
     std::cout << "Client Started!" << std::endl;
 
@@ -150,7 +161,7 @@ void sendTask(void *parameters){
         uint32_t epoch;
         if (client.readInt(epoch))
         {
-            if(setTime(epoch))
+            if(setSystemTime(epoch))
                 is_time_set = true;
         }   
 
@@ -185,7 +196,7 @@ void print_task_state(eTaskState state){
  *  @brief set the time received by the server as the time of the system
  *         this is needed to synchronize all the esp boards
  */
-bool setTime(uint32_t epoch){
+bool setSystemTime(uint32_t epoch){
     struct timeval tval;
     tval.tv_sec = epoch;
     tval.tv_usec = 0;

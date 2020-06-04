@@ -15,7 +15,6 @@ extern "C" {
 #define INVALID_PKT_LIST -7
 #define NVS_ERROR -8
 #define SETTIME_ERROR -9
-#define PROTO_UNKNOWN_MSG -50
 
 #if defined (__cplusplus)
 }

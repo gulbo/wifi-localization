@@ -2,20 +2,6 @@
 #include "esp_wifi.h"
 #include <iostream>
 
-const std::string ProtocolCode::HI = "HI";
-const std::string ProtocolCode::OK = "OK";
-const std::string ProtocolCode::RT = "RT";
-const std::string ProtocolCode::DE = "DE";
-const std::string ProtocolCode::GO = "GO";
-
-bool ProtocolCode::isValid(std::string code)
-{
-    if (code.size() != CODE_LENGTH)
-        return false;
-
-    return (code == HI || code == OK || code == RT || code == DE || code == GO);
-}
-
 Client::Client(uint8_t board_id, std::string server_ip, int16_t server_port){
     board_id_ = board_id;
     server_ip_ = server_ip;
@@ -79,9 +65,11 @@ uint32_t Client::start()
 {
     assert(is_connected_);
 
+    std::cout << "Sending HI..." << std::endl;
     if (!sendHi_())
         throw std::runtime_error("Error sending Hi");
-
+    std::cout << "HI sent" << std::endl;
+    
     // wait for OK reponse from the server
     std::cout << "Waiting OK..." << std::endl;
     std::string code;
@@ -89,7 +77,7 @@ uint32_t Client::start()
         throw std::runtime_error("Invalid code received: " + code);
     if(code != ProtocolCode::OK)
         throw std::runtime_error("Waiting for OK, received : " + code);
-
+        
     std::cout << "Received OK" << std::endl;
 
     // read how many boards are there
@@ -108,15 +96,17 @@ uint32_t Client::start()
         throw std::runtime_error("Error on sendDE");
     
     // wait for GO code
+    std::cout << "Waiting for GO..." << std::endl;
     if(!readProtocolCode_(code))
         throw std::runtime_error("Invalid code received: " + code);
 
     if (code != ProtocolCode::GO)
-        throw std::runtime_error("Waiting for GO, received : " + code);
+        throw std::runtime_error("Waiting for GO, received instead: " + code);
 
     std::cout << "Received GO" << std::endl;
 
     // wait for time from the server
+    std::cout << "Waiting to synchronize system time..." << std::endl;
     uint32_t epoch = 0;
     if(!readInt(epoch))
     {
@@ -168,15 +158,16 @@ bool Client::sendHi_(){
 bool Client::readProtocolCode_(std::string& code){
     assert(is_connected_);
 
-    char msg[ProtocolCode::CODE_LENGTH];
+    char msg[ProtocolCode::CODE_LENGTH + 1];
 
     size_t bytes_received = ::recv(socket_, msg, ProtocolCode::CODE_LENGTH, 0);
     if(bytes_received != ProtocolCode::CODE_LENGTH){
         std::cout << "Error reading protocol code" << std::endl;
         return false;
     }
-
+    msg[2] = '\0'; // add end string
     code = std::string(msg);
+
     return ProtocolCode::isValid(code);
 }
 
