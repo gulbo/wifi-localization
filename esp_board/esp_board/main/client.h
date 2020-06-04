@@ -3,30 +3,10 @@
 
 #include "sys/socket.h"
 #include "sniffed_packet.h"
+#include "protocol_code.h"
 #include <list>
 
 #define PROTO_NUM_LEN (4)
-#define PROTO_UNKNOWN_MSG -50
-
-/**
- * @brief struct that holds the protocol specific constants and methods
- */
-struct ProtocolCode
-{
-    static const std::string HI;
-    static const std::string OK;
-    static const std::string RT;
-    static const std::string DE;
-    static const std::string GO;
-    static const size_t CODE_LENGTH = 2;
-
-    /** 
-     * @brief check if a code is a valid protocol code
-     * @return is valid
-     */
-    static bool isValid(std::string code);
-
-};
 
 /**
  * @brief Client class that groups all the client interface to the server
@@ -66,6 +46,7 @@ class Client
         *  4) send [DE 0]
         *  5a) rcv [GO time]
         *  6a) rcv [RT] retry sniffing
+        * @return epoch given by the server
         */
         uint32_t start();
 
@@ -97,6 +78,7 @@ class Client
          * @brief send a list of packets
          *        first send [#packets]
          *        then send every packet one at a time
+         * @note remove from the list the packets successfully sent, leave there the failed ones
          * @param packets list
          */
         void sendPackets(std::list<SniffedPacket>& packets);
@@ -130,7 +112,7 @@ class Client
         bool sendDE_(int32_t esp_found);
 
         /**
-        * @brief read a message and returns its code\
+        * @brief read a message and returns its code
         * @param code output argument for the code
         * @return successful
         */

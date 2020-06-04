@@ -15,8 +15,8 @@
 //#define SSID "GULPO"
 //#define PASSWORD "f117f117bagonghi"
 
-#define SSID "Help! I am Trapped in a Router!!"
-#define PASSWORD "sfsu1996"
+#define SSID "GULPO"
+#define PASSWORD "f117f117bagonghi"
 
 #if defined (__cplusplus)
 extern "C" {
