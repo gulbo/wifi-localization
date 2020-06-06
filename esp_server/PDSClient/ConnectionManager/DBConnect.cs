@@ -28,7 +28,7 @@ namespace PDSClient.ConnectionManager
             this.Server = server;
             this.Uid = uid;
             this.Password = password;
-            this.Database = "mydb";
+            this.Database = "db_wifi-localization";
             this.Connected = false;
             boards = new ConcurrentDictionary<int, Board>();
         }
@@ -43,13 +43,13 @@ namespace PDSClient.ConnectionManager
             return boards[id];
         }
 
+        //Insert di pacchetti nella tabella 'pacchetti'
 
-        //insert packet in the table 'pacchetti'
         public bool Insert(String idBoard, String mac, int rssi, String ssid, String timestamp, String hash)
         {
             try
             {
-                string query = String.Format("INSERT INTO  Pacchetti(MAC, RSSI, SSID, TIMESTAMP, HASH, IDSCHEDA) VALUES('{0}','{1}','{2}','{3}','{4}','{5}')",
+                string query = String.Format("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda) VALUES('{0}','{1}','{2}','{3}','{4}','{5}')",
                                                 mac, rssi, ssid, timestamp, hash, idBoard);
 
                 using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
@@ -78,7 +78,8 @@ namespace PDSClient.ConnectionManager
         {
             try
             {
-                string query = String.Format("INSERT INTO  Pacchetti(MAC, RSSI, SSID, TIMESTAMP, HASH, IDSCHEDA, GLOBAL) VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}')",
+
+                string query = String.Format("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda, global) VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}')",
                                                p.MacAddr, p.Rssi, p.Ssid, p.Timestamp, p.Checksum, p.IdBoard, p.Global);
 
                 using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
@@ -108,7 +109,8 @@ namespace PDSClient.ConnectionManager
             try
             {
                 StringBuilder builder = new StringBuilder();
-                builder.Append("INSERT INTO  Pacchetti(MAC, RSSI, SSID, TIMESTAMP, HASH, IDSCHEDA, GLOBAL) VALUES");
+                builder.Append("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda, global) VALUES");
+                
 
                 foreach (Packet p in list)
                 {
@@ -150,12 +152,13 @@ namespace PDSClient.ConnectionManager
             return MySql.Data.MySqlClient.MySqlHelper.EscapeString(txt);
         }
 
-        //delete packet with selected id from the table 'pacchetti'
+        //Delete di pacchetti (selezionando l'ID_pacchetto) nella tabella 'pacchetti'
+ 
         public bool Delete(int id)
         {
             try
             {
-                string query = String.Format("DELETE FROM Pacchetti WHERE id='{0}'", id);
+                string query = String.Format("DELETE FROM pacchetti WHERE ID_pacchetto='{0}'", id);
 
                 using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
                 using (var cmd = conn.CreateCommand())
@@ -183,7 +186,7 @@ namespace PDSClient.ConnectionManager
         {
             try
             {
-                string query = String.Format("DELETE FROM Boards");
+                string query = String.Format("DELETE FROM schede");
 
                 using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
                 using (var cmd = conn.CreateCommand())
@@ -231,13 +234,13 @@ namespace PDSClient.ConnectionManager
                     {
                         while (reader.Read())
                         {
-                            list[0].Add(reader["ID"] + "");
+                            list[0].Add(reader["ID_pacchetto"] + "");
                             list[1].Add(reader["MAC"] + "");
                             list[2].Add(reader["RSSI"] + "");
                             list[3].Add(reader["SSID"] + "");
-                            list[4].Add(reader["TIMESTAMP"] + "");
-                            list[5].Add(reader["HASH"] + "");
-                            list[6].Add(reader["IDSCHEDA"] + "");
+                            list[4].Add(reader["timestamp"] + "");
+                            list[5].Add(reader["hash"] + "");
+                            list[6].Add(reader["ID_scheda"] + "");
                         }
                         this.Connected = true;
                         return list;
@@ -294,7 +297,7 @@ namespace PDSClient.ConnectionManager
         {
             try
             {
-                String query = String.Format("INSERT INTO boards (idBoard, x, y) VALUES({0}, {1}, {2})",
+                String query = String.Format("INSERT INTO schede (ID_scheda, x, y) VALUES({0}, {1}, {2})",
                                         board.Id, board.P.X, board.P.Y);
 
                 AddBoard(board);
@@ -325,7 +328,7 @@ namespace PDSClient.ConnectionManager
         {
             try
             {
-                String query = String.Format("INSERT INTO boards (idBoard, x, y) VALUES({0}, {1}, {2})", id, x, y);
+                String query = String.Format("INSERT INTO schede (ID_scheda, x, y) VALUES({0}, {1}, {2})", id, x, y);
 
                 using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
                 using (var cmd = conn.CreateCommand())
@@ -355,7 +358,7 @@ namespace PDSClient.ConnectionManager
             try
             {
                 StringBuilder builder = new StringBuilder();
-                builder.Append("INSERT INTO boards (idBoard, x, y) VALUES");
+                builder.Append("INSERT INTO schede (ID_scheda, x, y) VALUES");
                 foreach (Board b in boards)
                 {
                     builder.Append(String.Format("({0},{1},{2})", b.Id, b.P.X.ToString(CultureInfo.InvariantCulture), b.P.Y.ToString(CultureInfo.InvariantCulture)));
@@ -404,7 +407,7 @@ namespace PDSClient.ConnectionManager
                 try
                 {
                     conn.Open();
-                    cmd.CommandText = "SELECT * FROM BOARDS";
+                    cmd.CommandText = "SELECT * FROM schede";
                     using (var dataReader = cmd.ExecuteReader())
                     {
                         while (dataReader.Read())
@@ -431,7 +434,7 @@ namespace PDSClient.ConnectionManager
         {
             try
             {
-                string query = String.Format("DELETE FROM Boards WHERE idBoard='{0}'", id);
+                string query = String.Format("DELETE FROM schede WHERE ID_scheda='{0}'", id);
 
                 using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
                 using (var cmd = conn.CreateCommand())
@@ -465,7 +468,7 @@ namespace PDSClient.ConnectionManager
             }
             CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
             StringBuilder builder = new StringBuilder();
-            builder.Append("INSERT INTO posizioni (mac, x, y, timestamp, global) VALUES ");
+            builder.Append("INSERT INTO posizioni (MAC, x, y, timestamp, global) VALUES ");
             foreach (PhoneInfo phone in phones)
             {
                 builder.Append(String.Format("('{0}',{1},{2},{3},{4})",
@@ -522,9 +525,10 @@ namespace PDSClient.ConnectionManager
                     conn.Open();
                     //Create Query
                     StringBuilder builder = new StringBuilder();
-                    builder.Append("SELECT DISTINCT P1.MAC, P1.TIMESTAMP, P1.GLOBAL,P1.HASH");
+                    builder.Append("SELECT DISTINCT P1.MAC, P1.timestamp, P1.global, P1.hash");
+
                     for (int i = 0; i < nBoards; i++)
-                        builder.Append(", P").Append(i + 1).Append(".IDSCHEDA, P").Append(i + 1).Append(".RSSI");
+                        builder.Append(", P").Append(i + 1).Append(".ID_scheda, P").Append(i + 1).Append(".RSSI");
 
                     builder.Append(VarQuery(nBoards, time, threshold));
 
@@ -633,20 +637,20 @@ namespace PDSClient.ConnectionManager
             {
                 if (i > 1)
                     builder.Append(" AND");
-                builder.Append(" P").Append(i).Append(".IDSCHEDA > P").Append(i + 1).Append(".IDSCHEDA");
+                builder.Append(" P").Append(i).Append(".ID_scheda > P").Append(i + 1).Append(".ID_scheda");
             }
             //TIMESTAMP
             for (int i = 1; i < nBoards; i++)
-                builder.Append(" AND ABS(P1.TIMESTAMP - P").Append(i + 1).Append(".TIMESTAMP) <= ").Append(threshold);
+                builder.Append(" AND ABS(P1.timestamp - P").Append(i + 1).Append(".timestamp) <= ").Append(threshold);
             //MAC
             for (int i = 1; i < nBoards; i++)
                 builder.Append(" AND P").Append(i).Append(".MAC = P").Append(i + 1).Append(".MAC");
             //HASH 
-            builder.Append(" AND P1.HASH = P2.HASH AND P1.HASH <> 00000000");
+            builder.Append(" AND P1.hash = P2.hash AND P1.hash <> 00000000");
             //MAC
             for (int i = 1; i < nBoards; i++)
                 builder.Append(" AND P").Append(i).Append(".MAC = P").Append(i + 1).Append(".MAC");
-            builder.Append(" AND P1.TIMESTAMP > ").Append(timestamp);
+            builder.Append(" AND P1.timestamp > ").Append(timestamp);
             return builder.ToString();
 
         }
@@ -690,11 +694,11 @@ namespace PDSClient.ConnectionManager
         public List<PhoneInfo> MostFrequentPhones(int n, int min, int max, int threshold = 0)
         {
             List<PhoneInfo> list = new List<PhoneInfo>();
-            String query = "SELECT MAC, TIMESTAMP, X, Y FROM posizioni AS p1 WHERE p1.MAC IN " +
+            String query = "SELECT MAC, timestamp, x, y FROM posizioni AS p1 WHERE p1.MAC IN " +
                 "(SELECT * FROM " +
                 "(SELECT MAC " +
-                "FROM posizioni AS p2 WHERE p2.TIMESTAMP < " + max + " AND p2.TIMESTAMP > " + min +
-                " GROUP BY p2.MAC ORDER BY COUNT(*) DESC LIMIT " + n + ") AS p3) AND p1.TIMESTAMP < " + max + " AND p1.TIMESTAMP > " + min + ";";
+                "FROM posizioni AS p2 WHERE p2.timestamp < " + max + " AND p2.timestamp > " + min +
+                " GROUP BY p2.MAC ORDER BY COUNT(*) DESC LIMIT " + n+") AS p3) AND p1.timestamp < " + max + " AND p1.timestamp > " + min + ";";
 
             using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
             using (var cmd = conn.CreateCommand())
@@ -726,8 +730,8 @@ namespace PDSClient.ConnectionManager
         public List<PhoneInfo> PhonesInRange(int min, int max, int threshold = 0)
         {
             List<PhoneInfo> list = new List<PhoneInfo>();
-            String query = "SELECT MAC, TIMESTAMP, X, Y " +
-                "FROM posizioni WHERE TIMESTAMP < " + max + " AND TIMESTAMP > " + min + " ORDER BY TIMESTAMP";
+            String query = "SELECT MAC, timestamp, x, y " +
+                "FROM posizioni WHERE timestamp < " + max + " AND timestamp > " + min+" ORDER BY timestamp";
 
             using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
             using (var cmd = conn.CreateCommand())
@@ -762,9 +766,9 @@ namespace PDSClient.ConnectionManager
             List<String> list = new List<String>();
 
             String query = "SELECT MAC " +
-               "FROM posizioni WHERE GLOBAL = 1 AND TIMESTAMP > " + time +
-               " AND ABS(X - " + p.Position.X.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) +
-               " AND ABS(Y - " + p.Position.Y.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) +
+               "FROM posizioni WHERE global = 1 AND timestamp > " + time +
+               " AND ABS(x - " + p.Position.X.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) +
+               " AND ABS(y - " + p.Position.Y.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) + 
                " AND MAC <> '" + p.MacAddr + "'";
 
 
