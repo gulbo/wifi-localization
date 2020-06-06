@@ -1,7 +1,3 @@
-/*
-    Progetto PDS a.a. 2017/2018
-*/
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
@@ -21,46 +17,32 @@
 #include <string>
 #include <iostream>
 
-#define SNIFFER_CHANNEL (1)
-#define STACK_SIZE (50 * 1024)
-#define SNIFFING_TIME_SEC (60)
-
+#define WIFI_CHANNEL 1
+#define SNIFFING_TIME_SEC 60
 #define SERVER_IP "192.168.1.17"
 #define SERVER_PORT 7999
-#define BOARD_ID 1
+#define BOARD_ID 2
 
 std::list<SniffedPacket> sniffed_packets;
-Client client(BOARD_ID, SERVER_IP, SERVER_PORT);
-
-static void config();
-void createTask();
-void wifi_sniffer_handler(void *buff, wifi_promiscuous_pkt_type_t type);
-void sendTask(void *parameters);
-void print_task_state(eTaskState state);
-bool setSystemTime(uint32_t epoch);
-
-TaskHandle_t send_task_handle;
+Client client{};
 const TickType_t send_task_delay = SNIFFING_TIME_SEC * 1000 / portTICK_PERIOD_MS;
 
-static void config(){
-    printf("initializing tcip adapter and wifi config\n");
-    wifi_config();
+/**
+ *  @brief set the time received by the server as the time of the system
+ *         this is needed to synchronize all the esp boards
+ *  @return success 
+ */
+bool setSystemTime(uint32_t epoch){
+    struct timeval tval;
+    tval.tv_sec = epoch;
+    tval.tv_usec = 0;
 
-    BaseType_t xReturned;
-    int x = 0;
-    printf("Creating tasks...\n");
-    // create and starts sendTask
-    // TODO PROBABLY WE CAN REMOVE THE x PARAMETER PASSED
-    xReturned = xTaskCreate(&sendTask, "sendTask", STACK_SIZE, &x, 1 /*priority*/, &send_task_handle);
-    if(xReturned != pdPASS){
-        printf("Could not allocate required memory to create sendTask!\n");
-        exit(1);
+    int16_t result = settimeofday(&tval, NULL);
+    if(result != 0){
+        return false;
     }
-    
-    eTaskState state = eTaskGetState(send_task_handle);
-    printf("sendTask: ");
-    print_task_state(state);
-    return;
+
+    return true;
 }
 
 /**
@@ -92,46 +74,11 @@ void wifi_sniffer_handler(void *buf, wifi_promiscuous_pkt_type_t type){
 
 /**
  * @brief the main task
- *  First initialize the protocol
- *  Then starts sniffing for send_task_delay
+ *  Starts sniffing for send_task_delay
  *  At the end sends the sniffed packets and starts sniffing again
  *  @param parameters input parameters, not used
  */
 void sendTask(void *parameters){
-    // doesn't start until the config is conluded
-    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-    // try to connect to the server
-    for(uint16_t tries = 1; tries <= Client::MAX_CONNECTION_RETRIES && !client.isConnected(); tries++){
-
-        std::cout << "Trying to connect: " << std::to_string(tries) << std::endl;
-        client.connect();
-    }
-    
-    if(!client.isConnected()){
-        std::cout << "Failed to connect to the server" << std::endl;
-        exit(1);
-    }
-
-    std::cout << "Connected to the server!" << std::endl;
-
-    std::cout << "Starting client..." << std::endl;
-
-    uint32_t epoch;
-    try
-    {
-        epoch = client.start();
-    }
-    catch(const std::runtime_error& e)
-    {
-        std::cout << e.what() << std::endl;
-        exit(1);
-    }
-    
-    if(!setSystemTime(epoch))
-        throw std::runtime_error("Error setting the first time from the server");
-    std::cout << "Client Started!" << std::endl;
-
     // every send_task_delay send:
     // --> id_board
     // --> array of devices found
@@ -172,52 +119,59 @@ void sendTask(void *parameters){
     }
 }
 
-void print_task_state(eTaskState state){
-    switch(state){
-        case eReady:
-            printf("task is in Ready state\n");
-        break;
-        case eRunning:
-            printf("task is in running state\n");
-        break;
-        case eBlocked:
-            printf("task is in blocked state\n");
-        break;
-        case eSuspended:
-            printf("task is in suspended state\n");
-        break;
-        case eDeleted:
-            printf("task is in deleted state\n");
-        break;
+void initializeClient()
+{
+    client = Client(BOARD_ID, SERVER_IP, SERVER_PORT);
+
+    // try to connect to the server
+    for(uint16_t tries = 1; tries <= Client::MAX_CONNECTION_RETRIES && !client.isConnected(); tries++)
+    {
+        std::cout << "Trying to connect: " << std::to_string(tries) << std::endl;
+        client.connect();
     }
-}
-
-/**
- *  @brief set the time received by the server as the time of the system
- *         this is needed to synchronize all the esp boards
- */
-bool setSystemTime(uint32_t epoch){
-    struct timeval tval;
-    tval.tv_sec = epoch;
-    tval.tv_usec = 0;
-
-    int16_t result = settimeofday(&tval, NULL);
-    if(result != 0){
-        return false;
+    
+    if(!client.isConnected())
+    {
+        std::cout << "Failed to connect to the server" << std::endl;
+        exit(1);
     }
 
-    return true;
+    std::cout << "Connected to the server!" << std::endl;
+
+    std::cout << "Starting client..." << std::endl;
+
+    uint32_t epoch;
+    try
+    {
+        epoch = client.start();
+    }
+    catch(const std::runtime_error& e)
+    {
+        std::cout << e.what() << std::endl;
+        exit(1);
+    }
+    
+    if(!setSystemTime(epoch))
+        throw std::runtime_error("Error setting the first time from the server");
+
+    std::cout << "Client Started!" << std::endl;
 }
 
 int main(){
-    send_task_handle = NULL;
+    std::cout << "Initialize tcip adapter and wifi" << std::endl;
+    wifi_config();
+    wifi_sniffer_set_channel(WIFI_CHANNEL);
 
-    config();
-    wifi_sniffer_set_channel(SNIFFER_CHANNEL);
+    initializeClient();
 
-    // notifies sendTask that the configuration has terminated
-    // it won't start before this
-    xTaskNotifyGive(send_task_handle);
+    std::cout << "Create sniffing task" << std::endl;
+    // create and starts sendTask
+    TaskHandle_t send_task_handle;
+    BaseType_t xReturned = xTaskCreate(&sendTask, "sendTask", 50 * 1024 /*stacksize*/, nullptr, 1 /*priority*/, &send_task_handle);
+    if(xReturned != pdPASS){
+        std::cout << "Error creating sendTask!" << std::endl;
+        exit(1);
+    }
 }
 
 extern "C" void app_main(void){
