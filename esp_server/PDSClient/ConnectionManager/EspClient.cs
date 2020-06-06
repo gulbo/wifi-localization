@@ -348,7 +348,7 @@ namespace PDSClient.ConnectionManager
                 msg = Encoding.ASCII.GetString(receiveBuffer, 0, 2);
                 System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): received " + msg);
 
-                //receive 0
+                //receive 0 
                 ControlledRecv(s, receiveBuffer, 4, ct);
                 n = BitConverter.ToInt32(receiveBuffer, 0);
                 n = IPAddress.NetworkToHostOrder(n);

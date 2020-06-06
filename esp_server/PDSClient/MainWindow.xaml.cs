@@ -235,6 +235,11 @@ namespace PDSClient
         {
             bool invalid = false;
             string errMsg = "";
+            Button startButton = (Button) sender;
+            Grid FindMACGrid = (Grid)startButton.Parent;
+            Button stopButton = (Button)FindMACGrid.FindName("stopButton");
+            Grid MACTextBoxGrid = (Grid)FindMACGrid.FindName("MACTextBoxGrid");
+            TextBox MACTextBox = (TextBox)MACTextBoxGrid.FindName("MAC");
 
             if (MAC.Text != "") {
                 foreach (char c in MAC.Text.ToCharArray()) {
@@ -253,14 +258,36 @@ namespace PDSClient
                 }
 
             }
-            if(!invalid)
-                dr.SearchMac(MAC.Text);
+            else if(MAC.Text == "")
+            {
+                invalid = true;
+                errMsg = "no MAC inserted";
+            }
+            if (!invalid)
+            {
+
+                startButton.Visibility = System.Windows.Visibility.Hidden;
+                stopButton.Visibility = System.Windows.Visibility.Visible;
+                MACTextBox.IsReadOnly = true;
+
+               // dr.SearchMac(MAC.Text);
+            }
             else
                 System.Windows.MessageBox.Show(errMsg, "Attention", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
         }
 
         private void RemoveMac(object sender, System.Windows.RoutedEventArgs e)
         {
+            Button  stopButton = (Button)sender;
+            Grid FindMACGrid = (Grid)stopButton.Parent;
+            Button startButton = (Button)FindMACGrid.FindName("startButton");
+            Grid MACTextBoxGrid = (Grid)FindMACGrid.FindName("MACTextBoxGrid");
+            TextBox MACTextBox = (TextBox)MACTextBoxGrid.FindName("MAC");
+
+            stopButton.Visibility = System.Windows.Visibility.Hidden;
+            startButton.Visibility = System.Windows.Visibility.Visible;
+            MACTextBox.IsReadOnly = false;
+
             dr.RemoveSearch();   
         }
         private void EDateInitialized(object sender, EventArgs e)

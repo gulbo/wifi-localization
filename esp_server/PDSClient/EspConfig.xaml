@@ -11,7 +11,7 @@
         xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance local:MainWindow}" WindowStyle="None" Visibility="Visible"  
-		ResizeMode="NoResize"
+		ResizeMode="NoResize" MouseDown="Window_MouseDown"
         Title="ESP Board Configuration" Height="600" Width="500">
 
 
@@ -72,7 +72,7 @@
                     Click="ButtonAdd">
                     <Button.Template>
                         <ControlTemplate TargetType="{x:Type Button}">
-                            <Grid>
+                            <Grid >
                                 <Ellipse Fill="#ff9800"/>
                                 <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Grid>

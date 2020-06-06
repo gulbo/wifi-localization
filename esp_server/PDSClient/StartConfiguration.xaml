@@ -12,10 +12,11 @@
         
        
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance local:MainWindow}" WindowStyle="None" Visibility="Visible"  
-        ResizeMode="NoResize"
-        Title="StartConfiguration" Height="400" Width="300">
-    <Grid>
+        d:DataContext="{d:DesignInstance local:MainWindow}" WindowStyle="None" Visibility="Visible"
+        Title="StartConfiguration" Height="400" Width="300" MouseDown="Window_MouseDown" ResizeMode="NoResize">
+    
+        <Grid UseLayoutRounding="False">
+        
       <Grid.RowDefinitions>
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
@@ -86,4 +87,5 @@
             </StackPanel>
         </Grid>
     </Grid>
+
 </Window>
