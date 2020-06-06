@@ -12,9 +12,6 @@
 #include "esp_event_loop.h"
 #include "string.h"
 
-//#define SSID "GULPO"
-//#define PASSWORD "f117f117bagonghi"
-
 #define SSID "GULPO"
 #define PASSWORD "f117f117bagonghi"
 

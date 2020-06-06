@@ -17,7 +17,8 @@ class Client
 
         static const uint16_t MAX_CONNECTION_RETRIES = 15;
         static const size_t MAX_MESSAGE_LENGTH = 128;
-
+        
+        Client() = default;
         Client(uint8_t board_id, std::string server_ip, int16_t server_port);
 
         ~Client();
