@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Creato il: Mag 23, 2020 alle 17:54
+-- Creato il: Giu 06, 2020 alle 17:59
 -- Versione del server: 10.4.11-MariaDB
 -- Versione PHP: 7.4.4
 
@@ -35,7 +35,7 @@ CREATE TABLE `pacchetti` (
   `timestamp` int(11) NOT NULL,
   `hash` varchar(20) NOT NULL,
   `ID_scheda` int(11) NOT NULL,
-  `ctrl_MAC` tinyint(1) NOT NULL
+  `global` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -45,11 +45,12 @@ CREATE TABLE `pacchetti` (
 --
 
 CREATE TABLE `posizioni` (
+  `ID_posizione` int(11) NOT NULL,
   `MAC` varchar(20) CHARACTER SET utf8 NOT NULL,
   `x` double NOT NULL,
   `y` double NOT NULL,
   `timestamp` int(11) NOT NULL,
-  `ctrl_MAC` tinyint(1) NOT NULL
+  `global` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -86,7 +87,7 @@ ALTER TABLE `pacchetti`
 -- Indici per le tabelle `posizioni`
 --
 ALTER TABLE `posizioni`
-  ADD PRIMARY KEY (`MAC`,`timestamp`);
+  ADD PRIMARY KEY (`ID_posizione`) USING BTREE;
 
 --
 -- Indici per le tabelle `schede`
@@ -103,6 +104,12 @@ ALTER TABLE `schede`
 --
 ALTER TABLE `pacchetti`
   MODIFY `ID_pacchetto` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT per la tabella `posizioni`
+--
+ALTER TABLE `posizioni`
+  MODIFY `ID_posizione` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
