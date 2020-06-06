@@ -54,14 +54,16 @@ namespace PDSClient.StatModule
             selectedPhonePos = new ChartValues<PhoneInfo>();
             scatterChart.Series.Add(new ScatterSeries(boardsPos)
             {
-                Title = "Boards",
-                PointGeometry = DefaultGeometries.Triangle
-                
+                Title = "Board",
+                PointGeometry = DefaultGeometries.Triangle,
+                Fill = System.Windows.Media.Brushes.Green
 
-            });
+            }) ;
             scatterChart.Series.Add(new ScatterSeries(phonePos)
             {
-                Title = "Visible Devices"
+                Title = "Visible Devices",
+                PointGeometry = DefaultGeometries.Diamond,
+                Fill = System.Windows.Media.Brushes.OrangeRed
             });
             scatterChart.Series.Add(new ScatterSeries(hiddenPhonePos)
             {

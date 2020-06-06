@@ -193,5 +193,11 @@ namespace PDSClient.ConnectionManager
             Board DeletedBoard = (Board) ClickedButton.DataContext;
             Boards.Remove(DeletedBoard);
         }
+
+        private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
+        }
     }
 }

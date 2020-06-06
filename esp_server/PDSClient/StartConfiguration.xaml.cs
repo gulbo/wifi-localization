@@ -17,6 +17,18 @@ using Microsoft.Win32;
 using System.IO;
 using Newtonsoft.Json;
 
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+
+using Point = PDSClient.ConnectionManager.Point;
+using System.Timers;
+using PDSClient.StatModule;
+
+
+using System.Globalization;
+using System.Threading;
+
+
 
 namespace PDSClient
 {
@@ -103,10 +115,19 @@ namespace PDSClient
                     return;
                 }
             }
-
+            //Hide the current window
+            this.Hide();
+            //show the config page with boards already displayed
             EspConfig configWindow = new EspConfig(boards, _dbConnection, this);
             configWindow.ShowDialog();
         }
-      
+
+        private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
+        }
+
     }
+
 }
