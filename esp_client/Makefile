@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := nvs_flash
+PROJECT_NAME := wifi-localization
 
 include $(IDF_PATH)/make/project.mk
 
