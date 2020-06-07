@@ -115,14 +115,14 @@ namespace PDSClient.StatModule
                     if (animationCurrTimestamp >= ph.Timestamp)
                     {
                         scatter.Add(ph);
-                        if (ph.Position.X < minX)
-                            minX = ph.Position.X;
-                        if (ph.Position.X > maxX)
-                            maxX = ph.Position.X;
-                        if (ph.Position.Y < minY)
-                            minY = ph.Position.Y;
-                        if (ph.Position.Y > maxY)
-                            maxY = ph.Position.Y;
+                        if (ph.Position.Ascissa < minX)
+                            minX = ph.Position.Ascissa;
+                        if (ph.Position.Ascissa > maxX)
+                            maxX = ph.Position.Ascissa;
+                        if (ph.Position.Ordinata < minY)
+                            minY = ph.Position.Ordinata;
+                        if (ph.Position.Ordinata > maxY)
+                            maxY = ph.Position.Ordinata;
                     }
                 }
             }
@@ -139,9 +139,11 @@ namespace PDSClient.StatModule
 
             _movement.Series[macToIndex[mac]].LabelPoint = point => string.Format("Timestamp:{0} \n X:{1}  Y:{2}", 
                 new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(((PhoneInfo)point.Instance).Timestamp), 
-                ((PhoneInfo)point.Instance).Position.X, ((PhoneInfo)point.Instance).Position.X);
+                ((PhoneInfo)point.Instance).Position.Ascissa, ((PhoneInfo)point.Instance).Position.Ascissa);
+           
+            //SECONDO ME è SBAGLIATA QUI!!!! DANIELE
 
-            _movement.Series[macToIndex[mac]].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.X).Y(b => b.Position.Y);
+            _movement.Series[macToIndex[mac]].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
             _movement.Series[macToIndex[mac]].Values = new ChartValues<PhoneInfo>(scatter);
             _movement.AxisX[0].MinValue = minX - 0.1;
             _movement.AxisX[0].MaxValue = maxX + 0.1;
@@ -175,14 +177,14 @@ namespace PDSClient.StatModule
             {
                 animationCurrTimestamp = tmp;
                 _movement.Series[macToIndex[p.MacAddr]].Values.Add(p);
-                if (p.Position.X < minX)
-                    minX = p.Position.X;
-                if (p.Position.X > maxX)
-                    maxX = p.Position.X;
-                if (p.Position.Y < minY)
-                    minY = p.Position.Y;
-                if (p.Position.Y > maxY)
-                    maxY = p.Position.Y;
+                if (p.Position.Ascissa < minX)
+                    minX = p.Position.Ascissa;
+                if (p.Position.Ascissa > maxX)
+                    maxX = p.Position.Ascissa;
+                if (p.Position.Ordinata < minY)
+                    minY = p.Position.Ordinata;
+                if (p.Position.Ordinata > maxY)
+                    maxY = p.Position.Ordinata;
                 _movement.AxisX[0].MinValue = minX - 0.1;
                 _movement.AxisX[0].MaxValue = maxX + 0.1;
                 _movement.AxisY[0].MinValue = minY - 0.1;
@@ -230,14 +232,14 @@ namespace PDSClient.StatModule
             {
                 animationCurrTimestamp = timestamps[0];
                 _movement.Series[macToIndex[p.MacAddr]].Values.Remove(p);
-                if (p.Position.X<minX)
-                    minX = p.Position.X;
-                if (p.Position.X > maxX)
-                    maxX = p.Position.X;
-                if (p.Position.Y<minY)
-                    minY = p.Position.Y;
-                if (p.Position.Y > maxY)
-                    maxY = p.Position.Y;
+                if (p.Position.Ascissa<minX)
+                    minX = p.Position.Ascissa;
+                if (p.Position.Ascissa > maxX)
+                    maxX = p.Position.Ascissa;
+                if (p.Position.Ordinata<minY)
+                    minY = p.Position.Ordinata;
+                if (p.Position.Ordinata > maxY)
+                    maxY = p.Position.Ordinata;
                 _movement.AxisX[0].MinValue = minX - 0.1;
                 _movement.AxisX[0].MaxValue = maxX + 0.1;
                 _movement.AxisY[0].MinValue = minY - 0.1;
