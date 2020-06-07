@@ -73,7 +73,6 @@ namespace PDSClient.ConnectionManager
 
             this._dbConnection = DBConnection;
             this._initialWindow = initialWindow;
-            
         }
         private void backButton(object sender, System.Windows.RoutedEventArgs e)
         {
@@ -88,16 +87,16 @@ namespace PDSClient.ConnectionManager
             Environment.Exit(Environment.ExitCode);
         }        
 
-        private bool ValidPos(List<Board> boards)
+        private bool ValidPos(List<Scheda> boards)
         {
             HashSet<Tuple<double, double>> boardPos = new HashSet<Tuple<double, double>>();
 
-            foreach (Board b in boards)
+            foreach (Scheda b in boards)
             {
-                if (boardPos.Contains(new Tuple<double, double>(b.P.X, b.P.Y)))
+                if (boardPos.Contains(new Tuple<double, double>(b.Punto.Ascissa, b.Punto.Ordinata)))
                     return false;
                 else
-                    boardPos.Add(new Tuple<double, double>(b.P.X, b.P.Y));
+                    boardPos.Add(new Tuple<double, double>(b.Punto.Ascissa, b.Punto.Ordinata));
             }
             return true;
 
@@ -113,7 +112,6 @@ namespace PDSClient.ConnectionManager
 
         private void ButtonOk(object sender, RoutedEventArgs e)
         {
-            
             HashSet<int> idBoards = new HashSet<int>();
             
             if(Boards == null)
@@ -127,7 +125,7 @@ namespace PDSClient.ConnectionManager
             List<Board> boards = new List<Board>();
             foreach (Board board in Boards_box.Items)
             {
-                if (idBoards.Contains(board.Id))
+                if (idBoards.Contains(board.ID_scheda))
                 {
                     System.Windows.MessageBox.Show("Duplicate id not allowed. Please check your configuration.",
                         "Conflict with ids detected",
@@ -148,7 +146,7 @@ namespace PDSClient.ConnectionManager
 
             try
             {
-                bool res = _dbConnection.DeleteBoards();
+                bool res = _dbConnection.RemoveSchede();
                 if (!res)
                 {
                     System.Windows.MessageBox.Show("Unable to connect to database.",
@@ -157,7 +155,7 @@ namespace PDSClient.ConnectionManager
                         MessageBoxImage.Error);
                     return;
                 }
-                res = _dbConnection.InsertBoard(Boards);
+                res = _dbConnection.InsertScheda(boards);
                 if (!res)
                 {
                     System.Windows.MessageBox.Show("Unable to insert boards' information to the database. Please check the connection and retry.",

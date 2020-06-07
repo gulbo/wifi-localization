@@ -22,7 +22,7 @@ namespace PDSClient
     public partial class MainWindow 
     {
 
-        private List<Board> _boards { get; set; }
+        private List<Scheda> _boards { get; set; }
         public bool ConnectionError { get; set; }
         public Mutex ConnectionErrorMutex { get; set; }
 
@@ -31,7 +31,7 @@ namespace PDSClient
         EspClient client;
         DataReceiver dr;
 
-        public MainWindow(DBConnect DBConnection, List<Board> boards)
+        public MainWindow(DBConnect DBConnection, List<Scheda> boards)
         {
             InitializeComponent();
 
