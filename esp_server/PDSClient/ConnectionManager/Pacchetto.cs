@@ -16,13 +16,13 @@ namespace PDSClient.ConnectionManager
 
         //Proprietà
 
-        public PhysicalAddress MAC_address {get; private set;}
-        public int RSSI {get; private set;}
-        public string SSID {get; private set;}
-        public int Timestamp {get; private set;}
-        public string Checksum { get; private set;}
-        public int ID_scheda {get; private set;}
-        public bool Global {get; private set;}
+        public PhysicalAddress MAC_address { get; private set; }
+        public int RSSI { get; private set; }
+        public string SSID { get; private set; }
+        public int Timestamp { get; private set; }
+        public string Checksum { get; private set; }
+        public int ID_scheda { get; private set; }
+        public bool Global { get; private set; }
 
         public Pacchetto()
         {
@@ -31,39 +31,39 @@ namespace PDSClient.ConnectionManager
 
         public Pacchetto(string mac, int rssi, string ssid, int timestamp, string checksum, int id_scheda, bool global)
         {
-            this.MAC_address = PhysicalAddress.Parse(mac);
-            this.RSSI = rssi;
-            this.SSID = ssid;
-            this.Timestamp = timestamp;
-            this.Checksum = checksum;
-            this.ID_scheda = id_scheda;
-            this.Global = global;
+            MAC_address = PhysicalAddress.Parse(mac);
+            RSSI = rssi;
+            SSID = ssid;
+            Timestamp = timestamp;
+            Checksum = checksum;
+            ID_scheda = id_scheda;
+            Global = global;
         }
         
-        public Pacchetto(byte[] mac, int rssi, String ssid, int timestamp, byte[] checksum, int id_scheda, bool global)
+        public Pacchetto(byte[] mac, int rssi, string ssid, int timestamp, byte[] checksum, int id_scheda, bool global)
         {
             if (mac.Length != 6)
             {
                 throw new Exception("Lunghezza MAC address non valida");
             }
-            this.MAC_address = new PhysicalAddress(mac);
-            this.RSSI = rssi;
-            this.SSID = ssid;
-            this.Timestamp = timestamp;
-            this.Checksum = BitConverter.ToString(checksum, 0, LUNGHEZZA_CHECKSUM).Replace("-", "");
-            this.ID_scheda = id_scheda;
-            this.Global = global;
+            MAC_address = new PhysicalAddress(mac);
+            RSSI = rssi;
+            SSID = ssid;
+            Timestamp = timestamp;
+            Checksum = BitConverter.ToString(checksum, 0, LUNGHEZZA_CHECKSUM).Replace("-", "");
+            ID_scheda = id_scheda;
+            Global = global;
         }
 
         public Pacchetto(PhysicalAddress mac, int rssi, string ssid, int timestamp, string checksum, int id_scheda, bool global)
         {
-            this.MAC_address = mac;
-            this.RSSI = rssi;
-            this.SSID = ssid;
-            this.Timestamp = timestamp;
-            this.Checksum = checksum;
-            this.ID_scheda = id_scheda;
-            this.Global = global;
+            MAC_address = mac;
+            RSSI = rssi;
+            SSID = ssid;
+            Timestamp = timestamp;
+            Checksum = checksum;
+            ID_scheda = id_scheda;
+            Global = global;
         }
 
         public static bool CntrlGlobal(byte[] mac)
@@ -138,13 +138,13 @@ namespace PDSClient.ConnectionManager
         public override string ToString()
         {
             StringBuilder builderStringa = new StringBuilder();
-            builderStringa.Append("MAC: ").Append(this.MAC_address.ToString()).Append(" - ");
-            builderStringa.Append("RSSI: ").Append(this.RSSI).Append(" - ");
-            builderStringa.Append("SSID: ").Append(this.SSID).Append(" - ");
-            builderStringa.Append("Timestamp: ").Append(this.Timestamp).Append(" - ");
-            builderStringa.Append("Checksum: ").Append(this.Checksum).Append(" - ");
-            builderStringa.Append("Id_scheda: ").Append(this.ID_scheda).Append(" - ");
-            builderStringa.Append("Global: ").Append(this.Global);
+            builderStringa.Append("MAC: ").Append(MAC_address.ToString()).Append(" - ");
+            builderStringa.Append("RSSI: ").Append(RSSI).Append(" - ");
+            builderStringa.Append("SSID: ").Append(SSID).Append(" - ");
+            builderStringa.Append("Timestamp: ").Append(Timestamp).Append(" - ");
+            builderStringa.Append("Checksum: ").Append(Checksum).Append(" - ");
+            builderStringa.Append("Id_scheda: ").Append(ID_scheda).Append(" - ");
+            builderStringa.Append("Global: ").Append(Global);
             return builderStringa.ToString();
         }
     }

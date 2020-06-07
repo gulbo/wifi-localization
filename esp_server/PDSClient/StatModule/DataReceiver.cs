@@ -195,7 +195,7 @@ namespace PDSClient.StatModule
             }
         }
 
-        private void DrawOneMinutesChart(List<Scheda> boards, List<PhoneInfo> phoneInfos)
+        private void DrawOneMinutesChart(List<Scheda> schede, List<PhoneInfo> phoneInfos)
         {
             double minX, minY, maxX, maxY;
 
@@ -206,22 +206,22 @@ namespace PDSClient.StatModule
             List<PhoneInfo> hiddenMacs = new List<PhoneInfo>();
             HashSet<String> countedMacs = new HashSet<String>();
 
-            minX = maxX = boards.First().Punto.Ascissa;
-            minY = maxY = boards.First().Punto.Ordinata;
+            minX = maxX = schede.First().Punto.Ascissa;
+            minY = maxY = schede.First().Punto.Ordinata;
 
             boardsPos.Clear();
-            foreach (Scheda board in boards)
+            foreach (Scheda scheda in schede)
             {
-                if (minX > board.Punto.Ascissa)
-                    minX = board.Punto.Ascissa;
-                if (maxX < board.Punto.Ascissa)
-                    maxX = board.Punto.Ascissa;
-                if (minY > board.Punto.Ordinata)
-                    minY = board.Punto.Ordinata;
-                if (maxY < board.Punto.Ordinata)
-                    maxY = board.Punto.Ordinata;
+                if (minX > scheda.Punto.Ascissa)
+                    minX = scheda.Punto.Ascissa;
+                if (maxX < scheda.Punto.Ascissa)
+                    maxX = scheda.Punto.Ascissa;
+                if (minY > scheda.Punto.Ordinata)
+                    minY = scheda.Punto.Ordinata;
+                if (maxY < scheda.Punto.Ordinata)
+                    maxY = scheda.Punto.Ordinata;
 
-                boardsPos.Add(board);
+                boardsPos.Add(scheda);
             }
             phonePos.Clear();
             hiddenPhonePos.Clear();
