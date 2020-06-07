@@ -1,9 +1,5 @@
 using PDSClient.ConnectionManager;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Windows.Controls;
-using Point = PDSClient.ConnectionManager.Point;
-using System.Timers;
 using PDSClient.StatModule;
 using System.Windows.Input;
 using System;
