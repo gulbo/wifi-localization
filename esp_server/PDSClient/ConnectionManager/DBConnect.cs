@@ -40,6 +40,11 @@ namespace PDSClient.ConnectionManager
             schede.TryAdd(scheda.ID_scheda, scheda);
         }
 
+        private static String Escape_stringa(String stringa)
+        {
+            return MySql.Data.MySqlClient.MySqlHelper.EscapeString(stringa);
+        }
+
         //Inserisci schede nella tabella 'schede' del DB e nel local dictionary
 
         public bool InsertScheda(Scheda scheda)
@@ -63,12 +68,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Impossibile inserire le schede nel database");
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire le schede nel database" + e.ToString());
                 this.Connesso = false;
-                return false;
-            }
-            catch (Exception e)
-            {
                 return false;
             }
         }
@@ -107,12 +108,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Impossibile inserire le schede nel database");
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire le schede nel database" + e.ToString());
                 this.Connesso = false;
-                return false;
-            }
-            catch (Exception e)
-            {
                 return false;
             }
         }
@@ -136,12 +133,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Impossibile inserire le schede nel database");
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire le schede nel database" + e.ToString());
                 this.Connesso = false;
-                return false;
-            }
-            catch (Exception e)
-            {
                 return false;
             }
         }
@@ -166,12 +159,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione della scheda");
+                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione della scheda" + e.ToString());
                 this.Connesso = false;
-                return false;
-            }
-            catch (Exception e)
-            {
                 return false;
             }
         }
@@ -194,12 +183,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione delle schede");
+                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione delle schede" + e.ToString());
                 this.Connesso = false;
-                return false;
-            }
-            catch (Exception e)
-            {
                 return false;
             }
         }
@@ -233,12 +218,8 @@ namespace PDSClient.ConnectionManager
                 }
                 catch (MySqlException e)
                 {
-                    System.Diagnostics.Debug.WriteLine("Impossibile recuperare le informazioni sulle schede dal database");
+                    System.Diagnostics.Debug.WriteLine("Impossibile recuperare le informazioni sulle schede dal database" + e.ToString());
                     this.Connesso = false;
-                    return null;
-                }
-                catch (Exception e)
-                {
                     return null;
                 }
             }
@@ -265,12 +246,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Impossibile inserire i pacchetti nel database");
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire i pacchetti nel database" + e.ToString());
                 this.Connesso = false;
-                return false;
-            }
-            catch (Exception e)
-            {
                 return false;
             }
         }
@@ -308,12 +285,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Impossibile inserire i pacchetti nel database");
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire i pacchetti nel database" + e.ToString());
                 this.Connesso = false;
-                return false;
-            }
-            catch (Exception e)
-            {
                 return false;
             }
         }
@@ -337,19 +310,10 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Impossibile inserire i pacchetti nel database");
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire i pacchetti nel database" + e.ToString());
                 this.Connesso = false;
                 return false;
             }
-            catch (Exception e)
-            {
-                return false;
-            }
-        }
-
-        private static String Escape_stringa(String stringa)
-        {
-            return MySql.Data.MySqlClient.MySqlHelper.EscapeString(stringa);
         }
 
         //Rimuovi pacchetti (selezionando l'ID_pacchetto) nella tabella 'pacchetti' del DB
@@ -372,12 +336,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione dei pacchetti");
+                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione dei pacchetti" + e.ToString());
                 this.Connesso = false;
-                return false;
-            }
-            catch (Exception e)
-            {
                 return false;
             }
         }
@@ -400,12 +360,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione dei pacchetti");
+                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione dei pacchetti" + e.ToString());
                 this.Connesso = false;
-                return false;
-            }
-            catch (Exception e)
-            {
                 return false;
             }
         }
@@ -439,12 +395,8 @@ namespace PDSClient.ConnectionManager
                 }
                 catch (MySqlException e)
                 {
-                    System.Diagnostics.Debug.WriteLine("Impossibile recuperare le informazioni sui pacchetti dal database");
+                    System.Diagnostics.Debug.WriteLine("Impossibile recuperare le informazioni sui pacchetti dal database" + e.ToString());
                     this.Connesso = false;
-                    return null;
-                }
-                catch (Exception e)
-                {
                     return null;
                 }
             }
@@ -490,12 +442,8 @@ namespace PDSClient.ConnectionManager
                 }
                 catch(MySqlException e)
                 {
-                    System.Diagnostics.Debug.WriteLine("Impossibile recuperare le informazioni sui pacchetti dal database");
+                    System.Diagnostics.Debug.WriteLine("Impossibile recuperare le informazioni sui pacchetti dal database" + e.ToString());
                     this.Connesso = false;
-                    return null;
-                }
-                catch (Exception e)
-                {
                     return null;
                 }
             }
