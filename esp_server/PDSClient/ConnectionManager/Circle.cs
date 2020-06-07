@@ -1,83 +1,85 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace PDSClient.ConnectionManager
 {
-    public class Circle
+    public class Cerchio
     {
+
+        //Proprietà
+
+        public Punto Centro { get; set; }
+        public double Raggio { get; set; }
         
-        //properties
-        public double Radius { get; set; }
-        public Punto Center { get; set; }
-
-
-        public Circle(Punto center, int rssi)
+        static double Converti_RSSI(int rssi)
         {
-            Center = center;
-            Radius = RSSIConverter(rssi);
+            const double n = 3.3;
+            const double measurePower = -60;
+            
+            return Math.Pow(10, (measurePower - rssi) / (10 * n));
         }
 
-        public static Punto Intersection(ICollection<Circle> collection)
+        public Cerchio(Punto centro, int rssi)
         {
-            Punto intersection = new Punto(0, 0);
+            Centro = centro;
+            Raggio = Converti_RSSI(rssi);
+        }
+
+        public static Punto Intersezione(ICollection<Cerchio> collection)
+        {
+            Punto intersezione = new Punto(0, 0);
             int n = 0;
-            List<Punto> points = new List<Punto>();
+            List<Punto> punti = new List<Punto>();
             for (int i = 0; i < collection.Count - 1; i++)
             {
                 for (int j = i + 1; j < collection.Count; j++)
                 {
-                    if (collection.ElementAt(i).DoesIntersect(collection.ElementAt(j)))
-                        points.Add(collection.ElementAt(i).Intersect(collection.ElementAt(j)));
+                    if (collection.ElementAt(i).NonInterseca(collection.ElementAt(j)))
+                        punti.Add(collection.ElementAt(i).Interseca(collection.ElementAt(j)));
                     else
                     {
-                        points.Add(collection.ElementAt(i).WeightedAverage(collection.ElementAt(j)));
+                        punti.Add(collection.ElementAt(i).WeightedAverage(collection.ElementAt(j)));
                     }
                 }
             }
 
-            foreach (Punto point in points)
+            foreach (Punto point in punti)
             {
-                intersection.Ascissa += point.Ascissa;
-                intersection.Ordinata += point.Ordinata;
+                intersezione.Ascissa += point.Ascissa;
+                intersezione.Ordinata += point.Ordinata;
                 n++;
             }
-            intersection.Ascissa /= n;
-            intersection.Ordinata /= n;
-            return intersection;
+            intersezione.Ascissa /= n;
+            intersezione.Ordinata /= n;
+            return intersezione;
         }
 
-        private Punto WeightedAverage(Circle c)
+        private Punto WeightedAverage(Cerchio cerchio)
         {
             double x, y;
-            double r = this.Radius + c.Radius;
+            double raggio = Raggio + cerchio.Raggio;
             double w1, w2;
 
-            w1 = this.Radius / r;
-            w2 = c.Radius / r;
+            w1 = Raggio / raggio;
+            w2 = cerchio.Raggio / raggio;
 
             System.Diagnostics.Debug.Assert(w1 >= 0 && w1 <= 1);
             System.Diagnostics.Debug.Assert(w2 >= 0 && w2 <= 1);
 
-            x = this.Center.Ascissa * w2 + c.Center.Ascissa * w1;
-            y = this.Center.Ordinata * w2 + c.Center.Ordinata * w1;
+            x = this.Centro.Ascissa * w2 + cerchio.Centro.Ascissa * w1;
+            y = this.Centro.Ordinata * w2 + cerchio.Centro.Ordinata * w1;
 
             return new Punto(x, y);
         }
 
-        static double RSSIConverter(int rssi)
+       
+
+
+        public bool NonInterseca(Cerchio cerchio)
         {
-            const double measurePower = -60;
-            const double n = 3.3;
-
-            return Math.Pow(10, (measurePower - rssi) / (10 * n));
-        }
-
-
-        public bool DoesIntersect(Circle c)
-        {
-            double distSq = (Center.Ascissa - c.Center.Ascissa) * (Center.Ascissa - c.Center.Ascissa) + (Center.Ordinata - c.Center.Ordinata) * (Center.Ordinata - c.Center.Ordinata);
-            double radSumSq = (Radius + c.Radius) * (Radius + c.Radius);
+            double distSq = (Centro.Ascissa - cerchio.Centro.Ascissa) * (Centro.Ascissa - cerchio.Centro.Ascissa) + (Centro.Ordinata - cerchio.Centro.Ordinata) * (Centro.Ordinata - cerchio.Centro.Ordinata);
+            double radSumSq = (Raggio + cerchio.Raggio) * (Raggio + cerchio.Raggio);
             if (distSq <= radSumSq)
                 return true;
             else
@@ -87,16 +89,16 @@ namespace PDSClient.ConnectionManager
         
 
 
-        public Punto Intersect(Circle c)
+        public Punto Interseca(Cerchio cerchio)
         {            
             Punto intersection;
            
-            double cx0 = Center.Ascissa;
-            double cy0 = Center.Ordinata;
-            double radius0 = Radius;
-            double cx1 = c.Center.Ascissa;
-            double cy1 = c.Center.Ordinata;
-            double radius1 = c.Radius;
+            double cx0 = Centro.Ascissa;
+            double cy0 = Centro.Ordinata;
+            double radius0 = Raggio;
+            double cx1 = cerchio.Centro.Ascissa;
+            double cy1 = cerchio.Centro.Ordinata;
+            double radius1 = cerchio.Raggio;
 
             // Find the distance between the centers.
             double dx = cx0 - cx1;

@@ -7,8 +7,8 @@ namespace PDSClient.ConnectionManager
 
         //Proprietà
 
-        public int ID_scheda {get; set;}
-        public Punto Punto {get; set;}
+        public int ID_scheda { get; set; }
+        public Punto Punto { get; set; }
 
         public Scheda()
         {
@@ -17,27 +17,27 @@ namespace PDSClient.ConnectionManager
 
         public Scheda(int id_scheda, Punto punto)
         {
-            this.ID_scheda = id_scheda;
-            this.Punto = punto;
+            ID_scheda = id_scheda;
+            Punto = punto;
         }
 
         public Scheda(int id_scheda, double x, double y)
         {
-            this.ID_scheda = id_scheda;
-            this.Punto = new Punto(x,y);
+            ID_scheda = id_scheda;
+            Punto = new Punto(x,y);
         }
 
         public bool Equals(Scheda scheda)
         {
-            return this.ID_scheda == scheda.ID_scheda;
+            return ID_scheda == scheda.ID_scheda;
         }
 
         public override string ToString()
         {
             StringBuilder builderStringa = new StringBuilder();
-            builderStringa.Append("ID scheda: ").Append(this.ID_scheda).Append(" - ");
-            builderStringa.Append("Ascissa (X): ").Append(this.Punto.Ascissa).Append(" - ");
-            builderStringa.Append("Ordinata (Y): ").Append(this.Punto.Ordinata);
+            builderStringa.Append("ID scheda: ").Append(ID_scheda).Append(" - ");
+            builderStringa.Append("Ascissa (X): ").Append(Punto.Ascissa).Append(" - ");
+            builderStringa.Append("Ordinata (Y): ").Append(Punto.Ordinata);
             return builderStringa.ToString();
         }
     }
