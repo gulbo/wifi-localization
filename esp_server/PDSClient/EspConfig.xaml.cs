@@ -30,20 +30,20 @@ namespace PDSClient.ConnectionManager
         private static double TextBoxWidth = 60;
         private static Thickness TextBlockMargin = new Thickness(0, 0, 0, 0);
         private static Thickness TextBoxMargin = new Thickness(10, 0, 30, 10);
-        private ObservableCollection<Board> Boards;
+        private ObservableCollection<Scheda> Boards;
         //private List<Board> boards;
 
         public int NBoards { get; private set; }
         private DBConnect _dbConnection { get; set; }
         private StartConfiguration _initialWindow { get; set; }
 
-        public EspConfig(List<Board> Boards, DBConnect DBConnection, StartConfiguration initialWindow)
+        public EspConfig(List<Scheda> Boards, DBConnect DBConnection, StartConfiguration initialWindow)
         {
             //Load the compiled page of a component.(because we use XAML)
             InitializeComponent();
             if (Boards.Count > 0)
             {
-                this.Boards = new ObservableCollection<Board>(Boards);
+                this.Boards = new ObservableCollection<Scheda>(Boards);
                 ListView boards = Boards_box;
                 boards.ItemsSource = this.Boards;
                 
@@ -63,7 +63,7 @@ namespace PDSClient.ConnectionManager
             //Load the compiled page of a component.(because we use XAML)
             InitializeComponent();
 
-            this.Boards = new ObservableCollection<Board>();
+            this.Boards = new ObservableCollection<Scheda>();
             ListView boards = Boards_box;
             boards.ItemsSource = Boards;
             DataTemplate dataTemplate = Boards_box.ItemTemplate;
@@ -104,7 +104,7 @@ namespace PDSClient.ConnectionManager
 
         private void ButtonAdd(object sender, RoutedEventArgs e)
         {
-            Board newBoard =new Board();
+            Scheda newBoard =new Scheda();
             Boards.Add(newBoard);
             
             return;
@@ -122,8 +122,8 @@ namespace PDSClient.ConnectionManager
                     MessageBoxImage.Error);
                 return;
             }
-            List<Board> boards = new List<Board>();
-            foreach (Board board in Boards_box.Items)
+            List<Scheda> boards = new List<Scheda>();
+            foreach (Scheda board in Boards_box.Items)
             {
                 if (idBoards.Contains(board.ID_scheda))
                 {
@@ -133,7 +133,7 @@ namespace PDSClient.ConnectionManager
                         MessageBoxImage.Warning);
                     return;
                 }
-                idBoards.Add(board.Id);
+                idBoards.Add(board.ID_scheda);
                 boards.Add(board);
             }
             if (!ValidPos(boards)) {
@@ -188,7 +188,7 @@ namespace PDSClient.ConnectionManager
         private void ButtonDelete(object sender, RoutedEventArgs e)
         {
             Button ClickedButton = (Button) sender;
-            Board DeletedBoard = (Board) ClickedButton.DataContext;
+            Scheda DeletedBoard = (Scheda) ClickedButton.DataContext;
             Boards.Remove(DeletedBoard);
         }
 
