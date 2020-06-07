@@ -22,7 +22,7 @@ namespace PDSClient.StatModule
         private Thread t;
         private CartesianChart scatterChart;
         private CartesianChart fiveMinutesChart;
-        private ChartValues<Board> boardsPos;
+        private ChartValues<Scheda> boardsPos;
         private ChartValues<PhoneInfo> phonePos;
         private ChartValues<PhoneInfo> hiddenPhonePos;
         private ChartValues<PhoneInfo> selectedPhonePos;
@@ -48,7 +48,7 @@ namespace PDSClient.StatModule
             _ct = _cts.Token;
             this.scatterChart = scatterChart;
             this.fiveMinutesChart = fiveMinutesChart;
-            boardsPos = new ChartValues<Board>();
+            boardsPos = new ChartValues<Scheda>();
             hiddenPhonePos = new ChartValues<PhoneInfo>();
             phonePos = new ChartValues<PhoneInfo>();
             selectedPhonePos = new ChartValues<PhoneInfo>();
@@ -110,34 +110,34 @@ namespace PDSClient.StatModule
             fiveMinutesChart.AxisX.Add(xAxis);
             fiveMinutesChart.AxisY.Add(yAxis);
 
-            scatterChart.Series[0].Configuration = Mappers.Xy<Board>().X(b => b.P.X).Y(b => b.P.Y);
+            scatterChart.Series[0].Configuration = Mappers.Xy<Scheda>().X(b => b.Punto.Ascissa).Y(b => b.Punto.Ordinata);
             scatterChart.Series[0].Values = boardsPos;
-            scatterChart.Series[1].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.X).Y(b => b.Position.Y);
+            scatterChart.Series[1].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
             scatterChart.Series[1].Values = phonePos;
-            scatterChart.Series[2].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.X).Y(b => b.Position.Y);
+            scatterChart.Series[2].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
             scatterChart.Series[2].Values = hiddenPhonePos;
-            scatterChart.Series[3].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.X).Y(b => b.Position.Y);
+            scatterChart.Series[3].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
             scatterChart.Series[3].Values = selectedPhonePos;
 
             scatterChart.Series[0].LabelPoint = point => string.Format("IdBoard: {0}\n X:{1} Y:{2}",
-                                                            ((Board)point.Instance).Id,
-                                                            Math.Round(((Board)point.Instance).P.X, 2),
-                                                            Math.Round(((Board)point.Instance).P.Y, 2));
+                                                            ((Scheda)point.Instance).ID_scheda,
+                                                            Math.Round(((Scheda)point.Instance).Punto.Ascissa, 2),
+                                                            Math.Round(((Scheda)point.Instance).Punto.Ordinata, 2));
             scatterChart.Series[1].LabelPoint = point => string.Format(" MAC: {0}\n Timestamp:{1} \n X:{2}  Y:{3}",
                                                                 Utils.FormatMACAddr(((PhoneInfo)point.Instance).MacAddr),
                                                                 Utils.UnixTimestampToDateTime(((PhoneInfo)point.Instance).Timestamp),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.X, 2),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.Y, 2));
+                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ascissa, 2),
+                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ordinata, 2));
             scatterChart.Series[2].LabelPoint = point => string.Format(" MAC: {0}\n Timestamp:{1} \n X:{2}  Y:{3}",
                                                                 Utils.FormatMACAddr(((PhoneInfo)point.Instance).MacAddr),
                                                                 Utils.UnixTimestampToDateTime(((PhoneInfo)point.Instance).Timestamp),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.X, 2),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.Y, 2));
+                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ascissa, 2),
+                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ordinata, 2));
             scatterChart.Series[3].LabelPoint = point => string.Format(" MAC: {0}\n Timestamp:{1} \n X:{2}  Y:{3}",
                                                                 Utils.FormatMACAddr(((PhoneInfo)point.Instance).MacAddr),
                                                                 Utils.UnixTimestampToDateTime(((PhoneInfo)point.Instance).Timestamp),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.X, 2),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.Y, 2));
+                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ascissa, 2),
+                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ordinata, 2));
 
 
             t = new Thread(new ThreadStart(this.ReceiverFunc));
@@ -159,7 +159,7 @@ namespace PDSClient.StatModule
                     System.Threading.Thread.Sleep(5000);
 
                     phoneInfos = _statCalc.GetLastMinutePositions(_nBoards, 1);
-                    List<Board> boards = _statCalc.GetBoardsPosition();
+                    List<Scheda> boards = _statCalc.GetBoardsPosition();
 
                     if (phoneInfos == null || boards == null)
                     {
@@ -198,7 +198,7 @@ namespace PDSClient.StatModule
             }
         }
 
-        private void DrawOneMinutesChart(List<Board> boards, List<PhoneInfo> phoneInfos)
+        private void DrawOneMinutesChart(List<Scheda> boards, List<PhoneInfo> phoneInfos)
         {
             double minX, minY, maxX, maxY;
 
@@ -209,20 +209,20 @@ namespace PDSClient.StatModule
             List<PhoneInfo> hiddenMacs = new List<PhoneInfo>();
             HashSet<String> countedMacs = new HashSet<String>();
 
-            minX = maxX = boards.First().P.X;
-            minY = maxY = boards.First().P.Y;
+            minX = maxX = boards.First().Punto.Ascissa;
+            minY = maxY = boards.First().Punto.Ordinata;
 
             boardsPos.Clear();
-            foreach (Board board in boards)
+            foreach (Scheda board in boards)
             {
-                if (minX > board.P.X)
-                    minX = board.P.X;
-                if (maxX < board.P.X)
-                    maxX = board.P.X;
-                if (minY > board.P.Y)
-                    minY = board.P.Y;
-                if (maxY < board.P.Y)
-                    maxY = board.P.Y;
+                if (minX > board.Punto.Ascissa)
+                    minX = board.Punto.Ascissa;
+                if (maxX < board.Punto.Ascissa)
+                    maxX = board.Punto.Ascissa;
+                if (minY > board.Punto.Ordinata)
+                    minY = board.Punto.Ordinata;
+                if (maxY < board.Punto.Ordinata)
+                    maxY = board.Punto.Ordinata;
 
                 boardsPos.Add(board);
             }
@@ -231,15 +231,15 @@ namespace PDSClient.StatModule
             selectedPhonePos.Clear();
             foreach (PhoneInfo p in phoneInfos)
             {
-                if (p.Position.X > maxX)
-                    maxX = p.Position.X;
-                if (p.Position.X < minX)
-                    minX = p.Position.X;
+                if (p.Position.Ascissa > maxX)
+                    maxX = p.Position.Ascissa;
+                if (p.Position.Ascissa < minX)
+                    minX = p.Position.Ascissa;
 
-                if (p.Position.Y > maxY)
-                    maxY = p.Position.Y;
-                if (p.Position.Y < minY)
-                    minY = p.Position.Y;
+                if (p.Position.Ordinata > maxY)
+                    maxY = p.Position.Ordinata;
+                if (p.Position.Ordinata < minY)
+                    minY = p.Position.Ordinata;
 
                 if (p.Global)
                 {
@@ -376,7 +376,7 @@ namespace PDSClient.StatModule
             {
                 selectedMAC = selected;
 
-                if(Packet.IsGlobal(selectedMAC))
+                if(Pacchetto.CntrlGlobal(selectedMAC))
                 {
                     //hiddenPhone
                     foreach (PhoneInfo p in scatterChart.Series[2].Values)
@@ -414,7 +414,7 @@ namespace PDSClient.StatModule
                 PhoneInfo p = selectedPhonePos.First<PhoneInfo>();
                 selectedPhonePos.Remove(p);
 
-                if (Packet.IsGlobal(selectedMAC))
+                if (Pacchetto.CntrlGlobal(selectedMAC))
                 {
                     //hiddenPhone
                     hiddenPhonePos.Add(p);

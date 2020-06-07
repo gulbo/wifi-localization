@@ -54,8 +54,8 @@ namespace PDSClient.StatModule
                 MacAddr = pi.MacAddr,
             })
                             .Select(item => new PhoneInfo(item.Key.MacAddr, item.Select(it => it.Timestamp).First(),
-                                                        new Point(item.Select(it => it.Position.X).Average(),
-                                                                item.Select(it => it.Position.Y).Average()),
+                                                        new Punto(item.Select(it => it.Position.Ascissa).Average(),
+                                                                item.Select(it => it.Position.Ordinata).Average()),
                                                         item.Select(it => it.Global).First())).ToList();
 
             //return list;
@@ -63,8 +63,8 @@ namespace PDSClient.StatModule
             //        .Select(item => item.OrderByDescending(it => it.Timestamp).First()).ToList();
         }
 
-        public List<Board> GetBoardsPosition() {
-            return DBConnection.GetBoards();
+        public List<Scheda> GetBoardsPosition() {
+            return DBConnection.SelezionaSchede();
         }
 
         public List<PhoneInfo> MostFrequentPhones(int n, int min, int max, int threshold = 0)
