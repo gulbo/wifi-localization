@@ -136,9 +136,7 @@ namespace PDSClient.StatModule
 
             _movement.Series[macToIndex[mac]].LabelPoint = point => string.Format("Timestamp:{0} \n X:{1}  Y:{2}", 
                 new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(((PhoneInfo)point.Instance).Timestamp), 
-                ((PhoneInfo)point.Instance).Position.Ascissa, ((PhoneInfo)point.Instance).Position.Ascissa);
-           
-            //SECONDO ME è SBAGLIATA QUI!!!! DANIELE
+                ((PhoneInfo)point.Instance).Position.Ascissa, ((PhoneInfo)point.Instance).Position.Ordinata);
 
             _movement.Series[macToIndex[mac]].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
             _movement.Series[macToIndex[mac]].Values = new ChartValues<PhoneInfo>(scatter);

@@ -31,8 +31,8 @@ namespace PDSClient.ConnectionManager
         public EspClient(int nBoards, DBConnect DBConnection, Action ConnectionErrorAction)
         {
             
-            this.NBoards = nBoards;
-            this.server = new TcpListener(IPAddress.Any, 7999);
+            NBoards = nBoards;
+            server = new TcpListener(IPAddress.Any, 7999);
             this.DBConnection = DBConnection;
             this.ConnectionErrorAction = ConnectionErrorAction;
             threads = new List<Thread>();

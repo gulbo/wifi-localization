@@ -15,11 +15,11 @@ namespace PDSClient.ConnectionManager
 
         //Proprietà
 
-        public String Server {get; private set;}
-        public String Uid {get; private set;}
-        public String Password {get; private set;}
-        public String Database {get; private set;}
-        public bool Connesso {get; private set;}
+        public string Server { get; private set; }
+        public string Uid { get; private set; }
+        public string Password { get; private set; }
+        public string Database { get; private set; }
+        public bool Connesso { get; private set; }
 
         public DBConnect(string server, string uid, string password)
         {
@@ -76,6 +76,10 @@ namespace PDSClient.ConnectionManager
 
         public bool InsertScheda(IEnumerable<Scheda> schede)
         {
+            if (schede.Count() == 0)
+            {
+                return false;
+            }
             try
             {
                 StringBuilder builderQuery = new StringBuilder();
@@ -252,17 +256,21 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public bool InsertPacchetto(List<Pacchetto> list)
+        public bool InsertPacchetto(List<Pacchetto> pacchetti)
         {
+            if (pacchetti.Count() == 0)
+            {
+                return false;
+            }
             try
             {
                 StringBuilder builderQuery = new StringBuilder();
                 builderQuery.Append("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda, global) VALUES");
-                foreach (Pacchetto pacchetto in list)
+                foreach (Pacchetto pacchetto in pacchetti)
                 {
                     builderQuery.Append(string.Format("('{0}','{1}','{2}','{3}','{4}','{5}',{6})",
                         pacchetto.MAC_address, pacchetto.RSSI, Escape_stringa(pacchetto.SSID), pacchetto.Timestamp, pacchetto.Checksum, pacchetto.ID_scheda, pacchetto.Global));
-                    if (pacchetto.Equals(list.Last<Pacchetto>()))
+                    if (pacchetto.Equals(pacchetti.Last<Pacchetto>()))
                     {
                         builderQuery.Append(";");
                     }
@@ -451,43 +459,41 @@ namespace PDSClient.ConnectionManager
         }
 
 
-       //CONTINUO DA QUI ... DANIELE
+        //CONTINUO DA QUI ... DANIELE
 
 
-       
 
 
-        //insert phones in the table 'posizioni'
-        private void InsertPhones(IEnumerable<PhoneInfo> phones, MySqlConnection conn)
+
+        //Inserisci telefoni nella tabella 'posizioni' del DB
+
+        private void InsertTelefono(IEnumerable<PhoneInfo> telefoni, MySqlConnection connessione)
         {
-            if (phones.Count() == 0)
+            if(telefoni.Count() == 0)
             {
                 return;
             }
+            StringBuilder builderQuery = new StringBuilder();
+            builderQuery.Append("INSERT INTO posizioni (MAC, x, y, timestamp, global) VALUES ");
             CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
-            StringBuilder builder = new StringBuilder();
-            builder.Append("INSERT INTO posizioni (MAC, x, y, timestamp, global) VALUES ");
-            foreach (PhoneInfo phone in phones)
+            foreach (PhoneInfo telefono in telefoni)
             {
-                builder.Append(String.Format("('{0}',{1},{2},{3},{4})", 
-                                            phone.MacAddr, 
-                                            Math.Round(phone.Position.Ascissa, 2).ToString(culture),
-                                            Math.Round(phone.Position.Ordinata, 2).ToString(culture),
-                                            phone.Timestamp,
-                                            phone.Global));
-                if (phone.Equals(phones.Last<PhoneInfo>()))
+                builderQuery.Append(string.Format("('{0}',{1},{2},{3},{4})",
+                    telefono.MacAddr, Math.Round(telefono.Position.Ascissa, 2).ToString(culture),
+                    Math.Round(telefono.Position.Ordinata, 2).ToString(culture), telefono.Timestamp, telefono.Global));
+                if (telefono.Equals(telefoni.Last<PhoneInfo>()))
                 {
-                    builder.Append(";");
+                    builderQuery.Append(";");
                 }
                 else
                 {
-                    builder.Append(", ");
+                    builderQuery.Append(", ");
                 }
             }
-            String query = builder.ToString();
+            string query = builderQuery.ToString();
             try
             {
-                using (var cmd = conn.CreateCommand())
+                using (MySqlCommand cmd = connessione.CreateCommand())
                 {
                     //Create Command
                     cmd.CommandText = query;
@@ -497,7 +503,7 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Unable to insert phones in database");
+                System.Diagnostics.Debug.WriteLine("Unable to insert phones in database" + e.ToString());
                 Connesso = false;
                 throw;
             }
@@ -517,10 +523,10 @@ namespace PDSClient.ConnectionManager
                 //Create a list to store the result
                 List<PhoneInfo> list = new List<PhoneInfo>();
 
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
+                using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (MySqlCommand cmd = connessione.CreateCommand())
                 {
-                    conn.Open();
+                    connessione.Open();
                     //Create Query
                     StringBuilder builder = new StringBuilder();
                     builder.Append("SELECT DISTINCT P1.MAC, P1.timestamp, P1.global, P1.hash");
@@ -533,23 +539,23 @@ namespace PDSClient.ConnectionManager
                     //Create Command
                     cmd.CommandText = builder.ToString();
                     cmd.ExecuteNonQuery();
-                    using (var dataReader = cmd.ExecuteReader())
+                    using (MySqlDataReader dataReader = cmd.ExecuteReader())
                     {
                         while (dataReader.Read())
                         {
-                            String mac = dataReader.GetString(0);
+                            string mac = dataReader.GetString(0);  
                             int timestamp = dataReader.GetInt32(1);
                             bool global = dataReader.GetBoolean(2);
 
-                            List<Circle> circles = new List<Circle>();
-                            //board signal area for each board
+                            List<Cerchio> cerchi = new List<Cerchio>();
                             for (int i = 0; i < nBoards; i++)
                             {
-                                int id = dataReader.GetInt32(4 + i * 2);
-                                int rssi = dataReader.GetInt32(5 + i * 2);
-                                circles.Add(new Circle(GetScheda(id).Punto, rssi));  
+                                int id = dataReader.GetInt32(3 + i * 2);
+                                int rssi = dataReader.GetInt32(4 + i * 2);
+
+                                cerchi.Add(new Cerchio(GetScheda(id).Punto, rssi));  
                             }
-                            Punto point = Circle.Intersection(circles);
+                            Punto point = Cerchio.Intersezione(cerchi);
                             if(!(Double.IsNaN(point.Ascissa) || Double.IsNaN(point.Ordinata)))
                             {
                                 PhoneInfo p = new PhoneInfo(mac, timestamp, point, global);
@@ -558,20 +564,20 @@ namespace PDSClient.ConnectionManager
                         }
                     }
 
-                    InsertPhones(list, conn);
+                    InsertTelefono(list, connessione);
                 }
-                this.Connesso = true;
+                Connesso = true;
                 return list;
             }
             catch (KeyNotFoundException e)
             {
-                System.Diagnostics.Debug.WriteLine("idBoard not found...");
+                System.Diagnostics.Debug.WriteLine("idBoard not found..." + e.ToString());
                 throw e;
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("MySqlException catched.");
-                this.Connesso = false;
+                System.Diagnostics.Debug.WriteLine("MySqlException catched." + e.ToString());
+                Connesso = false;
                 return null;
             }
             catch (Exception e)
@@ -587,18 +593,18 @@ namespace PDSClient.ConnectionManager
             if (nBoards < 2)
                 return -1;
             int time = EspClient.GetUnixTimestamp() - 300;
-            String query = " SELECT COUNT(DISTINCT P1.MAC)" + VarQuery(nBoards, time, threshold);
+            string query = " SELECT COUNT(DISTINCT P1.MAC)" + VarQuery(nBoards,time,threshold);
 
-            using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-            using (var cmd = conn.CreateCommand())
+            using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+            using (MySqlCommand cmd = connessione.CreateCommand())
             {
                 try
                 {
-                    conn.Open();
+                    connessione.Open();
                     cmd.CommandText = query;
                     using (var dataReader = cmd.ExecuteReader())
                     {
-                        this.Connesso = true;
+                        Connesso = true;
                         if (dataReader.Read())
                         {
                             return dataReader.GetInt32(0);
@@ -611,15 +617,15 @@ namespace PDSClient.ConnectionManager
                 }
                 catch (MySqlException e)
                 {
-                    System.Diagnostics.Debug.WriteLine("MySqlException catched.");
-                    this.Connesso = false;
+                    System.Diagnostics.Debug.WriteLine("MySqlException catched." + e.ToString());
+                    Connesso = false;
                     return -100;
                 }
             }
         }
 
 
-        private String VarQuery(int nBoards, int timestamp, int threshold = 0)
+        private string VarQuery(int nBoards, int timestamp, int threshold=0)
         {
             StringBuilder builder = new StringBuilder();
 
@@ -691,18 +697,18 @@ namespace PDSClient.ConnectionManager
         public List<PhoneInfo> MostFrequentPhones(int n, int min, int max, int threshold = 0)
         {
             List<PhoneInfo> list = new List<PhoneInfo>();
-            String query = "SELECT MAC, timestamp, x, y FROM posizioni AS p1 WHERE p1.MAC IN " +
+            string query = "SELECT MAC, timestamp, x, y FROM posizioni AS p1 WHERE p1.MAC IN " +
                 "(SELECT * FROM " +
                 "(SELECT MAC " +
                 "FROM posizioni AS p2 WHERE p2.timestamp < " + max + " AND p2.timestamp > " + min +
                 " GROUP BY p2.MAC ORDER BY COUNT(*) DESC LIMIT " + n+") AS p3) AND p1.timestamp < " + max + " AND p1.timestamp > " + min + ";";
 
-            using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-            using (var cmd = conn.CreateCommand())
+            using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+            using (MySqlCommand cmd = connessione.CreateCommand())
             {
                 try
                 {
-                    conn.Open();
+                    connessione.Open();
                     cmd.CommandText = query;
                     using (var dataReader = cmd.ExecuteReader())
                     {
@@ -711,14 +717,14 @@ namespace PDSClient.ConnectionManager
                             PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), dataReader.GetDouble(2), dataReader.GetDouble(3));
                             list.Add(pi);
                         }
-                        this.Connesso = true;
+                        Connesso = true;
                         return list;
                     }
                 }
                 catch (MySqlException e)
                 {
-                    System.Diagnostics.Debug.WriteLine("MySqlException catched");
-                    this.Connesso = false;
+                    System.Diagnostics.Debug.WriteLine("MySqlException catched" + e.ToString());
+                    Connesso = false;
                     return null;
                 }
             }
@@ -727,15 +733,15 @@ namespace PDSClient.ConnectionManager
         public List<PhoneInfo> PhonesInRange(int min, int max, int threshold = 0)
         {
             List<PhoneInfo> list = new List<PhoneInfo>();
-            String query = "SELECT MAC, timestamp, x, y " +
+            string query = "SELECT MAC, timestamp, x, y " +
                 "FROM posizioni WHERE timestamp < " + max + " AND timestamp > " + min+" ORDER BY timestamp";
 
-            using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-            using (var cmd = conn.CreateCommand())
+            using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+            using (MySqlCommand cmd = connessione.CreateCommand())
             {
                 try
                 {
-                    conn.Open();
+                    connessione.Open();
                     cmd.CommandText = query;
                     using (var dataReader = cmd.ExecuteReader())
                     {
@@ -744,37 +750,37 @@ namespace PDSClient.ConnectionManager
                             PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), dataReader.GetDouble(2), dataReader.GetDouble(3));
                             list.Add(pi);
                         }
-                        this.Connesso = true;
+                        Connesso = true;
                         return list;
                     }
                 }
                 catch (MySqlException e)
                 {
-                    System.Diagnostics.Debug.WriteLine("MySqlException catched");
-                    this.Connesso = false;
+                    System.Diagnostics.Debug.WriteLine("MySqlException catched" + e.ToString());
+                    Connesso = false;
                     return null;
                 }
             }
         }
 
-        public List<String> CountHiddenPhones(PhoneInfo p, double threshold)
+        public List<string> CountHiddenPhones(PhoneInfo p, double threshold)
         {
             int time = EspClient.GetUnixTimestamp() - 60;
-            List<String> list = new List<String>();
+            List<string> list = new List<string>();
 
-            String query = "SELECT MAC " +
+            string query = "SELECT MAC " +
                "FROM posizioni WHERE global = 1 AND timestamp > " + time +
                " AND ABS(x - " + p.Position.Ascissa.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) +
                " AND ABS(y - " + p.Position.Ordinata.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) + 
                " AND MAC <> '" + p.MacAddr + "'";
 
 
-            using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-            using (var cmd = conn.CreateCommand())
+            using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+            using (MySqlCommand cmd = connessione.CreateCommand())
             {
                 try
                 {
-                    conn.Open();
+                    connessione.Open();
                     cmd.CommandText = query;
                     using (var dataReader = cmd.ExecuteReader())
                     {
@@ -782,14 +788,14 @@ namespace PDSClient.ConnectionManager
                         {
                             list.Add(dataReader.GetString(0));
                         }
-                        this.Connesso = true;
+                        Connesso = true;
                         return list;
                     }
                 }
                 catch (MySqlException e)
                 {
-                    System.Diagnostics.Debug.WriteLine("MySqlException catched.");
-                    this.Connesso = false;
+                    System.Diagnostics.Debug.WriteLine("MySqlException catched." + e.ToString());
+                    Connesso = false;
                     return null;
                 }
             }
