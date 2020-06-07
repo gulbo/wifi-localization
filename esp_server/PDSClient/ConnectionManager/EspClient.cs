@@ -170,7 +170,7 @@ namespace PDSClient.ConnectionManager
         {
             int idBoard = -1;
             byte[] receiveBuffer = new byte[512];
-            List<Packet> pktLst = new List<Packet>();
+            List<Pacchetto> pktLst = new List<Pacchetto>();
             ManualResetEvent mre1 = mres1[(int)index];
             ManualResetEvent mre2 = mres2[(int)index];
             AutoResetEvent are = phoneInfo_are[(int)index];
@@ -194,7 +194,7 @@ namespace PDSClient.ConnectionManager
                 mre2.Reset();
                 for (int i = 0; i < n; i++)
                 {
-                    Packet pkt = Packet.ReceivePacket(s, idBoard, ct);
+                    Pacchetto pkt = Pacchetto.RiceviPacchetto(s, idBoard, ct);
                     pktLst.Add(pkt);
                 }
                 mre2.Set();
@@ -205,7 +205,7 @@ namespace PDSClient.ConnectionManager
                 System.Diagnostics.Debug.WriteLine(index + ") Timestamp retrieved: " + netTimestamp + "... sending to board");
                 s.Send(BitConverter.GetBytes(netTimestamp), 4, SocketFlags.None);
 
-                DBConnection.Insert(pktLst);
+                DBConnection.InsertPacchetto(pktLst);
                 System.Diagnostics.Debug.WriteLine(index + ") pktList inserted into db... Setting the AutoResetEvent");
                 are.Set();
 

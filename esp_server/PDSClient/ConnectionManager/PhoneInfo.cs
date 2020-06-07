@@ -12,7 +12,7 @@ namespace PDSClient.ConnectionManager
         //attributes
         private String macAddr;
         private int timestamp;
-        private Point position;
+        private Punto position;
         private bool global;
 
         //properties
@@ -31,7 +31,7 @@ namespace PDSClient.ConnectionManager
             get { return timestamp; }
         }
 
-        public Point Position
+        public Punto Position
         {
             get { return position; }
         }
@@ -41,7 +41,7 @@ namespace PDSClient.ConnectionManager
             get { return global; }
         }
 
-        public PhoneInfo(String macAddr, int timestamp, Point position, bool global)
+        public PhoneInfo(String macAddr, int timestamp, Punto position, bool global)
         {
             this.macAddr = macAddr;
             this.timestamp = timestamp;
@@ -49,7 +49,7 @@ namespace PDSClient.ConnectionManager
             this.global = global;
         }
 
-        public PhoneInfo(String macAddr, int timestamp, Point position)
+        public PhoneInfo(String macAddr, int timestamp, Punto position)
         {
             this.macAddr = macAddr;
             this.timestamp = timestamp;
@@ -60,12 +60,12 @@ namespace PDSClient.ConnectionManager
         {
             this.macAddr = macAddr;
             this.timestamp = timestamp;
-            this.position = new Point(x, y);
+            this.position = new Punto(x, y);
         }
 
         public override string ToString()
         {
-            return macAddr + " " + timestamp + " " + "(" + position.X + ", " + position.Y + ")";
+            return macAddr + " " + timestamp + " " + "(" + position.Ascissa + ", " + position.Ordinata + ")";
         }
     }
 }
