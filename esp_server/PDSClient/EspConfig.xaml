@@ -99,11 +99,11 @@
                                     <ColumnDefinition Width="35"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Name ="id_text" Grid.Column="0" Text="Board id:" Margin="12,6,0,0"/>
-                                <TextBox  Name ="id_box"  Grid.Column="0" Text="{Binding Path=Id}" Height="30" Width="20" Margin="15,0,0,0" TextAlignment="Right" VerticalAlignment="Center" />
+                                <TextBox  Name ="id_box"  Grid.Column="0" Text="{Binding Path=ID_scheda}" Height="30" Width="20" Margin="15,0,0,0" TextAlignment="Right" VerticalAlignment="Center" />
                                 <TextBlock Name ="x_text" Grid.Column="1" Text="x:" />
-                                <TextBox  Name ="x_box" Grid.Column="1" Text="{Binding Path=P.X}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <TextBox  Name ="x_box" Grid.Column="1" Text="{Binding Path=Punto.Ascissa}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                 <TextBlock Name ="y_text"  Grid.Column="1" Grid.Row="1" Text="y:" />
-                                <TextBox  Name ="y_box" Grid.Column="1" Grid.Row="1" Text="{Binding Path=P.Y}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                <TextBox  Name ="y_box" Grid.Column="1" Grid.Row="1" Text="{Binding Path=Punto.Ordinata}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                 <Button  Grid.Column="2" Name="Delete" Click="ButtonDelete"  Background="{x:Null}" BorderBrush="{x:Null}" Height="16" Margin="0,5,0,0" Width="26"  ToolTip="Close" >
                                     <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="13" Width="15" UseLayoutRounding="False" Foreground="black"/>
                                     <Button.Style>
