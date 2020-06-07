@@ -40,11 +40,6 @@ namespace PDSClient.ConnectionManager
             schede.TryAdd(scheda.ID_scheda, scheda);
         }
 
-        private static String Escape_stringa(String stringa)
-        {
-            return MySqlHelper.EscapeString(stringa);
-        }
-
         //Inserisci schede nella tabella 'schede' del DB e nel local dictionary
 
         public bool InsertScheda(Scheda scheda)
@@ -269,7 +264,7 @@ namespace PDSClient.ConnectionManager
                 foreach (Pacchetto pacchetto in pacchetti)
                 {
                     builderQuery.Append(string.Format("('{0}','{1}','{2}','{3}','{4}','{5}',{6})",
-                        pacchetto.MAC_address, pacchetto.RSSI, Escape_stringa(pacchetto.SSID), pacchetto.Timestamp, pacchetto.Checksum, pacchetto.ID_scheda, pacchetto.Global));
+                        pacchetto.MAC_address, pacchetto.RSSI, MySqlHelper.EscapeString(pacchetto.SSID), pacchetto.Timestamp, pacchetto.Checksum, pacchetto.ID_scheda, pacchetto.Global));
                     if (pacchetto.Equals(pacchetti.Last<Pacchetto>()))
                     {
                         builderQuery.Append(";");
@@ -550,8 +545,8 @@ namespace PDSClient.ConnectionManager
                             List<Cerchio> cerchi = new List<Cerchio>();
                             for (int i = 0; i < nBoards; i++)
                             {
-                                int id = dataReader.GetInt32(3 + i * 2);
-                                int rssi = dataReader.GetInt32(4 + i * 2);
+                                int id = dataReader.GetInt32(4 + i * 2);
+                                int rssi = dataReader.GetInt32(5 + i * 2);
 
                                 cerchi.Add(new Cerchio(GetScheda(id).Punto, rssi));  
                             }

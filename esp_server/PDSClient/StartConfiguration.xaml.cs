@@ -11,15 +11,14 @@ using Newtonsoft.Json;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
-using Point = PDSClient.ConnectionManager.Point;
+using Point = PDSClient.ConnectionManager.Punto;
 using System.Timers;
 using PDSClient.StatModule;
 
 
 using System.Globalization;
 using System.Threading;
-
-
+using System.Windows.Input;
 
 namespace PDSClient
 {
