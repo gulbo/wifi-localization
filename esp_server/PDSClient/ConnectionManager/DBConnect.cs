@@ -521,10 +521,10 @@ namespace PDSClient.ConnectionManager
             builder.Append("INSERT INTO posizioni (MAC, x, y, timestamp, global) VALUES ");
             foreach (PhoneInfo phone in phones)
             {
-                builder.Append(String.Format("('{0}',{1},{2},{3},{4})",
-                                            phone.MacAddr,
-                                            Math.Round(phone.Position.X, 2).ToString(culture),
-                                            Math.Round(phone.Position.Y, 2).ToString(culture),
+                builder.Append(String.Format("('{0}',{1},{2},{3},{4})", 
+                                            phone.MacAddr, 
+                                            Math.Round(phone.Position.Ascissa, 2).ToString(culture),
+                                            Math.Round(phone.Position.Ordinata, 2).ToString(culture),
                                             phone.Timestamp,
                                             phone.Global));
                 if (phone.Equals(phones.Last<PhoneInfo>()))
@@ -545,12 +545,12 @@ namespace PDSClient.ConnectionManager
                     cmd.CommandText = query;
                     cmd.ExecuteNonQuery();
                 }
-                this.Connected = true;
+                this.Connesso = true;
             }
             catch (MySqlException e)
             {
                 System.Diagnostics.Debug.WriteLine("Unable to insert phones in database");
-                this.Connected = false;
+                this.Connesso = false;
                 throw;
             }
         }
@@ -599,11 +599,10 @@ namespace PDSClient.ConnectionManager
                             {
                                 int id = dataReader.GetInt32(4 + i * 2);
                                 int rssi = dataReader.GetInt32(5 + i * 2);
-
-                                circles.Add(new Circle(GetBoard(id).P, rssi));
+                                circles.Add(new Circle(GetScheda(id).Punto, rssi));  
                             }
-                            Point point = Circle.Intersection(circles);
-                            if (!(Double.IsNaN(point.X) || Double.IsNaN(point.Y)))
+                            Punto point = Circle.Intersection(circles);
+                            if(!(Double.IsNaN(point.Ascissa) || Double.IsNaN(point.Ordinata)))
                             {
                                 PhoneInfo p = new PhoneInfo(mac, timestamp, point, global);
                                 list.Add(p);
@@ -613,7 +612,7 @@ namespace PDSClient.ConnectionManager
 
                     InsertPhones(list, conn);
                 }
-                this.Connected = true;
+                this.Connesso = true;
                 return list;
             }
             catch (KeyNotFoundException e)
@@ -623,8 +622,8 @@ namespace PDSClient.ConnectionManager
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("MySqlException catched." + e.ToString());
-                this.Connected = false;
+                System.Diagnostics.Debug.WriteLine("MySqlException catched.");
+                this.Connesso = false;
                 return null;
             }
             catch (Exception e)
@@ -651,7 +650,7 @@ namespace PDSClient.ConnectionManager
                     cmd.CommandText = query;
                     using (var dataReader = cmd.ExecuteReader())
                     {
-                        this.Connected = true;
+                        this.Connesso = true;
                         if (dataReader.Read())
                         {
                             return dataReader.GetInt32(0);
@@ -665,7 +664,7 @@ namespace PDSClient.ConnectionManager
                 catch (MySqlException e)
                 {
                     System.Diagnostics.Debug.WriteLine("MySqlException catched.");
-                    this.Connected = false;
+                    this.Connesso = false;
                     return -100;
                 }
             }
@@ -718,8 +717,8 @@ namespace PDSClient.ConnectionManager
                     })
                             .Select(item => new PhoneInfo(item.Key.MacAddr,
                                                         item.Key.Timestamp,
-                                                        new Point(item.Select(it => it.Position.X).Average(),
-                                                                item.Select(it => it.Position.Y).Average()),
+                                                        new Punto(item.Select(it => it.Position.Ascissa).Average(),
+                                                                item.Select(it => it.Position.Ordinata).Average()),
                                                         item.Select(it => it.Global).First())).ToList();
                     break;
                 case ReduceType.Random:
@@ -764,14 +763,14 @@ namespace PDSClient.ConnectionManager
                             PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), dataReader.GetDouble(2), dataReader.GetDouble(3));
                             list.Add(pi);
                         }
-                        this.Connected = true;
+                        this.Connesso = true;
                         return list;
                     }
                 }
                 catch (MySqlException e)
                 {
                     System.Diagnostics.Debug.WriteLine("MySqlException catched");
-                    this.Connected = false;
+                    this.Connesso = false;
                     return null;
                 }
             }
@@ -797,14 +796,14 @@ namespace PDSClient.ConnectionManager
                             PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), dataReader.GetDouble(2), dataReader.GetDouble(3));
                             list.Add(pi);
                         }
-                        this.Connected = true;
+                        this.Connesso = true;
                         return list;
                     }
                 }
                 catch (MySqlException e)
                 {
                     System.Diagnostics.Debug.WriteLine("MySqlException catched");
-                    this.Connected = false;
+                    this.Connesso = false;
                     return null;
                 }
             }
@@ -817,8 +816,8 @@ namespace PDSClient.ConnectionManager
 
             String query = "SELECT MAC " +
                "FROM posizioni WHERE global = 1 AND timestamp > " + time +
-               " AND ABS(x - " + p.Position.X.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) +
-               " AND ABS(y - " + p.Position.Y.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) + 
+               " AND ABS(x - " + p.Position.Ascissa.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) +
+               " AND ABS(y - " + p.Position.Ordinata.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) + 
                " AND MAC <> '" + p.MacAddr + "'";
 
 
@@ -835,14 +834,14 @@ namespace PDSClient.ConnectionManager
                         {
                             list.Add(dataReader.GetString(0));
                         }
-                        this.Connected = true;
+                        this.Connesso = true;
                         return list;
                     }
                 }
                 catch (MySqlException e)
                 {
                     System.Diagnostics.Debug.WriteLine("MySqlException catched.");
-                    this.Connected = false;
+                    this.Connesso = false;
                     return null;
                 }
             }

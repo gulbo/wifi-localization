@@ -12,20 +12,20 @@ namespace PDSClient.ConnectionManager
         
         //properties
         public double Radius { get; set; }
-        public Point Center { get; set; }
+        public Punto Center { get; set; }
 
 
-        public Circle(Point center, int rssi)
+        public Circle(Punto center, int rssi)
         {
             Center = center;
             Radius = RSSIConverter(rssi);
         }
 
-        public static Point Intersection(ICollection<Circle> collection)
+        public static Punto Intersection(ICollection<Circle> collection)
         {
-            Point intersection = new Point(0, 0);
+            Punto intersection = new Punto(0, 0);
             int n = 0;
-            List<Point> points = new List<Point>();
+            List<Punto> points = new List<Punto>();
             for (int i = 0; i < collection.Count - 1; i++)
             {
                 for (int j = i + 1; j < collection.Count; j++)
@@ -39,18 +39,18 @@ namespace PDSClient.ConnectionManager
                 }
             }
 
-            foreach (Point point in points)
+            foreach (Punto point in points)
             {
-                intersection.X += point.X;
-                intersection.Y += point.Y;
+                intersection.Ascissa += point.Ascissa;
+                intersection.Ordinata += point.Ordinata;
                 n++;
             }
-            intersection.X /= n;
-            intersection.Y /= n;
+            intersection.Ascissa /= n;
+            intersection.Ordinata /= n;
             return intersection;
         }
 
-        private Point WeightedAverage(Circle c)
+        private Punto WeightedAverage(Circle c)
         {
             double x, y;
             double r = this.Radius + c.Radius;
@@ -62,10 +62,10 @@ namespace PDSClient.ConnectionManager
             System.Diagnostics.Debug.Assert(w1 >= 0 && w1 <= 1);
             System.Diagnostics.Debug.Assert(w2 >= 0 && w2 <= 1);
 
-            x = this.Center.X * w2 + c.Center.X * w1;
-            y = this.Center.Y * w2 + c.Center.Y * w1;
+            x = this.Center.Ascissa * w2 + c.Center.Ascissa * w1;
+            y = this.Center.Ordinata * w2 + c.Center.Ordinata * w1;
 
-            return new Point(x, y);
+            return new Punto(x, y);
         }
 
         static double RSSIConverter(int rssi)
@@ -79,7 +79,7 @@ namespace PDSClient.ConnectionManager
 
         public bool DoesIntersect(Circle c)
         {
-            double distSq = (Center.X - c.Center.X) * (Center.X - c.Center.X) + (Center.Y - c.Center.Y) * (Center.Y - c.Center.Y);
+            double distSq = (Center.Ascissa - c.Center.Ascissa) * (Center.Ascissa - c.Center.Ascissa) + (Center.Ordinata - c.Center.Ordinata) * (Center.Ordinata - c.Center.Ordinata);
             double radSumSq = (Radius + c.Radius) * (Radius + c.Radius);
             if (distSq <= radSumSq)
                 return true;
@@ -90,15 +90,15 @@ namespace PDSClient.ConnectionManager
         
 
 
-        public Point Intersect(Circle c)
+        public Punto Intersect(Circle c)
         {            
-            Point intersection;
+            Punto intersection;
            
-            double cx0 = Center.X;
-            double cy0 = Center.Y;
+            double cx0 = Center.Ascissa;
+            double cy0 = Center.Ordinata;
             double radius0 = Radius;
-            double cx1 = c.Center.X;
-            double cy1 = c.Center.Y;
+            double cx1 = c.Center.Ascissa;
+            double cy1 = c.Center.Ordinata;
             double radius1 = c.Radius;
 
             // Find the distance between the centers.
@@ -115,7 +115,7 @@ namespace PDSClient.ConnectionManager
             double cx = cx0 + a * (cx1 - cx0) / dist;
             double cy = cy0 + a * (cy1 - cy0) / dist;
 
-            intersection = new Point(cx, cy);
+            intersection = new Punto(cx, cy);
             return intersection;
 
         }
