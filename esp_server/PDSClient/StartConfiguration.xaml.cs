@@ -74,10 +74,10 @@ namespace PDSClient
 
         private void ButtonLoadFromDB(object sender, RoutedEventArgs e)
         {
-            List<Board> boards = new List<Board>();
+            List<Scheda> boards = new List<Scheda>();
             try
             {
-                boards = _dbConnection.GetBoards();
+                boards = _dbConnection.SelezionaSchede();
                 if(boards == null)
                 {
                     System.Windows.MessageBox.Show("Database error. Please check if the database is online",
@@ -104,11 +104,11 @@ namespace PDSClient
                 return;
             }
 
-            foreach(Board b in boards)
+            foreach(Scheda b in boards)
             {
-                if(b.Id <= 0)
+                if(b.ID_scheda <= 0)
                 {
-                    System.Windows.MessageBox.Show("Invalid board id found: " + b.Id,
+                    System.Windows.MessageBox.Show("Invalid board id found: " + b.ID_scheda,
                         "Invalid board id",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
@@ -127,7 +127,6 @@ namespace PDSClient
             if (e.ChangedButton == MouseButton.Left)
                 this.DragMove();
         }
-
     }
 
 }

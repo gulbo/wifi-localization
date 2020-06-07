@@ -170,13 +170,13 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ConnectionManager\Board.cs" />
+    <Compile Include="ConnectionManager\Scheda.cs" />
     <Compile Include="ConnectionManager\Circle.cs" />
     <Compile Include="ConnectionManager\DBConnect.cs" />
     <Compile Include="ConnectionManager\EspClient.cs" />
-    <Compile Include="ConnectionManager\Packet.cs" />
+    <Compile Include="ConnectionManager\Pacchetto.cs" />
     <Compile Include="ConnectionManager\PhoneInfo.cs" />
-    <Compile Include="ConnectionManager\Point.cs" />
+    <Compile Include="ConnectionManager\Punto.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
