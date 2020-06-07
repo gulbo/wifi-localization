@@ -1,27 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
-using PDSClient.ConnectionManager;
-using System.Collections.Concurrent;
+using System.Linq;
 using System.Globalization;
-using PDSClient.ConnectionManager.ConnException;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using MySql.Data.MySqlClient;
 
 namespace PDSClient.ConnectionManager
 {
     public sealed class DBConnect
     {
         private enum ReduceType { Mean, Random };
+        private ConcurrentDictionary<int, Scheda> schede;
 
-        private ConcurrentDictionary<int, Board> boards;
+        //Proprietà
 
-        public String Server { get; private set; }
-        public String Uid { get; private set; }
-        public String Password { get; private set; }
-        public String Database { get; private set; }
-        public bool Connected { get; private set; }
+        public String Server {get; private set;}
+        public String Uid {get; private set;}
+        public String Password {get; private set;}
+        public String Database {get; private set;}
+        public bool Connesso {get; private set;}
 
         public DBConnect(string server, string uid, string password)
         {
@@ -29,43 +27,44 @@ namespace PDSClient.ConnectionManager
             this.Uid = uid;
             this.Password = password;
             this.Database = "db_wifi-localization";
-            this.Connected = false;
-            boards = new ConcurrentDictionary<int, Board>();
+            this.Connesso = false;
+            schede = new ConcurrentDictionary<int, Scheda>();
         }
-
-        public void AddBoard(Board b)
+        public Scheda GetScheda(int id_scheda)
         {
-            boards.TryAdd(b.Id, b);
+            return schede[id_scheda];
         }
 
-        public Board GetBoard(int id)
+        public void AggiungiScheda(Scheda scheda)
         {
-            return boards[id];
+            schede.TryAdd(scheda.ID_scheda, scheda);
         }
 
-        //Insert di pacchetti nella tabella 'pacchetti'
+        //Inserisci schede nella tabella 'schede' del DB e nel local dictionary
 
-        public bool Insert(String idBoard, String mac, int rssi, String ssid, String timestamp, String hash)
+        public bool InsertScheda(Scheda scheda)
         {
             try
             {
-                string query = String.Format("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda) VALUES('{0}','{1}','{2}','{3}','{4}','{5}')",
-                                                mac, rssi, ssid, timestamp, hash, idBoard);
+                String query = String.Format("INSERT INTO schede (ID_scheda, x, y) VALUES({0}, {1}, {2})",
+                    scheda.ID_scheda, scheda.Punto.Ascissa, scheda.Punto.Ordinata);
 
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
+                AggiungiScheda(scheda);
+
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
                 {
-                    conn.Open();
+                    connessione.Open();
                     cmd.CommandText = query;
                     cmd.ExecuteNonQuery();
                 }
-                this.Connected = true;
+                this.Connesso = true;
                 return true;
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Unable to insert packet into db.");
-                this.Connected = false;
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire le schede nel database");
+                this.Connesso = false;
                 return false;
             }
             catch (Exception e)
@@ -74,106 +73,42 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public bool Insert(Packet p)
+        public bool InsertScheda(IEnumerable<Scheda> schede)
         {
             try
             {
-
-                string query = String.Format("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda, global) VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}')",
-                                               p.MacAddr, p.Rssi, p.Ssid, p.Timestamp, p.Checksum, p.IdBoard, p.Global);
-
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
+                StringBuilder builderQuery = new StringBuilder();
+                builderQuery.Append("INSERT INTO schede (ID_scheda, x, y) VALUES");
+                foreach (Scheda scheda in schede)
                 {
-                    conn.Open();
-                    cmd.CommandText = query;
-                    cmd.ExecuteNonQuery();
-                }
-                this.Connected = true;
-                return true;
-            }
-            catch (MySqlException e)
-            {
-                System.Diagnostics.Debug.WriteLine("Unable to insert packet into db.");
-                this.Connected = false;
-                return false;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
-        }
-
-        public bool Insert(List<Packet> list)
-        {
-            try
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.Append("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda, global) VALUES");
-                
-
-                foreach (Packet p in list)
-                {
-                    builder.Append(String.Format("('{0}','{1}','{2}','{3}','{4}','{5}',{6})", p.MacAddr, p.Rssi, Sanitize(p.Ssid), p.Timestamp, p.Checksum, p.IdBoard, p.Global));
-                    if (p.Equals(list.Last<Packet>()))
+                    builderQuery.Append(string.Format("({0},{1},{2})",
+                        scheda.ID_scheda, scheda.Punto.Ascissa.ToString(CultureInfo.InvariantCulture), scheda.Punto.Ordinata.ToString(CultureInfo.InvariantCulture)));
+                    if (scheda.Equals(schede.Last<Scheda>()))
                     {
-                        builder.Append(";");
+                        builderQuery.Append(";");
                     }
                     else
                     {
-                        builder.Append(", ");
+                        builderQuery.Append(", ");
                     }
+                    AggiungiScheda(scheda);
                 }
+                string query = builderQuery.ToString();
 
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
                 {
-                    conn.Open();
-                    cmd.CommandText = builder.ToString();
-                    cmd.ExecuteNonQuery();
-                }
-                this.Connected = true;
-                return true;
-            }
-            catch (MySqlException e)
-            {
-                System.Diagnostics.Debug.WriteLine("Unable to insert packet list into db");
-                this.Connected = false;
-                return false;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
-        }
-
-        private static String Sanitize(String txt)
-        {
-            return MySql.Data.MySqlClient.MySqlHelper.EscapeString(txt);
-        }
-
-        //Delete di pacchetti (selezionando l'ID_pacchetto) nella tabella 'pacchetti'
- 
-        public bool Delete(int id)
-        {
-            try
-            {
-                string query = String.Format("DELETE FROM pacchetti WHERE ID_pacchetto='{0}'", id);
-
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
-                {
-                    conn.Open();
+                    connessione.Open();
                     cmd.CommandText = query;
                     cmd.ExecuteNonQuery();
                 }
-                this.Connected = true;
+                this.Connesso = true;
                 return true;
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Unable to delete packet from db");
-                this.Connected = false;
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire le schede nel database");
+                this.Connesso = false;
                 return false;
             }
             catch (Exception e)
@@ -182,26 +117,85 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public bool DeleteBoards()
+        public bool InsertScheda(int id_scheda, double x, double y)
+        {
+            try
+            {
+                String query = String.Format("INSERT INTO schede (ID_scheda, x, y) VALUES({0}, {1}, {2})", id_scheda, x, y);
+
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                AggiungiScheda(new Scheda(id_scheda, x, y));
+                this.Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire le schede nel database");
+                this.Connesso = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        //Rimuovi scheda (selezionando l'ID_scheda) nella tabella 'schede' del DB
+
+        public bool RemoveScheda(int id_scheda)
+        {
+            try
+            {
+                string query = String.Format("DELETE FROM schede WHERE ID_scheda='{0}'", id_scheda);
+
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                this.Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione della scheda");
+                this.Connesso = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public bool RemoveSchede()
         {
             try
             {
                 string query = String.Format("DELETE FROM schede");
 
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
                 {
-                    conn.Open();
+                    connessione.Open();
                     cmd.CommandText = query;
                     cmd.ExecuteNonQuery();
                 }
-                this.Connected = true;
+                this.Connesso = true;
                 return true;
             }
             catch (MySqlException e)
             {
-                System.Diagnostics.Debug.WriteLine("Unable to delete boards from db");
-                this.Connected = false;
+                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione delle schede");
+                this.Connesso = false;
                 return false;
             }
             catch (Exception e)
@@ -210,11 +204,257 @@ namespace PDSClient.ConnectionManager
             }
         }
 
+        //Seleziona l'elenco delle schede (tutte) dalla tabella 'schede' del DB
 
-        public List<string>[] Select(string query)
+        public List<Scheda> SelezionaSchede()
         {
-            //Create a list to store the result
-            List<string>[] list = new List<string>[7];
+
+            //Creo una lista di schede per memorizzare i risultati
+
+            List<Scheda> list = new List<Scheda>();
+
+            using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+            using (var cmd = connessione.CreateCommand())
+            {
+                try
+                {
+                    connessione.Open();
+                    cmd.CommandText = "SELECT * FROM schede";
+                    using (var leggiDati = cmd.ExecuteReader())
+                    {
+                        while (leggiDati.Read())
+                        {
+                            Scheda scheda = new Scheda(leggiDati.GetInt32(0), leggiDati.GetDouble(1), leggiDati.GetDouble(2));
+                            list.Add(scheda);
+                        }
+                        this.Connesso = true;
+                        return list;
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    System.Diagnostics.Debug.WriteLine("Impossibile recuperare le informazioni sulle schede dal database");
+                    this.Connesso = false;
+                    return null;
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
+            }
+        }
+
+        //Inserisci pacchetti nella tabella 'pacchetti' del DB
+
+        public bool InsertPacchetto(Pacchetto pacchetto)
+        {
+            try
+            {
+                string query = String.Format("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda, global) VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}')",
+                    pacchetto.MAC_address, pacchetto.RSSI, pacchetto.SSID, pacchetto.Timestamp, pacchetto.Checksum, pacchetto.ID_scheda, pacchetto.Global);
+
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                this.Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire i pacchetti nel database");
+                this.Connesso = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public bool InsertPacchetto(List<Pacchetto> list)
+        {
+            try
+            {
+                StringBuilder builderQuery = new StringBuilder();
+                builderQuery.Append("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda, global) VALUES");
+                foreach (Pacchetto pacchetto in list)
+                {
+                    builderQuery.Append(string.Format("('{0}','{1}','{2}','{3}','{4}','{5}',{6})",
+                        pacchetto.MAC_address, pacchetto.RSSI, Escape_stringa(pacchetto.SSID), pacchetto.Timestamp, pacchetto.Checksum, pacchetto.ID_scheda, pacchetto.Global));
+                    if (pacchetto.Equals(list.Last<Pacchetto>()))
+                    {
+                        builderQuery.Append(";");
+                    }
+                    else
+                    {
+                        builderQuery.Append(", ");
+                    }
+                }
+                string query = builderQuery.ToString();
+
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                this.Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire i pacchetti nel database");
+                this.Connesso = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public bool InsertPacchetto(string mac, int rssi, string ssid, int timestamp, string checksum, string id_scheda, bool global)
+        {
+            try
+            {
+                string query = String.Format("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda, global) VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}')",
+                    mac, rssi, ssid, timestamp, checksum, id_scheda, global);
+               
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                this.Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Impossibile inserire i pacchetti nel database");
+                this.Connesso = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        private static String Escape_stringa(String stringa)
+        {
+            return MySql.Data.MySqlClient.MySqlHelper.EscapeString(stringa);
+        }
+
+        //Rimuovi pacchetti (selezionando l'ID_pacchetto) nella tabella 'pacchetti' del DB
+
+        public bool RemovePacchetto(int id_pacchetto)
+        {
+            try
+            {
+                string query = String.Format("DELETE FROM pacchetti WHERE ID_pacchetto='{0}'", id_pacchetto);
+
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                this.Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione dei pacchetti");
+                this.Connesso = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        public bool RemovePacchetti()
+        {
+            try
+            {
+                string query = String.Format("DELETE FROM pacchetti");
+
+                using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (var cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                this.Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Errore durante la rimozione dei pacchetti");
+                this.Connesso = false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                return false;
+            }
+        }
+
+        //Seleziona l'elenco dei pacchetti dalla tabella 'pacchetti' del DB
+
+        public List<Pacchetto> SelezionaPacchetti(string query)
+        {
+            //Creo una lista di pacchetti per memorizzare i risultati
+
+            List<Pacchetto> list = new List<Pacchetto>();
+
+            using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+            using (var cmd = connessione.CreateCommand())
+            {
+                try
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    using (var leggiDati = cmd.ExecuteReader())
+                    {
+                        while (leggiDati.Read())
+                        {
+                            Pacchetto pacchetto = new Pacchetto(leggiDati.GetString(1), leggiDati.GetInt32(2), leggiDati.GetString(3),
+                                leggiDati.GetInt32(4), leggiDati.GetString(5), leggiDati.GetInt32(6), leggiDati.GetBoolean(7));
+                            list.Add(pacchetto);
+                        }
+                        this.Connesso = true;
+                        return list;
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    System.Diagnostics.Debug.WriteLine("Impossibile recuperare le informazioni sui pacchetti dal database");
+                    this.Connesso = false;
+                    return null;
+                }
+                catch (Exception e)
+                {
+                    return null;
+                }
+            }
+        }
+ 
+        public List<string>[] SelezionaColonnePacchetti(string query)
+        {
+            //Creo una lista per ogni colonna della tabella 'pacchetti' per memorizzare i risultati
+
+            List<string>[] list = new List<string>[8];   
             list[0] = new List<string>();
             list[1] = new List<string>();
             list[2] = new List<string>();
@@ -222,241 +462,51 @@ namespace PDSClient.ConnectionManager
             list[4] = new List<string>();
             list[5] = new List<string>();
             list[6] = new List<string>();
+            list[7] = new List<string>();
 
-            using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-            using (var cmd = conn.CreateCommand())
+            using (var connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+            using (var cmd = connessione.CreateCommand())
             {
                 try
                 {
-                    conn.Open();
+                    connessione.Open();
                     cmd.CommandText = query;
-                    using (var reader = cmd.ExecuteReader())
+                    using (var leggiDati = cmd.ExecuteReader())
                     {
-                        while (reader.Read())
+                        while (leggiDati.Read())
                         {
-                            list[0].Add(reader["ID_pacchetto"] + "");
-                            list[1].Add(reader["MAC"] + "");
-                            list[2].Add(reader["RSSI"] + "");
-                            list[3].Add(reader["SSID"] + "");
-                            list[4].Add(reader["timestamp"] + "");
-                            list[5].Add(reader["hash"] + "");
-                            list[6].Add(reader["ID_scheda"] + "");
+                            list[0].Add(leggiDati["ID_pacchetto"] + "");
+                            list[1].Add(leggiDati["MAC"] + "");
+                            list[2].Add(leggiDati["RSSI"] + "");
+                            list[3].Add(leggiDati["SSID"] + "");
+                            list[4].Add(leggiDati["Timestamp"] + "");
+                            list[5].Add(leggiDati["Checksum"] + "");
+                            list[6].Add(leggiDati["ID_scheda"] + "");
+                            list[7].Add(leggiDati["Global"] + "");
                         }
-                        this.Connected = true;
+                        this.Connesso = true;
                         return list;
                     }
                 }
-                catch (MySqlException e)
+                catch(MySqlException e)
                 {
-                    System.Diagnostics.Debug.WriteLine("Unable to retrieve packets informations.");
-                    this.Connected = false;
+                    System.Diagnostics.Debug.WriteLine("Impossibile recuperare le informazioni sui pacchetti dal database");
+                    this.Connesso = false;
                     return null;
                 }
-
-            }
-
-        }
-
-
-        public List<Packet> SelectPackets(string query)
-        {
-            //Create a list to store the result
-            List<Packet> list = new List<Packet>();
-
-            using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-            using (var cmd = conn.CreateCommand())
-            {
-                try
+                catch (Exception e)
                 {
-                    conn.Open();
-                    cmd.CommandText = query;
-                    using (var dataReader = cmd.ExecuteReader())
-                    {
-                        while (dataReader.Read())
-                        {
-                            Packet p = new Packet(dataReader.GetInt32(6), dataReader.GetString(1), dataReader.GetInt32(2),
-                            dataReader.GetString(3), dataReader.GetInt32(4), dataReader.GetString(5), dataReader.GetBoolean(7));
-                            list.Add(p);
-                        }
-                        this.Connected = true;
-                        return list;
-                    }
-                }
-                catch (MySqlException e)
-                {
-                    System.Diagnostics.Debug.WriteLine("Unable to retrieve packets information");
-                    this.Connected = false;
                     return null;
                 }
             }
+
         }
 
 
-        //insert boards in the table 'boards' in DB and in the local dictionary
-        public bool InsertBoard(Board board)
-        {
-            try
-            {
-                String query = String.Format("INSERT INTO schede (ID_scheda, x, y) VALUES({0}, {1}, {2})",
-                                        board.Id, board.P.X, board.P.Y);
+       //CONTINUO DA QUI ... DANIELE
 
-                AddBoard(board);
 
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
-                {
-                    conn.Open();
-                    cmd.CommandText = query;
-                    cmd.ExecuteNonQuery();
-                }
-                this.Connected = true;
-                return true;
-            }
-            catch (MySqlException e)
-            {
-                System.Diagnostics.Debug.WriteLine("Unable to insert boards into db.");
-                this.Connected = false;
-                return false;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
-        }
-
-        public bool InsertBoard(int id, float x, float y)
-        {
-            try
-            {
-                String query = String.Format("INSERT INTO schede (ID_scheda, x, y) VALUES({0}, {1}, {2})", id, x, y);
-
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
-                {
-                    conn.Open();
-                    cmd.CommandText = query;
-                    cmd.ExecuteNonQuery();
-                }
-                AddBoard(new Board(id, x, y));
-                this.Connected = true;
-                return true;
-            }
-            catch (MySqlException e)
-            {
-                System.Diagnostics.Debug.WriteLine("Unable to insert boards into the db");
-                this.Connected = false;
-                return false;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
-        }
-
-        public bool InsertBoard(IEnumerable<Board> boards)
-        {
-            try
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.Append("INSERT INTO schede (ID_scheda, x, y) VALUES");
-                foreach (Board b in boards)
-                {
-                    builder.Append(String.Format("({0},{1},{2})", b.Id, b.P.X.ToString(CultureInfo.InvariantCulture), b.P.Y.ToString(CultureInfo.InvariantCulture)));
-                    if (b.Equals(boards.Last<Board>()))
-                    {
-                        builder.Append(";");
-                    }
-                    else
-                    {
-                        builder.Append(", ");
-                    }
-                    AddBoard(b);
-                }
-                String query = builder.ToString();
-
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
-                {
-                    conn.Open();
-                    cmd.CommandText = query;
-                    cmd.ExecuteNonQuery();
-                }
-                this.Connected = true;
-                return true;
-            }
-            catch (MySqlException e)
-            {
-                System.Diagnostics.Debug.WriteLine("Unable to insert boards into db");
-                this.Connected = false;
-                return false;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
-        }
-
-        //get a list of the boards in the table
-        public List<Board> GetBoards()
-        {
-            List<Board> list = new List<Board>();
-
-            using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-            using (var cmd = conn.CreateCommand())
-            {
-                try
-                {
-                    conn.Open();
-                    cmd.CommandText = "SELECT * FROM schede";
-                    using (var dataReader = cmd.ExecuteReader())
-                    {
-                        while (dataReader.Read())
-                        {
-                            Board b = new Board(dataReader.GetInt32(0), dataReader.GetFloat(1), dataReader.GetFloat(2));
-                            list.Add(b);
-                        }
-                        this.Connected = true;
-                        return list;
-                    }
-                }
-                catch (MySqlException e)
-                {
-                    System.Diagnostics.Debug.WriteLine("Unable to retrieve boards information from db");
-                    this.Connected = false;
-                    return null;
-                }
-
-            }
-        }
-
-        //remove board from the table
-        public bool RemoveBoard(int id)
-        {
-            try
-            {
-                string query = String.Format("DELETE FROM schede WHERE ID_scheda='{0}'", id);
-
-                using (var conn = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (var cmd = conn.CreateCommand())
-                {
-                    conn.Open();
-                    cmd.CommandText = query;
-                    cmd.ExecuteNonQuery();
-                }
-                this.Connected = true;
-                return true;
-            }
-            catch (MySqlException e)
-            {
-                System.Diagnostics.Debug.WriteLine("Error when removing board");
-                this.Connected = false;
-                return false;
-            }
-            catch (Exception e)
-            {
-                return false;
-            }
-        }
+       
 
 
         //insert phones in the table 'posizioni'
