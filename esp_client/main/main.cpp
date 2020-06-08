@@ -5,8 +5,9 @@
 #include "esp_system.h"
 #include "esp_event.h"
 #include "driver/gpio.h"
+#include "esp_wifi.h"
+#include "nvs_flash.h"
 #include "string.h"
-#include "wifi.h"
 #include <sys/time.h>
 #include <sys/types.h>
 #include "sniffed_packet.h"
@@ -16,8 +17,7 @@
 #include <string>
 #include <iostream>
 
-
-#define WIFI_SSID "GULPO"
+#define WIFI_SSID "GULPO_2"
 #define WIFI_PASSWORD "f117f117bagonghi"
 #define WIFI_CHANNEL 1
 #define SNIFFING_TIME_SEC 60
@@ -28,23 +28,13 @@
 std::list<SniffedPacket> sniffed_packets;
 Client client{};
 const TickType_t send_task_delay = SNIFFING_TIME_SEC * 1000 / portTICK_PERIOD_MS;
+EventGroupHandle_t wifi_event_group;
 
 /**
- *  @brief set the time received by the server as the time of the system
- *         this is needed to synchronize all the esp boards
- *  @return success 
+ *  @brief empty callback for packet sniffing
  */
-bool setSystemTime(uint32_t epoch){
-    struct timeval tval;
-    tval.tv_sec = epoch;
-    tval.tv_usec = 0;
-
-    int16_t result = settimeofday(&tval, NULL);
-    if(result != 0){
-        return false;
-    }
-
-    return true;
+void wifiSnifferNullHandler(void *buf, wifi_promiscuous_pkt_type_t type){
+    return;
 }
 
 /**
@@ -72,6 +62,89 @@ void wifiSnifferHandler(void *buf, wifi_promiscuous_pkt_type_t type){
     // add packet to the sniffed packets
     sniffed_packets.emplace_back(wifi_pkt);
     std::cout << sniffed_packets.back().toString() << std::endl;
+}
+
+/**
+ * @brief callback for wifi events handling
+ * @note thanks to github.com/lucadentella/esp32-tutorial
+ */
+static esp_err_t event_handler(void *ctx, system_event_t *event)
+{
+    switch(event->event_id) {
+    case SYSTEM_EVENT_STA_START:
+        esp_wifi_connect();
+        break;
+	case SYSTEM_EVENT_STA_GOT_IP:
+        xEventGroupSetBits(wifi_event_group, BIT0);
+        break;
+	case SYSTEM_EVENT_STA_DISCONNECTED:
+		xEventGroupClearBits(wifi_event_group, BIT0);
+        break;
+	default:
+        break;
+    }
+	return ESP_OK;
+}
+
+/**
+ * @brief initialize wifi and connect
+ * @param wifi_ssid
+ * @param wifi_password
+ * @param wifi_channel
+ * @note thanks to github.com/lucadentella/esp32-tutorial
+ */
+void initializeWifi(const char* wifi_ssid, const char* wifi_password, uint8_t wifi_channel){
+    static wifi_config_t wifi_config = {};
+    strcpy((char*)wifi_config.sta.ssid, wifi_ssid);
+    strcpy((char*)wifi_config.sta.password, wifi_password);
+    std::cout << "Connecting to: " << wifi_ssid << std::endl;
+
+    wifi_event_group = xEventGroupCreate();
+    nvs_flash_init();
+    tcpip_adapter_init();
+    ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
+
+    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+    static wifi_country_t wifi_country = {.cc="IT", .schan=1, .nchan=13, .policy=WIFI_COUNTRY_POLICY_AUTO};
+    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_set_country(&wifi_country));
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+
+    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+    ESP_ERROR_CHECK(esp_wifi_start());
+    xEventGroupWaitBits(wifi_event_group, BIT0, false, true, portMAX_DELAY);
+
+    tcpip_adapter_ip_info_t ip_info;
+	ESP_ERROR_CHECK(tcpip_adapter_get_ip_info(TCPIP_ADAPTER_IF_STA, &ip_info));
+    std::cout << "Connected!" << std::endl;
+	std::cout << "IP Address:  " << ip4addr_ntoa(&ip_info.ip) << std::endl;
+	std::cout << "Subnet mask: " << ip4addr_ntoa(&ip_info.netmask) << std::endl;
+	std::cout << "Gateway:     " << ip4addr_ntoa(&ip_info.gw) << std::endl;
+
+    // All packets of the currently joined 802.11 network (with a specific SSID and channel) are captured
+    esp_wifi_set_promiscuous(true);
+    // Each time a packet is received, the registered callback function will be called
+    esp_wifi_set_promiscuous_rx_cb(&wifiSnifferNullHandler);
+    esp_wifi_set_channel(wifi_channel, WIFI_SECOND_CHAN_NONE);
+}
+
+/**
+ *  @brief set the time received by the server as the time of the system
+ *         this is needed to synchronize all the esp boards
+ *  @return success 
+ */
+bool setSystemTime(uint32_t epoch){
+    struct timeval tval;
+    tval.tv_sec = epoch;
+    tval.tv_usec = 0;
+
+    int16_t result = settimeofday(&tval, NULL);
+    if(result != 0){
+        return false;
+    }
+
+    return true;
 }
 
 /**
