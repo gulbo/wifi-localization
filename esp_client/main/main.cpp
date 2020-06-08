@@ -4,7 +4,6 @@
 #include "esp_wifi_types.h"
 #include "esp_system.h"
 #include "esp_event.h"
-#include "esp_event_loop.h"
 #include "driver/gpio.h"
 #include "string.h"
 #include "wifi.h"
@@ -17,6 +16,9 @@
 #include <string>
 #include <iostream>
 
+
+#define WIFI_SSID "GULPO"
+#define WIFI_PASSWORD "f117f117bagonghi"
 #define WIFI_CHANNEL 1
 #define SNIFFING_TIME_SEC 60
 #define SERVER_IP "192.168.1.17"
@@ -49,7 +51,7 @@ bool setSystemTime(uint32_t epoch){
  *  @brief callback for every packet sniffed
  *  Inserts the packet into the sniffed_packets
  */
-void wifi_sniffer_handler(void *buf, wifi_promiscuous_pkt_type_t type){
+void wifiSnifferHandler(void *buf, wifi_promiscuous_pkt_type_t type){
     // parse only valid packets
     if (buf == nullptr) 
         return;
@@ -87,13 +89,13 @@ void sendTask(void *parameters){
     while(true){
         // start sniffing
         std::cout << "New sniffing phase: starting data acquisition" << std::endl;
-        esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_handler);
+        esp_wifi_set_promiscuous_rx_cb(&wifiSnifferHandler);
         
         // sleep for sniffing
         vTaskDelay(send_task_delay);
 
         std::cout << "New send phase: interrupting data acquisition" << std::endl;
-        esp_wifi_set_promiscuous_rx_cb(&wifi_sniffer_nullhandler);
+        esp_wifi_set_promiscuous_rx_cb(&wifiSnifferNullHandler);
 
         if (!client.sendBoardID())
         {
@@ -158,10 +160,10 @@ void initializeClient()
 }
 
 int main(){
-    std::cout << "Initialize tcip adapter and wifi" << std::endl;
-    wifi_config();
-    wifi_sniffer_set_channel(WIFI_CHANNEL);
+    std::cout << "Initialize WIFI" << std::endl;
+    initializeWifi(WIFI_SSID, WIFI_PASSWORD, WIFI_CHANNEL);
 
+    std::cout << "Initialize Client" << std::endl;
     initializeClient();
 
     std::cout << "Create sniffing task" << std::endl;

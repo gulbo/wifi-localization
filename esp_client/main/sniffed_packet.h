@@ -2,7 +2,6 @@
 #define __SNIFFED_PACKET_H__
 
 #include "esp_wifi_types.h"
-#include "errors.h"
 #include <iostream>
 #include <string>
 
