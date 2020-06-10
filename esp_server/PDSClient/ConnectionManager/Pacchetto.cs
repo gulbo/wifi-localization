@@ -91,7 +91,7 @@ namespace PDSClient.ConnectionManager
             byte[] byte_ricevuti = new byte[512];
             bool global = false;
 
-            EspClient.ControlledRecv(socket, mac_byte, 6, canc_token);
+            EspServer.ControlledRecv(socket, mac_byte, 6, canc_token);
            
             //Controlla che sia un mac reale
 
@@ -102,11 +102,11 @@ namespace PDSClient.ConnectionManager
 
             PhysicalAddress mac = new PhysicalAddress(mac_byte);
 
-            EspClient.ControlledRecv(socket, byte_ricevuti, 2, canc_token);
+            EspServer.ControlledRecv(socket, byte_ricevuti, 2, canc_token);
             short rssi = BitConverter.ToInt16(byte_ricevuti, 0);
             rssi = IPAddress.NetworkToHostOrder(rssi);
 
-            EspClient.ControlledRecv(socket, byte_ricevuti, 2, canc_token);
+            EspServer.ControlledRecv(socket, byte_ricevuti, 2, canc_token);
             short lunghezza_ssid = BitConverter.ToInt16(byte_ricevuti, 0);
             lunghezza_ssid = IPAddress.NetworkToHostOrder(lunghezza_ssid);
             if (lunghezza_ssid < 0 || lunghezza_ssid > 32)
@@ -120,15 +120,15 @@ namespace PDSClient.ConnectionManager
             Debug.Assert(lunghezza_ssid >= 0);
             if (lunghezza_ssid > 0)
             {
-                EspClient.ControlledRecv(socket, byte_ricevuti, lunghezza_ssid, canc_token);
+                EspServer.ControlledRecv(socket, byte_ricevuti, lunghezza_ssid, canc_token);
                 ssid = System.Text.Encoding.ASCII.GetString(byte_ricevuti, 0, lunghezza_ssid > 0 ? lunghezza_ssid : 0);
             }
 
-            EspClient.ControlledRecv(socket, byte_ricevuti, 4, canc_token);
+            EspServer.ControlledRecv(socket, byte_ricevuti, 4, canc_token);
             int timestamp = BitConverter.ToInt32(byte_ricevuti, 0);
             timestamp = IPAddress.NetworkToHostOrder(timestamp);
 
-            EspClient.ControlledRecv(socket, byte_ricevuti, 4, canc_token);
+            EspServer.ControlledRecv(socket, byte_ricevuti, 4, canc_token);
             string checksum = BitConverter.ToString(byte_ricevuti, 0, LUNGHEZZA_CHECKSUM).Replace("-", "");
 
             Pacchetto pacchetto = new Pacchetto(mac, rssi, ssid, timestamp, checksum, id_scheda, global);

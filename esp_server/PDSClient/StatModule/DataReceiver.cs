@@ -14,7 +14,7 @@ namespace PDSClient.StatModule
     {
         private MainWindow _window;
         private int _nBoards;
-        private IPositionSender _positionSender;
+        private EspServer _esp_client;
         private StatCalc _statCalc;
         private Thread t;
         private CartesianChart scatterChart;
@@ -34,11 +34,11 @@ namespace PDSClient.StatModule
 
         public List<PhoneInfo> PhoneInfos { get { return phoneInfos; } }
 
-        public DataReceiver(MainWindow window,int nBoards, IPositionSender positionSender, DBConnect dbC, CartesianChart scatterChart, CartesianChart fiveMinutesChart, Action errorAction)
+        public DataReceiver(MainWindow window,int nBoards, EspServer esp_client, DBConnect dbC, CartesianChart scatterChart, CartesianChart fiveMinutesChart, Action errorAction)
         {
             _window = window;
             _nBoards = nBoards;
-            _positionSender = positionSender;
+            _esp_client = esp_client;
             _statCalc = new StatCalc(dbC);
             _errorAction = errorAction;
             _cts = new CancellationTokenSource();
@@ -152,7 +152,7 @@ namespace PDSClient.StatModule
                         System.Diagnostics.Debug.WriteLine("Cancellation token set in DataReceiver... terminating loop");
                         break;
                     }
-                    _positionSender.WaitAll();
+                    _esp_client.WaitAll();
                     System.Threading.Thread.Sleep(5000);
 
                     phoneInfos = _statCalc.GetLastMinutePositions(_nBoards, 1);

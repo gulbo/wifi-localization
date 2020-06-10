@@ -6,8 +6,6 @@ from packets_parser import PacketParser
 class Board:
     PROTO_CODE_LEN = 2
     PROTO_CODE_HI = "HI"
-    PROTO_CODE_OK = "OK"
-    PROTO_CODE_DE = "DE"
     PROTO_CODE_GO = "GO"
 
     def __init__(self, id, server_ip, server_port):
@@ -39,20 +37,15 @@ class Board:
         self.socket.sendall(message)
         self.debug_(f"Sent {message}")
 
-    def receiveOK(self):
+    def receiveHI(self):
         if self.socket is None:
-            raise RuntimeError(self.debug_(f"{self.PROTO_CODE_OK} error! Not connected!"))
+            raise RuntimeError(self.debug_(f"{self.PROTO_CODE_HI} error! Not connected!"))
         
         code = self.getMsgCode_()
-        if code != self.PROTO_CODE_OK:
-            raise RuntimeError(self.debug_(f"{self.PROTO_CODE_OK} error! received {code}"))
-
-        num_boards = self.receiveInt_()
-        if num_boards != 0:
-            self.debug_("The sniffing phase is always skipped! thus num_boards should be 0!")
-            raise RuntimeError(self.debug_(f"{self.PROTO_CODE_OK} error! received {num_boards}"))
+        if code != self.PROTO_CODE_HI:
+            raise RuntimeError(self.debug_(f"{self.PROTO_CODE_HI} error! received {code}"))
         
-        self.debug_(f"Received {code}{num_boards}")
+        self.debug_(f"Received {code}")
 
     def debug_(self, message):
         debug_message = f"Board{self.id} {message}"
@@ -80,15 +73,6 @@ class Board:
             chunks = chunks + chunk
             bytes_received = bytes_received + len(chunk)
         return int.from_bytes(chunks, byteorder='big') #the network is big endian
-
-    def sendDE(self):
-        if self.socket is None:
-            raise RuntimeError(self.debug_(f"{self.PROTO_CODE_DE} error! Not connected!"))
-        
-        code = self.PROTO_CODE_DE.encode(encoding='ASCII')
-        message = code + bytes((0,0,0,0))
-        self.socket.sendall(message)
-        self.debug_(f"Sent {message}")
 
     def receiveGO(self):
         if self.socket is None:
@@ -147,13 +131,9 @@ for device in devices:
 for device in devices:
     device.sendHI()
 
-# receive OK
+# receive HI
 for device in devices:
-    device.receiveOK()
-
-# send DE
-for device in devices:
-    device.sendDE()
+    device.receiveHI()
 
 # receive GO
 for device in devices:
