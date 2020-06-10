@@ -148,7 +148,6 @@
     <Compile Include="EspConfig.xaml.cs">
       <DependentUpon>EspConfig.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ConnectionManager\IPositionSender.cs" />
     <Compile Include="ConnectionManager\ConnException\MySocketException.cs" />
     <Compile Include="ConnectionManager\PhoneInfoComparer.cs" />
     <Compile Include="StartConfiguration.xaml.cs">
@@ -173,7 +172,7 @@
     <Compile Include="ConnectionManager\Scheda.cs" />
     <Compile Include="ConnectionManager\Circle.cs" />
     <Compile Include="ConnectionManager\DBConnect.cs" />
-    <Compile Include="ConnectionManager\EspClient.cs" />
+    <Compile Include="ConnectionManager\EspServer.cs" />
     <Compile Include="ConnectionManager\Pacchetto.cs" />
     <Compile Include="ConnectionManager\PhoneInfo.cs" />
     <Compile Include="ConnectionManager\Punto.cs" />

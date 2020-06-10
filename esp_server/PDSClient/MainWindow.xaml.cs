@@ -24,7 +24,7 @@ namespace PDSClient
 
         DBConnect DBConnection;
         StaticChart sc;
-        EspClient client;
+        EspServer client;
         DataReceiver dr;
 
         public MainWindow(DBConnect DBConnection, List<Scheda> boards)
@@ -75,7 +75,7 @@ namespace PDSClient
             _boards = boards;
             this.DBConnection = DBConnection;
 
-            client = new EspClient(_boards.Count, DBConnection, connectionErrorAction);
+            client = new EspServer(_boards.Count, DBConnection, connectionErrorAction);
             dr = new DataReceiver(this,_boards.Count, client, DBConnection, scatterplot, fiveMinutes, keyNotFoundAction);
             sc = new StaticChart(DBConnection, CheckListbox,movement,temporalDistribution);
             //sc.CreateHeatChart(-1,-1);

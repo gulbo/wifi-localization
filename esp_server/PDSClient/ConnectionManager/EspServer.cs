@@ -11,10 +11,10 @@ using System.Runtime.InteropServices;
 
 namespace PDSClient.ConnectionManager
 {
-    class EspClient : IPositionSender
+    public class EspServer
     {
 
-        private TcpListener server;
+        private TcpListener _tcp_listener;
         private List<Thread> threads;
         private ManualResetEvent[] mres1, mres2, countMRE;
         private AutoResetEvent[] phoneInfo_are;
@@ -26,13 +26,13 @@ namespace PDSClient.ConnectionManager
         private CancellationToken[] ctArray;
         public bool Running { get; private set; }
 
-        public int NBoards { get; private set; }
+        public int BoardsNumber { get; private set; }
 
-        public EspClient(int nBoards, DBConnect DBConnection, Action ConnectionErrorAction)
+        public EspServer(int nBoards, DBConnect DBConnection, Action ConnectionErrorAction)
         {
             
-            NBoards = nBoards;
-            server = new TcpListener(IPAddress.Any, 7999);
+            BoardsNumber = nBoards;
+            _tcp_listener = new TcpListener(IPAddress.Any, 7999);
             this.DBConnection = DBConnection;
             this.ConnectionErrorAction = ConnectionErrorAction;
             threads = new List<Thread>();
@@ -50,7 +50,7 @@ namespace PDSClient.ConnectionManager
                 mac_addresses[i] = new byte[6];
             }
 
-            this.server.Start();
+            this._tcp_listener.Start();
 
             for (int i = 0; i < nBoards; i++)
             {
@@ -80,7 +80,7 @@ namespace PDSClient.ConnectionManager
             try
             {
                 System.Diagnostics.Debug.WriteLine((int)index + ") Before acceptSocket");
-                s = server.AcceptSocket();
+                s = _tcp_listener.AcceptSocket();
                 SetKeepAlive(s, true, 3000, 500);
                 System.Diagnostics.Debug.WriteLine((int)index + ") After acceptSocket");
                 ReceivePkt(s, index);
@@ -135,7 +135,7 @@ namespace PDSClient.ConnectionManager
                 dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                 {
                     System.Windows.MessageBox.Show(errMsg, "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-                    server.Stop();
+                    _tcp_listener.Stop();
                     Environment.Exit(0);
                 }));
             }
@@ -266,6 +266,7 @@ namespace PDSClient.ConnectionManager
             byte[] mac_addr = new byte[6];
             CancellationToken ct = ctArray[index];
 
+            // ricevo HI
             ControlledRecv(s, receiveBuffer, 2, ct);
             System.Diagnostics.Debug.WriteLine(index + ": new connection opened");
             String msg = Encoding.ASCII.GetString(receiveBuffer, 0, 2);
@@ -277,89 +278,44 @@ namespace PDSClient.ConnectionManager
                 return -1;
             }
 
+            // ricevo BoardID 4 bytes
             ControlledRecv(s, receiveBuffer, 4, ct);
             idBoard = BitConverter.ToInt32(receiveBuffer, 0);
             idBoard = IPAddress.NetworkToHostOrder(idBoard);
             System.Diagnostics.Debug.WriteLine(index + ": idboard = " + idBoard);
             msg = msg + " " + idBoard;
 
+            // ricevo MAC 6 bytes
             ControlledRecv(s, receiveBuffer, 6, ct);
             Array.Copy(receiveBuffer, 0, mac_addr, 0, 6);
             Array.Copy(mac_addr, mac_addresses[index], 6);
             PhysicalAddress espMac = new PhysicalAddress(mac_addr);
             System.Diagnostics.Debug.WriteLine(index + ": mac received = " + espMac.ToString());
             msg = msg + " " + espMac.ToString();
- 
-            //attendo che tutti i thread abbiano inserito il mac address alla posizione relativa e resetto l'evento
+
+            //rispondo HI
+            msg = "HI";
+            Encoding.ASCII.GetBytes(msg, 0, 2, receiveBuffer, 0);
+            System.Diagnostics.Debug.WriteLine(index + ": sending HI to my board");
+            s.Send(receiveBuffer, 2, SocketFlags.None);
+
+            // attendo che tutti i thread abbiano inserito il mac address alla posizione relativa e resetto l'evento
             System.Diagnostics.Debug.WriteLine(index + ": setting mre and waiting for the other boards to receive their mac");
             mre1.Set();
             ManualResetEvent.WaitAll(mres1);
             mre2.Reset();
             System.Diagnostics.Debug.WriteLine(index + ": woken up from WaitAll. All macs have been received");
 
-            //response OK
-            msg = "OK";
-            //TODO rimpiazzare
-            int n = 0;
-            //int n = NBoards - 1;
-            //n = IPAddress.HostToNetworkOrder(n);
-            Encoding.ASCII.GetBytes(msg, 0, 2, receiveBuffer, 0);
-            Array.Copy(BitConverter.GetBytes(n), 0, receiveBuffer, 2, 4);
-            System.Diagnostics.Debug.WriteLine(index + ": sending OK to my board");
-            s.Send(receiveBuffer, 6, SocketFlags.None);
-            int offset = 0;
-            if(n != 0)
-            {
-                for (int i = 0; i < NBoards; i++)
-                {
-                    if (i != index)
-                    {
-                        Array.Copy(mac_addresses[i], 0, receiveBuffer, offset, 6);
-                        offset += 6;
-                    }
-                }
-                System.Diagnostics.Debug.WriteLine(index + ": sending list of macs to my board");
-                s.Send(receiveBuffer, offset, SocketFlags.None);
-            }
-            
-            //parte del DE
-            /*ControlledRecv(s, receiveBuffer, 6);
-
-            msg = Encoding.ASCII.GetString(receiveBuffer, 0, 2);
-            System.Diagnostics.Debug.WriteLine("DE part, msg received: " + msg);
-            n = BitConverter.ToInt32(receiveBuffer, 2);
-            n = IPAddress.NetworkToHostOrder(n);*/
-
-            //TODO da implementare riconoscimento e verifica dei MAC
             mre1.Reset();
-            if(n != 0)
-            {
-                System.Diagnostics.Debug.WriteLine(index + ") Entering sniffing phase");
-                sniffingPhase(s, mre2, index, ref verifiedBoards);
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine(index + ") skipping sniffing phase");
-                //receive DE
-                ControlledRecv(s, receiveBuffer, 2, ct);
-                msg = Encoding.ASCII.GetString(receiveBuffer, 0, 2);
-                System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): received " + msg);
+     
+            //invia GO timestamp
+            msg = "GO";
+            Encoding.ASCII.GetBytes(msg, 0, 2, receiveBuffer, 0);
+            System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): synch on GO send");
+            s.Send(receiveBuffer, 2, SocketFlags.None);
+            System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): GO sent");
 
-                //receive 0 
-                ControlledRecv(s, receiveBuffer, 4, ct);
-                n = BitConverter.ToInt32(receiveBuffer, 0);
-                n = IPAddress.NetworkToHostOrder(n);
-                System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): nBoards identified = " + n);
 
-                //send GO
-                msg = "GO";
-                Encoding.ASCII.GetBytes(msg, 0, 2, receiveBuffer, 0);
-                System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): synch on GO send");
-                s.Send(receiveBuffer, 2, SocketFlags.None);
-                System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): GO sent");
-            }
-
-            //OK/RT
             //questa fase è preceduta dalla sincronizzazione tra tutti i thread. Attendo che tutte le schede siano a questo punto e parto
             mre1.Set();
             ManualResetEvent.WaitAll(mres1);
@@ -371,95 +327,13 @@ namespace PDSClient.ConnectionManager
             return idBoard;
         }
 
-        public void sniffingPhase(Socket s, ManualResetEvent startMRE, int index, ref int verifiedBoards)
-        {
-            //startMRE serve per sincronizzare tutti i thread all'avvio della sniffing phase
-            //endMRE serve per attendere che tutti i thread hanno finito la sniffing phase, controllano il numero di
-            //board identificate da ogni board. Se pari a NBoards - 1, procedi
-            byte[] buffer = new byte[1024];
-            ManualResetEvent endMRE = countMRE[index];
-            CancellationToken ct = ctArray[index];
-            System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): starting sniffing phase");
-            System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): synchronizing at start...");
-            startMRE.Set();
-            ManualResetEvent.WaitAll(mres2);
-            System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): woke up from sync");
-            while (true)
-            {
-                System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): waiting on recv...");
-                ControlledRecv(s, buffer, 2, ct);
-                String msg = Encoding.ASCII.GetString(buffer, 0, 2);
-                System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): received " + msg);
-                if (msg.Equals("PN"))
-                {
-                    System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "):PN message received");
-                    continue;
-                }
-                if (msg.Equals("DE"))
-                {
-                    //ultimo ping dalle schede, verifico l'intero ricevuto
-                    ControlledRecv(s, buffer, 4, ct);
-                    int n = BitConverter.ToInt32(buffer, 0);
-                    n = IPAddress.NetworkToHostOrder(n);
-                    System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): nBoards identified = " + n);
-                    System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): NBoards variable is = " + NBoards);
-
-                    if(n == NBoards - 1)
-                    {
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): number is fine, all boards identified");
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): before is " + verifiedBoards);
-                        Interlocked.Increment(ref verifiedBoards);
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): after is " + verifiedBoards);
-                    }
-                    System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): going to sleep at endMRE");
-
-                    endMRE.Set();
-                    ManualResetEvent.WaitAll(countMRE);
-                    startMRE.Reset();
-                    System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): woken up from endMRE sleep");
-                    System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): value of count is: " + verifiedBoards);
-                    if (verifiedBoards == NBoards)
-                    {
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): number is correct... Ending sniffing phase");
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): sending GO");
-                        msg = "GO";
-                        Encoding.ASCII.GetBytes(msg, 0, 2, buffer, 0);
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): synch on GO send");
-                        startMRE.Set();
-                        ManualResetEvent.WaitAll(mres2);
-                        endMRE.Reset();
-                        s.Send(buffer, 2, SocketFlags.None);
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): GO sent");
-
-                        break;
-                    }
-                    else
-                    {
-                        if(n == NBoards - 1)
-                        {
-                            Interlocked.Decrement(ref verifiedBoards);
-                        }
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): number is incorrect... Sending RT");
-                        msg = "RT";
-                        Encoding.ASCII.GetBytes(msg, 0, 2, buffer, 0);
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): sync on RT send");
-                        startMRE.Set();
-                        ManualResetEvent.WaitAll(mres2);
-                        endMRE.Reset();
-                        s.Send(buffer, 2, SocketFlags.None);
-                        System.Diagnostics.Debug.WriteLine(index + "(" + Thread.CurrentThread.ManagedThreadId + "): RT sent");
-                    }
-                }
-            }
-        }
-
         public void Shutdown()
         {
             System.Diagnostics.Debug.WriteLine("Shutting down operation on EspClient starting...");
             Running = false;
             cts.Cancel();
 
-            for (int i = 0; i < NBoards; i++)
+            for (int i = 0; i < BoardsNumber; i++)
             {
                 if (threads[i].IsAlive)
                 {
@@ -473,9 +347,9 @@ namespace PDSClient.ConnectionManager
 
             }
 
-            server.Stop();
+            _tcp_listener.Stop();
 
-            for (int i = 0; i < NBoards; i++)
+            for (int i = 0; i < BoardsNumber; i++)
             {
                 System.Diagnostics.Debug.WriteLine("Joining " + i + " EspClient's thread");
                 var result = threads[i].Join(1000);
