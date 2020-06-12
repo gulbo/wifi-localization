@@ -66,7 +66,7 @@
                 <dragablz:TabablzControl.InterTabController>
                     <dragablz:InterTabController/>
                 </dragablz:TabablzControl.InterTabController>
-                <TabItem Name="Scatter" Header="REAL TIME POSITION" >
+                <TabItem Name="Scatter" Header="Posizione in tempo reale" >
                     
                     <Grid >
                         <Grid.RowDefinitions>
@@ -74,24 +74,16 @@
                             <RowDefinition Height="80*" />
                             <RowDefinition Height="10*" />
                         </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*"></ColumnDefinition>
-                            <ColumnDefinition Width="78*"></ColumnDefinition>
-                            <ColumnDefinition Width="20*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
 
-                        <Grid Grid.Column="0" Grid.Row="1">
-                            <TextBlock Text="[m]" Margin="0,4" FontSize="14" />
-                        </Grid>
-                        
-                        <Grid Grid.Column="1"  Grid.Row="0">
+                        <Grid  Grid.Row="0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="15*"></ColumnDefinition>
                                 <ColumnDefinition Width="30*"></ColumnDefinition>
                                 <ColumnDefinition Width="15*"></ColumnDefinition>
                                 <ColumnDefinition Width="40*"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Find MAC:" Margin="25,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            
+                            <TextBlock Grid.Column="0" Text="trova MAC:" Margin="25,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" />
                             
                             <Grid x:Name="MACTextBoxGrid" Grid.Column="1" Height="30" Margin="0,10,0,5" >
                                 <TextBox   Name="MAC" BorderThickness="1" Margin="0,0,0,4" ForceCursor="True" Background="Transparent" FontSize="14" MaxLength="17" FontStretch="Expanded" CharacterCasing="Upper" SelectionBrush="#FF00867D"/>
@@ -114,7 +106,7 @@
                                     Grid.Column="2"
                                     Foreground="black"
                                     Background ="#ff9800"
-                                    Content="Search"
+                                    Content="Cerca"
                                     Margin="0,10,0,5"
                                     Height="30"
                                     MaxWidth="90"
@@ -131,10 +123,33 @@
                                     Visibility="Hidden"
                                     Click="RemoveMac" FontSize="12" />
 
+                            <Grid Grid.Column="3" Grid.Row="0">
+                                
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30*"></ColumnDefinition>
+                                    <ColumnDefinition Width="30*"></ColumnDefinition>
+                                    <ColumnDefinition Width="30*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                                    <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="MAC nascosti totali:"/>
+                                    <TextBlock x:Name="total" Margin="10,0,0,0" Height="23" TextWrapping="Wrap" Foreground="#FFFF9800" FontWeight="Bold" Width="50"  />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="MAC nascosti correlati:"/>
+                                    <TextBlock x:Name="correlated" Margin="10,0,0,0"  Height="23" TextWrapping="Wrap" Foreground="#FFFF9800" FontWeight="Bold" Width="50" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,20,0">
+                                    <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Percentuale Errore:" />
+                                    <TextBlock x:Name="error" Margin="10,0,0,0"  Height="23" TextWrapping="Wrap" Foreground="#FFFF9800" FontWeight="Bold" Width="50"/>
+                                </StackPanel>
+
+                            </Grid>
+                            
                         </Grid>
                         
                         <Grid Grid.Column="1" Grid.Row="1">
-                            <lvc:CartesianChart x:Name="scatterplot" LegendLocation="Right"  Grid.Row="0" >
+                            <lvc:CartesianChart x:Name="scatterplot" LegendLocation="Left"  Grid.Row="0" >
                             </lvc:CartesianChart>
                         </Grid>
 
@@ -143,29 +158,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <Grid Grid.Row="0">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="24*"/>
-                                    <RowDefinition Height="21*"/>
-                                    <RowDefinition Height="55*"/>
-
-                                </Grid.RowDefinitions>
-
-                                <StackPanel Grid.Row="1" Orientation="Vertical" Margin="10,10,10,0">
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Total hidden macs:" Width="160"/>
-                                        <TextBlock x:Name="total" Margin="0,0,0,0"  Height="23" TextWrapping="Wrap"  Width="50"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Correlated hidden macs:" Width="160"/>
-                                        <TextBlock x:Name="correlated" Margin="0,0,0,0"  Height="23" TextWrapping="Wrap"  Width="50"/>
-                                    </StackPanel>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Error:" Width="160" />
-                                        <TextBlock x:Name="error" Margin="0,0,0,0"  Height="23" TextWrapping="Wrap"  Width="50"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Grid>
+                            
                             <Grid Grid.Row="1">
                                 
                             </Grid>

@@ -45,7 +45,7 @@ namespace PDSClient
                     return;
                 }
                 this.ConnectionErrorMutex.ReleaseMutex();
-                System.Windows.MessageBox.Show("Error sending/receiving information from boards. Please check connection and the boards and then reboot the system.",
+                System.Windows.MessageBox.Show("Errore inviando/ricevendo pacchetti dalla scheda. Controlla la connessione e le schede infine riavvia il sistema.",
                     "Alert",
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Error);
@@ -59,7 +59,7 @@ namespace PDSClient
 
             Action keyNotFoundAction = new Action(() =>
             {
-                System.Windows.MessageBox.Show("IdBoards(s) set in Configuration are wrong. Please reboot the system with the correct list of idBoards.",
+                System.Windows.MessageBox.Show("Le schede impostate nella configurazione sono sbagliate. Riavvia il sistema con la lista di schede corretta.",
                     "Error",
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Error);
@@ -150,7 +150,7 @@ namespace PDSClient
             {
                 if (startDate.Value >= endDate.Value)
                 {
-                    System.Windows.MessageBox.Show("Invalid date range", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                    System.Windows.MessageBox.Show("Intervallo di date non valido", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                     return;
                 }
                 DateTime _startDate = (DateTime)startDate.Value;
@@ -214,7 +214,7 @@ namespace PDSClient
             {
                 if (sDate.Value >= eDate.Value)
                 {
-                    System.Windows.MessageBox.Show("Invalid date range", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                    System.Windows.MessageBox.Show("Intervallo di date non valido", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                     return;
                 }
                 DateTime _startDate = (DateTime)sDate.Value;
@@ -243,21 +243,21 @@ namespace PDSClient
                     }
                     else {
                         invalid = true;
-                        errMsg = "MAC address contains invalid characters!";
+                        errMsg = "L'indirizzo MAC contiene caratteri non validi!";
                         break;
                     }
                 }
                 if (MAC.Text.Length < 17)
                 {
                     invalid = true;
-                    errMsg = "Invalid MAC address";
+                    errMsg = "indirizzo MAC non valido";
                 }
 
             }
             else if(MAC.Text == "")
             {
                 invalid = true;
-                errMsg = "no MAC inserted";
+                errMsg = "Nessun indirizzo MAC inserito";
             }
             if (!invalid)
             {
@@ -269,7 +269,7 @@ namespace PDSClient
                // dr.SearchMac(MAC.Text);
             }
             else
-                System.Windows.MessageBox.Show(errMsg, "Attention", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                System.Windows.MessageBox.Show(errMsg, "Attention ", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
         }
 
         private void RemoveMac(object sender, System.Windows.RoutedEventArgs e)
