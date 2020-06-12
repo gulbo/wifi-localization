@@ -51,40 +51,46 @@ namespace PDSClient.StatModule
             selectedPhonePos = new ChartValues<PhoneInfo>();
             scatterChart.Series.Add(new ScatterSeries(boardsPos)
             {
-                Title = "Board",
+                Title = "Schede",
                 PointGeometry = DefaultGeometries.Triangle,
-                Fill = System.Windows.Media.Brushes.Green
+                Fill = System.Windows.Media.Brushes.DarkGreen
 
             }) ;
             scatterChart.Series.Add(new ScatterSeries(phonePos)
             {
-                Title = "Visible Devices",
+                Title = "Dispositivi Visibili",
                 PointGeometry = DefaultGeometries.Diamond,
-                Fill = System.Windows.Media.Brushes.OrangeRed
+                Fill = System.Windows.Media.Brushes.Orange,
+                
             });
             scatterChart.Series.Add(new ScatterSeries(hiddenPhonePos)
             {
-                Title = "Hidden Devices"
+                Title = "Dispositivi Nascosti",
+                PointGeometry = DefaultGeometries.Square,
+                Fill = System.Windows.Media.Brushes.Purple
             });
 
             scatterChart.Series.Add(new ScatterSeries(selectedPhonePos)
             {
-                Title = "Selected MAC",
-                Fill =System.Windows.Media.Brushes.Green
+                Title = "MAC selezionato",
+                PointGeometry = DefaultGeometries.Circle,
+                Fill =System.Windows.Media.Brushes.DarkRed
             });
 
             scatterChart.AxisX.Add(new Axis
             {
                 MinValue = -2,
                 MaxValue = 2,
-                LabelFormatter = x => Math.Round(x, 2).ToString()
+                LabelFormatter = x => Math.Round(x, 2).ToString(),
+                Title = "posizione [m]"
             });
 
             scatterChart.AxisY.Add(new Axis
             {
                 MinValue = -2,
                 MaxValue = 2,
-                LabelFormatter = x => Math.Round(x, 2).ToString()
+                LabelFormatter = x => Math.Round(x, 2).ToString(),
+                Title = "posizione [m]"
             });
 
             InitializeFiveMinuteChart();
@@ -94,13 +100,13 @@ namespace PDSClient.StatModule
 
             xAxis.Separator.Step = 1;
             xAxis.FontSize = 15;
-            xAxis.Title = "Time [minutes]";
+            xAxis.Title = "Tempo [minuti]";
 
             yAxis.FontSize = 15;
-            yAxis.Title = "Device number";
-            yAxis.Separator.Step = 2;
+            yAxis.Title = "Numero dispositivi";
+            yAxis.Separator.Step = 1;
             xAxis.MinValue = 0;
-            xAxis.MaxValue = 5;
+            xAxis.MaxValue = 20;
             yAxis.MinValue = 0;
             yAxis.MaxValue = 10;
 
@@ -116,7 +122,7 @@ namespace PDSClient.StatModule
             scatterChart.Series[3].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
             scatterChart.Series[3].Values = selectedPhonePos;
 
-            scatterChart.Series[0].LabelPoint = point => string.Format("IdBoard: {0}\n X:{1} Y:{2}",
+            scatterChart.Series[0].LabelPoint = point => string.Format("ID scheda: {0}\n X:{1} Y:{2}",
                                                             ((Scheda)point.Instance).ID_scheda,
                                                             Math.Round(((Scheda)point.Instance).Punto.Ascissa, 2),
                                                             Math.Round(((Scheda)point.Instance).Punto.Ordinata, 2));
@@ -297,7 +303,7 @@ namespace PDSClient.StatModule
             Axis xAxis = fiveMinutesChart.AxisX[0];
             Axis yAxis = fiveMinutesChart.AxisY[0];
             
-            if(fiveMinutesPhone.Count > 5)
+            if(fiveMinutesPhone.Count > 20)
             {
                 xAxis.MaxValue = fiveMinutesPhone.Count;
                 xAxis.MinValue = fiveMinutesPhone.Count - 5;
@@ -336,33 +342,33 @@ namespace PDSClient.StatModule
 
             fiveMinutesChart.Series.Add(new LineSeries(fiveMinutesPhone)
             {
-                PointGeometry = DefaultGeometries.Diamond,
+                PointGeometry = DefaultGeometries.Circle,
                 PointGeometrySize = 20,
                 StrokeThickness = 4,
                 Fill = System.Windows.Media.Brushes.Transparent,
-                Stroke = System.Windows.Media.Brushes.Black,
-                Title = "Total Devices"
+                Stroke = System.Windows.Media.Brushes.DarkGreen,
+                Title = "Dispositivi"
             });
 
             fiveMinutesChart.Series.Add(new LineSeries(fiveMinutesHiddenPhone)
             {
-                PointGeometry = DefaultGeometries.Diamond,
+                PointGeometry = DefaultGeometries.Circle,
                 PointGeometrySize = 20,
                 StrokeThickness = 4,
                 Fill = System.Windows.Media.Brushes.Transparent,
-                Stroke = System.Windows.Media.Brushes.Blue,
-                Title= "Hidden Devices"
+                Stroke = System.Windows.Media.Brushes.Purple,
+                Title= "Dispositivi Nascosti"
    
             });
 
             fiveMinutesChart.Series.Add(new LineSeries(fiveMinutesVisiblePhone)
             {
-                PointGeometry = DefaultGeometries.Diamond,
+                PointGeometry = DefaultGeometries.Circle,
                 PointGeometrySize = 20,
                 StrokeThickness = 4,
                 Fill = System.Windows.Media.Brushes.Transparent,
-                Stroke = System.Windows.Media.Brushes.Red,
-                Title = "Visible Devices"
+                Stroke = System.Windows.Media.Brushes.Orange,
+                Title = "Dispositivi Visibili"
             });
 
         }
