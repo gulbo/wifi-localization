@@ -513,7 +513,7 @@ namespace PDSClient.ConnectionManager
                 if (nBoards < 2)
                     return null;
 
-                int time = EspServer.GetUnixTimestamp() - 60;
+                int time = EspServer.getUnixEpoch() - 60;
 
                 //Create a list to store the result
                 List<PhoneInfo> list = new List<PhoneInfo>();
@@ -587,7 +587,7 @@ namespace PDSClient.ConnectionManager
         {
             if (nBoards < 2)
                 return -1;
-            int time = EspServer.GetUnixTimestamp() - 300;
+            int time = EspServer.getUnixEpoch() - 300;
             string query = " SELECT COUNT(DISTINCT P1.MAC)" + VarQuery(nBoards,time,threshold);
 
             using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
@@ -760,7 +760,7 @@ namespace PDSClient.ConnectionManager
 
         public List<string> CountHiddenPhones(PhoneInfo p, double threshold)
         {
-            int time = EspServer.GetUnixTimestamp() - 60;
+            int time = EspServer.getUnixEpoch() - 60;
             List<string> list = new List<string>();
 
             string query = "SELECT MAC " +
