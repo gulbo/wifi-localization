@@ -71,29 +71,14 @@ uint32_t Client::start()
     std::cout << "HI sent" << std::endl;
     
     // wait for OK reponse from the server
-    std::cout << "Waiting OK..." << std::endl;
+    std::cout << "Waiting HI..." << std::endl;
     std::string code;
     if(!readProtocolCode_(code))
         throw std::runtime_error("Invalid code received: " + code);
-    if(code != ProtocolCode::OK)
-        throw std::runtime_error("Waiting for OK, received : " + code);
+    if(code != ProtocolCode::HI)
+        throw std::runtime_error("Waiting for HI, received : " + code);
         
-    std::cout << "Received OK" << std::endl;
-
-    // read how many boards are there
-    // should be always 0 for now
-    int32_t nmacs;
-    if(!readInt(nmacs))
-        throw std::runtime_error("Unexpected value received: " + std::to_string(nmacs));
-
-    if(nmacs != 0){
-        std::cout << "Error on nmacs! 0!=" << std::to_string(nmacs) << std::endl;
-        throw std::runtime_error("DE phase called but not implemented!");
-    }
-
-    // send DE 0
-    if(!sendDE_(0))
-        throw std::runtime_error("Error on sendDE");
+    std::cout << "Received HI" << std::endl;
     
     // wait for GO code
     std::cout << "Waiting for GO..." << std::endl;
@@ -221,24 +206,6 @@ bool Client::sendInt(const uint32_t& value)
         }
         return false;
     }
-    return true;
-}
-
-bool Client::sendDE_(int32_t esp_found){
-    assert(is_connected_);
-    uint8_t buff[MAX_MESSAGE_LENGTH];
-
-	printf("Sending DE %d to server\n", esp_found);
-    memcpy(buff, ProtocolCode::DE.c_str(), ProtocolCode::CODE_LENGTH);
-    int32_t esp_found_net = htonl(esp_found);
-    memcpy(&(buff[ProtocolCode::CODE_LENGTH]), &esp_found_net, sizeof(esp_found_net));
-    size_t message_length = ProtocolCode::CODE_LENGTH + sizeof(esp_found_net);
-
-    int res = ::send(socket_, buff, message_length, 0);
-    if(res != message_length){
-        return false;
-    }
-
     return true;
 }
 
