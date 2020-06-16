@@ -19,14 +19,12 @@ namespace PDSClient.ConnectionManager
         private CancellationTokenSource cancellation_token_source_;
         private int boards_number_;
         private bool is_running_;
-        private EspBoard[] esp_boards_;
         private List<Thread> board_handlers_;
         private Thread connection_handler_;
 
         public EspServer(int boards_number, DBConnect DBConnection, Action ConnectionErrorAction)
         {
             boards_number_ = boards_number;
-            esp_boards_ = new EspBoard[boards_number];
             tcp_listener_ = new TcpListener(IPAddress.Any, ESP_SERVER_PORT);
             board_handlers_ = new List<Thread>();
             is_running_ = false;
@@ -49,7 +47,8 @@ namespace PDSClient.ConnectionManager
         
         ~EspServer()
         {
-            stop();
+            if (is_running_)
+                stop();
         }
 
         public void connectionHandler()
@@ -58,7 +57,8 @@ namespace PDSClient.ConnectionManager
             writeDebugLine_("Handler delle connessioni in ingresso avviato");
             is_running_ = true;
 
-            while (true)
+            CancellationToken token = cancellation_token_source_.Token;
+            while (!token.IsCancellationRequested)
             {
                 Socket socket = null;
                 var dispatcher = System.Windows.Application.Current.Dispatcher;
@@ -89,6 +89,7 @@ namespace PDSClient.ConnectionManager
                 board_handler.Start(socket);
                 board_handlers_.Add(board_handler);
             }
+            writeDebugLine_("ConnectionHandler fermato");
         }
 
         public void boardHandler(object arg)
@@ -96,40 +97,36 @@ namespace PDSClient.ConnectionManager
             Socket socket = (Socket) arg;
             CancellationToken token = cancellation_token_source_.Token;
             EspBoard board = new EspBoard(socket, token, time_sync_events_);
-            if (board.initialize())
+            
+            try
             {
-                writeDebugLine_("Nuova board inizializzata");
-                esp_boards_[board.getBoardID() - 1] = board; //sovrascrivere la board vecchia?
-
-                while (!token.IsCancellationRequested)
+                if (board.initialize())
                 {
-                    // ricevo i pacchetti
-                    List<Pacchetto> packet_list = board.receivePackets();
+                    writeDebugLine_("Nuova board inizializzata");
 
-                    // inserisco i pacchetti nel DB
-                    DBConnection.InsertPacchetto(packet_list);
-                    packets_ready_events[board.getBoardID() -1].Set();
+                    while (!token.IsCancellationRequested)
+                    {
+                        // ricevo i pacchetti
+                        List<Pacchetto> packet_list = board.receivePackets();
+
+                        // inserisco i pacchetti nel DB
+                        DBConnection.InsertPacchetto(packet_list);
+                        packets_ready_events[board.getBoardID() -1].Set();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                writeDebugLine_("Board" + board.getBoardID() + " connessione persa");
+                if (socket != null || socket.Connected)
+                {
+                    socket.Close();
+                    //var dispatcher = System.Windows.Application.Current.Dispatcher;
+                    //dispatcher.BeginInvoke(ConnectionErrorAction, DispatcherPriority.Send);
                 }
             }
         }
   
-        private void OrderedExit(Socket s, Dispatcher dispatcher)
-        {
-            if (s != null)
-            {
-                s.Close();
-            }
-
-            if (is_running_)
-            {
-                if (s != null && s.Connected)
-                {
-                    s.Close();
-                }
-                dispatcher.BeginInvoke(ConnectionErrorAction, DispatcherPriority.Send);
-            }
-        }
-
         public static Int32 getUnixEpoch()
         {
             return (Int32)(DateTime.Now.ToLocalTime().Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
@@ -155,13 +152,12 @@ namespace PDSClient.ConnectionManager
             cancellation_token_source_.Cancel();
 
             // interrompo il connection handler
+            tcp_listener_.Stop();
             if (connection_handler_.IsAlive)
                 connection_handler_.Interrupt();
-            var result = connection_handler_.Join(1000);
+            var result = connection_handler_.Join(100);
             if (!result)
                 connection_handler_.Abort();
-
-            tcp_listener_.Stop();
 
             // interrompo i board handlers
             for (int i = 0; i < boards_number_; i++)
@@ -173,7 +169,7 @@ namespace PDSClient.ConnectionManager
 
             foreach (Thread thread in board_handlers_)
             {
-                result = thread.Join(1000);
+                result = thread.Join(100);
                 if (!result)
                     thread.Abort();
             }
