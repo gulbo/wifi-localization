@@ -106,13 +106,6 @@ class Client
         bool sendHi_();
 
         /**
-         * @brief sends ["DE" #esp_found ]
-         *        //TODO remove it when we change the protocol. Right now we cannot remove it yet 
-         * @return successful
-         */
-        bool sendDE_(int32_t esp_found);
-
-        /**
         * @brief read a message and returns its code
         * @param code output argument for the code
         * @return successful

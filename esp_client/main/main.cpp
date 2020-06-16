@@ -17,13 +17,13 @@
 #include <string>
 #include <iostream>
 
-#define WIFI_SSID "GULPO_2"
+#define WIFI_SSID "GULPO"
 #define WIFI_PASSWORD "f117f117bagonghi"
 #define WIFI_CHANNEL 1
 #define SNIFFING_TIME_SEC 60
-#define SERVER_IP "192.168.1.17"
+#define SERVER_IP "192.168.43.214"
 #define SERVER_PORT 7999
-#define BOARD_ID 2
+#define BOARD_ID 1
 
 std::list<SniffedPacket> sniffed_packets;
 Client client{};
