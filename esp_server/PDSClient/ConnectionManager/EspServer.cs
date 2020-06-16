@@ -11,16 +11,16 @@ namespace PDSClient.ConnectionManager
     public class EspServer
     {
         private const int ESP_SERVER_PORT = 7999;
-        private TcpListener tcp_listener_;
-        private ManualResetEvent[] time_sync_events_;
-        private AutoResetEvent[] packets_ready_events;
-        private DBConnect DBConnection;
-        private Action ConnectionErrorAction { get; set; }
-        private CancellationTokenSource cancellation_token_source_;
-        private int boards_number_;
-        private bool is_running_;
-        private List<Thread> board_handlers_;
-        private Thread connection_handler_;
+        private TcpListener tcp_listener_;                              /** listener per nuove connessioni tcp in ingresso */
+        private Thread connection_handler_;                             /** thread che gestisce le connessioni in ingresso */
+        private ManualResetEvent[] time_sync_events_;                   /** evento per sincronizzare il tempo su tutte le boards */    
+        private AutoResetEvent[] packets_ready_events;                  /** evento per segnalare l'avvenuto inserimento dei pacchetti nel DB */
+        private DBConnect db_connect;                                   /** connessione con il DB */
+        private Action ConnectionErrorAction { get; set; }              /** Action per segnalare un errore di connessione **/
+        private CancellationTokenSource cancellation_token_source_;     /** generatore di Tokens per fermare i threads in esecuzione */
+        private int boards_number_;                                     /** numbero di boards presenti */
+        private List<Thread> board_handlers_;                           /** lista dei threads che gestiscono le connessioni con le boards */
+        private bool is_running_;                                      
 
         public EspServer(int boards_number, DBConnect DBConnection, Action ConnectionErrorAction)
         {
@@ -28,7 +28,7 @@ namespace PDSClient.ConnectionManager
             tcp_listener_ = new TcpListener(IPAddress.Any, ESP_SERVER_PORT);
             board_handlers_ = new List<Thread>();
             is_running_ = false;
-            this.DBConnection = DBConnection;
+            this.db_connect = DBConnection;
             this.ConnectionErrorAction = ConnectionErrorAction;
             cancellation_token_source_ = new CancellationTokenSource();
 
@@ -51,6 +51,9 @@ namespace PDSClient.ConnectionManager
                 stop();
         }
 
+        /** 
+         * Gestisce le nuove richieste di connessione, su un thread a sé stante
+         */
         public void connectionHandler()
         {
             tcp_listener_.Start();
@@ -79,11 +82,12 @@ namespace PDSClient.ConnectionManager
                         tcp_listener_.Stop();
                         Environment.Exit(0);
                     }));
+
                 }
 
                 keepConnectionAlive_(socket, true, 4000, 500);
 
-                // creo un thread per gestire questa connessione
+                // creo un thread per gestire questa connessione con la board
                 Thread board_handler = new Thread(new ParameterizedThreadStart(this.boardHandler));
                 board_handler.Name = "ConnectionHandler";
                 board_handler.Start(socket);
@@ -92,6 +96,9 @@ namespace PDSClient.ConnectionManager
             writeDebugLine_("ConnectionHandler fermato");
         }
 
+        /** 
+         * Gestisce la connessione con una singola board
+         */
         public void boardHandler(object arg)
         {
             Socket socket = (Socket) arg;
@@ -103,6 +110,7 @@ namespace PDSClient.ConnectionManager
                 if (board.initialize())
                 {
                     writeDebugLine_("Nuova board inizializzata");
+                    signalBoardConnected_(board.getBoardID());
 
                     while (!token.IsCancellationRequested)
                     {
@@ -110,7 +118,7 @@ namespace PDSClient.ConnectionManager
                         List<Pacchetto> packet_list = board.receivePackets();
 
                         // inserisco i pacchetti nel DB
-                        DBConnection.InsertPacchetto(packet_list);
+                        db_connect.InsertPacchetto(packet_list);
                         packets_ready_events[board.getBoardID() -1].Set();
                     }
                 }
@@ -121,17 +129,43 @@ namespace PDSClient.ConnectionManager
                 if (socket != null || socket.Connected)
                 {
                     socket.Close();
-                    //var dispatcher = System.Windows.Application.Current.Dispatcher;
-                    //dispatcher.BeginInvoke(ConnectionErrorAction, DispatcherPriority.Send);
+                    if (board.getBoardID() != -1)
+                    {
+                        signalBoardDisconnected_(board.getBoardID());
+                    }
                 }
             }
         }
-  
+
+        private void signalBoardDisconnected_(int board_id)
+        {
+            var dispatcher = System.Windows.Application.Current.Dispatcher;
+            dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+            {
+                System.Windows.MessageBox.Show("Board" + board_id + " disconnessa. Riconnettere!", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }));
+        }
+
+        private void signalBoardConnected_(int board_id)
+        {
+            var dispatcher = System.Windows.Application.Current.Dispatcher;
+            dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+            {
+                System.Windows.MessageBox.Show("Board" + board_id + " connessa.", "Info", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            }));
+        }
+
+        /**
+         * Ottieni la Unix epoch in secondi
+         */
         public static Int32 getUnixEpoch()
         {
             return (Int32)(DateTime.Now.ToLocalTime().Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         }
 
+        /**
+         * Imposta il keepAliveTime e keepAliveInterval su una connessione
+         */
         private static void keepConnectionAlive_(Socket socket, bool on, uint keepAliveTime, uint keepAliveInterval)
         {
             int size = Marshal.SizeOf(new uint());
@@ -145,6 +179,9 @@ namespace PDSClient.ConnectionManager
             socket.IOControl(IOControlCode.KeepAliveValues, inOptionValues, null);
         }
 
+        /**
+         * Ferma il server
+         */
         public void stop()
         {
             writeDebugLine_("Fermando ESP Server...");
@@ -175,6 +212,9 @@ namespace PDSClient.ConnectionManager
             }
         }
 
+        /**
+         * Attenti che tutte le board abbiano inserito i pacchetti nel DB
+         */
         public void waitAllBoardsData()
         {
             AutoResetEvent.WaitAll(packets_ready_events);
