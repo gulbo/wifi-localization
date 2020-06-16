@@ -12,9 +12,7 @@ namespace PDSClient.ConnectionManager
     public class EspBoard
     {
         private Socket socket_;
-        private bool connected_;
         private int board_id_;
-        private byte[] mac_address_;
         private PhysicalAddress py_address_;
         private CancellationToken cancellation_token_;
         private ManualResetEvent[] time_sync_events_;
@@ -25,13 +23,11 @@ namespace PDSClient.ConnectionManager
             cancellation_token_ = token;
             time_sync_events_ = time_sync_events;
             board_id_ = -1;
-            connected_ = false;
-            mac_address_ = new byte[6];
         }
         
         ~EspBoard()
         {
-            if (socket_ == null || socket_.Connected)
+            if (socket_ != null || socket_.Connected)
                 socket_.Close();
         }
 
@@ -77,8 +73,10 @@ namespace PDSClient.ConnectionManager
 
             // ricevo MAC 6 bytes
             receiveBytes(buffer, 6);
-            Array.Copy(buffer, 0, mac_address_, 0, 6);
-            py_address_ = new PhysicalAddress(mac_address_);
+
+            Byte[] mac_address = new Byte[6];
+            Array.Copy(buffer, 0, mac_address, 0, 6);
+            py_address_ = new PhysicalAddress(mac_address);
             writeDebugLine_("MAC ottenuto " + py_address_);
 
             // rispondo HI
