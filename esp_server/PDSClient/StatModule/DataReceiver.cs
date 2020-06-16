@@ -14,7 +14,7 @@ namespace PDSClient.StatModule
     {
         private MainWindow _window;
         private int _nBoards;
-        private EspServer _esp_client;
+        private EspServer _esp_server;
         private StatCalc _statCalc;
         private Thread t;
         private CartesianChart scatterChart;
@@ -38,7 +38,7 @@ namespace PDSClient.StatModule
         {
             _window = window;
             _nBoards = nBoards;
-            _esp_client = esp_client;
+            _esp_server = esp_client;
             _statCalc = new StatCalc(dbC);
             _errorAction = errorAction;
             _cts = new CancellationTokenSource();
@@ -152,7 +152,7 @@ namespace PDSClient.StatModule
                         System.Diagnostics.Debug.WriteLine("Cancellation token set in DataReceiver... terminating loop");
                         break;
                     }
-                    _esp_client.WaitAll();
+                    _esp_server.waitAllBoardsData();
                     System.Threading.Thread.Sleep(5000);
 
                     phoneInfos = _statCalc.GetLastMinutePositions(_nBoards, 1);

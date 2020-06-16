@@ -24,7 +24,7 @@ namespace PDSClient
 
         DBConnect DBConnection;
         StaticChart sc;
-        EspServer client;
+        EspServer espServer;
         DataReceiver dr;
 
         public MainWindow(DBConnect DBConnection, List<Scheda> boards)
@@ -49,8 +49,8 @@ namespace PDSClient
                     "Alert",
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Error);
-                if (client != null)
-                    client.Shutdown();
+                if (espServer != null)
+                    espServer.stop();
                 if (dr != null)
                     dr.Shutdown();
 
@@ -64,8 +64,8 @@ namespace PDSClient
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Error);
 
-                if (client != null)
-                    client.Shutdown();
+                if (espServer != null)
+                    espServer.stop();
                 if (dr != null)
                     dr.Shutdown();
 
@@ -75,8 +75,8 @@ namespace PDSClient
             _boards = boards;
             this.DBConnection = DBConnection;
 
-            client = new EspServer(_boards.Count, DBConnection, connectionErrorAction);
-            dr = new DataReceiver(this,_boards.Count, client, DBConnection, scatterplot, fiveMinutes, keyNotFoundAction);
+            espServer = new EspServer(_boards.Count, DBConnection, connectionErrorAction);
+            dr = new DataReceiver(this,_boards.Count, espServer, DBConnection, scatterplot, fiveMinutes, keyNotFoundAction);
             sc = new StaticChart(DBConnection, CheckListbox,movement,temporalDistribution);
             //sc.CreateHeatChart(-1,-1);
             txtB.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
@@ -90,8 +90,8 @@ namespace PDSClient
             for (int intCounter = App.Current.Windows.Count - 1; intCounter >= 0; intCounter--)
                 App.Current.Windows[intCounter].Close();
 
-            if (client != null)
-                client.Shutdown();
+            if (espServer != null)
+                espServer.stop();
             if (dr != null)
                 dr.Shutdown();
 
