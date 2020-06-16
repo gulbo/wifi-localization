@@ -144,6 +144,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ConnectionManager\EspBoard.cs" />
     <Compile Include="ConnectionManager\ConnException\MyThreadExitException.cs" />
     <Compile Include="EspConfig.xaml.cs">
       <DependentUpon>EspConfig.xaml</DependentUpon>

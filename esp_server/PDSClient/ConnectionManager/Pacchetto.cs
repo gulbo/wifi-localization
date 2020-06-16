@@ -80,8 +80,9 @@ namespace PDSClient.ConnectionManager
             return CntrlGlobal(array);
         }
 
-        public static Pacchetto RiceviPacchetto(Socket socket, int id_scheda, CancellationToken canc_token)
+        public static Pacchetto RiceviPacchetto(EspBoard board)
         {
+            Socket socket = board.getSocket();
             if (!socket.Connected)
             {
                 throw new Exception("Il socket non è connesso");
@@ -91,7 +92,7 @@ namespace PDSClient.ConnectionManager
             byte[] byte_ricevuti = new byte[512];
             bool global = false;
 
-            EspServer.ControlledRecv(socket, mac_byte, 6, canc_token);
+            board.receiveBytes(mac_byte, 6);
            
             //Controlla che sia un mac reale
 
@@ -102,11 +103,11 @@ namespace PDSClient.ConnectionManager
 
             PhysicalAddress mac = new PhysicalAddress(mac_byte);
 
-            EspServer.ControlledRecv(socket, byte_ricevuti, 2, canc_token);
+            board.receiveBytes(byte_ricevuti, 2);
             short rssi = BitConverter.ToInt16(byte_ricevuti, 0);
             rssi = IPAddress.NetworkToHostOrder(rssi);
 
-            EspServer.ControlledRecv(socket, byte_ricevuti, 2, canc_token);
+            board.receiveBytes(byte_ricevuti, 2);
             short lunghezza_ssid = BitConverter.ToInt16(byte_ricevuti, 0);
             lunghezza_ssid = IPAddress.NetworkToHostOrder(lunghezza_ssid);
             if (lunghezza_ssid < 0 || lunghezza_ssid > 32)
@@ -120,18 +121,18 @@ namespace PDSClient.ConnectionManager
             Debug.Assert(lunghezza_ssid >= 0);
             if (lunghezza_ssid > 0)
             {
-                EspServer.ControlledRecv(socket, byte_ricevuti, lunghezza_ssid, canc_token);
+                board.receiveBytes(byte_ricevuti, lunghezza_ssid);
                 ssid = System.Text.Encoding.ASCII.GetString(byte_ricevuti, 0, lunghezza_ssid > 0 ? lunghezza_ssid : 0);
             }
 
-            EspServer.ControlledRecv(socket, byte_ricevuti, 4, canc_token);
+            board.receiveBytes(byte_ricevuti, 4);
             int timestamp = BitConverter.ToInt32(byte_ricevuti, 0);
             timestamp = IPAddress.NetworkToHostOrder(timestamp);
 
-            EspServer.ControlledRecv(socket, byte_ricevuti, 4, canc_token);
+            board.receiveBytes(byte_ricevuti, 4);
             string checksum = BitConverter.ToString(byte_ricevuti, 0, LUNGHEZZA_CHECKSUM).Replace("-", "");
 
-            Pacchetto pacchetto = new Pacchetto(mac, rssi, ssid, timestamp, checksum, id_scheda, global);
+            Pacchetto pacchetto = new Pacchetto(mac, rssi, ssid, timestamp, checksum, board.getBoardID(), global);
             return pacchetto;
         }
 
