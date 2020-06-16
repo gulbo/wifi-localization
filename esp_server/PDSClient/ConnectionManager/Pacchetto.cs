@@ -2,11 +2,9 @@
 using System.Text;
 using System.Linq;
 using System.Diagnostics;
-using System.Threading;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
-using PDSClient.ConnectionManager.ConnException;
 
 namespace PDSClient.ConnectionManager
 {
@@ -114,7 +112,7 @@ namespace PDSClient.ConnectionManager
             {
                 System.Diagnostics.Debug.WriteLine("Errore critico: la lunghezza del ssid è errata");
                 socket.Close();
-                throw new MySocketException(MySocketException.INVALID_SSID_LEN);
+                throw new Exception("Invalid SSID length: " + lunghezza_ssid);
             }
             string ssid = "";
 
