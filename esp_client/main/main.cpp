@@ -27,7 +27,7 @@
 
 std::list<SniffedPacket> sniffed_packets;
 Client client{};
-const TickType_t send_task_delay = SNIFFING_TIME_SEC * 1000 / portTICK_PERIOD_MS;
+const TickType_t one_second_delay = 1000 / portTICK_PERIOD_MS;
 EventGroupHandle_t wifi_event_group;
 
 /**
@@ -158,12 +158,12 @@ bool setSystemTime(uint32_t epoch){
 
 /**
  * @brief the main task
- *  Starts sniffing for send_task_delay
+ *  Starts sniffing for SNIFFING_TIME_SEC
  *  At the end sends the sniffed packets and starts sniffing again
  *  @param parameters input parameters, not used
  */
 void sendTask(void *parameters){
-    // every send_task_delay send:
+    // every SNIFFING_TIME_SEC send:
     // --> id_board
     // --> array of devices found
     // then receive
@@ -173,8 +173,16 @@ void sendTask(void *parameters){
         std::cout << "New sniffing phase: starting data acquisition" << std::endl;
         esp_wifi_set_promiscuous_rx_cb(&wifiSnifferHandler);
         
-        // sleep for sniffing
-        vTaskDelay(send_task_delay);
+        // ping while sniffing
+        for (uint32_t ping = 1; ping <= SNIFFING_TIME_SEC; ping++)
+        {
+            vTaskDelay(one_second_delay);
+            if (!client.sendInt(ping))
+            {
+                std::cout << "Error sending  ping" << std::endl;
+                exit(1);;
+            }
+        }
 
         std::cout << "New send phase: interrupting data acquisition" << std::endl;
         esp_wifi_set_promiscuous_rx_cb(&wifiSnifferNullHandler);

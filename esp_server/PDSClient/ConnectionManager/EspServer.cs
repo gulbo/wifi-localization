@@ -118,6 +118,11 @@ namespace PDSClient.ConnectionManager
                     while (!token.IsCancellationRequested)
                     {
                         writeDebugLine_(getBoardsConnected() + " boards connesse");
+
+                        int ping_seconds = 60;
+                        if (!board.pingFor(ping_seconds))
+                            throw new Exception("Ping lost for board" + board.getBoardID());
+
                         // ricevo i pacchetti
                         List<Pacchetto> packet_list = board.receivePackets();
 
@@ -129,6 +134,7 @@ namespace PDSClient.ConnectionManager
             }
             catch (Exception ex)
             {
+                writeDebugLine_(ex.ToString());
                 if (socket != null || socket.Connected)
                 {
                     socket.Close();
