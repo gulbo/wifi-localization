@@ -23,7 +23,7 @@
 #define SNIFFING_TIME_SEC 60
 #define SERVER_IP "192.168.43.214"
 #define SERVER_PORT 7999
-#define BOARD_ID 1
+#define BOARD_ID 2
 
 std::list<SniffedPacket> sniffed_packets;
 Client client{};
@@ -94,6 +94,12 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
  * @note thanks to github.com/lucadentella/esp32-tutorial
  */
 void initializeWifi(const char* wifi_ssid, const char* wifi_password, uint8_t wifi_channel){
+    // set LED OFF before connecting to wifi
+    const gpio_num_t LED_GPIO =  GPIO_NUM_2;
+    gpio_pad_select_gpio(LED_GPIO);
+    gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
+    gpio_set_level(LED_GPIO, 0);
+    
     static wifi_config_t wifi_config = {};
     strcpy((char*)wifi_config.sta.ssid, wifi_ssid);
     strcpy((char*)wifi_config.sta.password, wifi_password);
@@ -123,9 +129,6 @@ void initializeWifi(const char* wifi_ssid, const char* wifi_password, uint8_t wi
 	std::cout << "Gateway:     " << ip4addr_ntoa(&ip_info.gw) << std::endl;
     
     // set LED on
-    const gpio_num_t LED_GPIO =  GPIO_NUM_2;
-    gpio_pad_select_gpio(LED_GPIO);
-    gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
     gpio_set_level(LED_GPIO, 1);
 
     // All packets of the currently joined 802.11 network (with a specific SSID and channel) are captured
