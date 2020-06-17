@@ -115,7 +115,7 @@ namespace PDSClient.ConnectionManager
 
                     while (!token.IsCancellationRequested)
                     {
-                        writeDebugLine_(board_handlers_.Count + " boards connesse");
+                        writeDebugLine_(getBoardsConnected() + " boards connesse");
                         // ricevo i pacchetti
                         List<Pacchetto> packet_list = board.receivePackets();
 
@@ -240,6 +240,11 @@ namespace PDSClient.ConnectionManager
         private void writeDebugLine_(String str)
         {
             System.Diagnostics.Debug.WriteLine("EspServer: " + str);
+        }
+
+        public int getBoardsConnected()
+        {
+            return board_handlers_.Count;
         }
     }
 }
