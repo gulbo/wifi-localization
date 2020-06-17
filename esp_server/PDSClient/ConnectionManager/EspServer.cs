@@ -89,8 +89,7 @@ namespace PDSClient.ConnectionManager
 
                 // creo un thread per gestire questa connessione con la board
                 Thread board_handler = new Thread(new ParameterizedThreadStart(this.boardHandler));
-                board_handler.Name = "ConnectionHandler";
-                board_handler.Start(socket);
+                board_handler.Start(new Tuple<Socket, Thread>(socket, board_handler));
                 board_handlers_.Add(board_handler);
             }
             writeDebugLine_("ConnectionHandler fermato");
@@ -101,7 +100,8 @@ namespace PDSClient.ConnectionManager
          */
         public void boardHandler(object arg)
         {
-            Socket socket = (Socket) arg;
+            Socket socket = ((Tuple<Socket,Thread>) arg).Item1;
+            Thread thread = ((Tuple<Socket, Thread>)arg).Item2;
             CancellationToken token = cancellation_token_source_.Token;
             EspBoard board = new EspBoard(socket, token, time_sync_events_);
             
@@ -110,10 +110,12 @@ namespace PDSClient.ConnectionManager
                 if (board.initialize())
                 {
                     writeDebugLine_("Nuova board inizializzata");
+                    thread.Name = "Board" + board.getBoardID();
                     signalBoardConnected_(board.getBoardID());
 
                     while (!token.IsCancellationRequested)
                     {
+                        writeDebugLine_(board_handlers_.Count + " boards connesse");
                         // ricevo i pacchetti
                         List<Pacchetto> packet_list = board.receivePackets();
 
@@ -125,34 +127,49 @@ namespace PDSClient.ConnectionManager
             }
             catch (Exception ex)
             {
-                writeDebugLine_("Board" + board.getBoardID() + " connessione persa");
                 if (socket != null || socket.Connected)
                 {
                     socket.Close();
                     if (board.getBoardID() != -1)
                     {
+                        writeDebugLine_("Board" + board.getBoardID() + " connessione persa");
                         signalBoardDisconnected_(board.getBoardID());
                     }
                 }
+                board_handlers_.Remove(thread);
             }
         }
 
         private void signalBoardDisconnected_(int board_id)
         {
-            var dispatcher = System.Windows.Application.Current.Dispatcher;
-            dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-            {
-                System.Windows.MessageBox.Show("Board" + board_id + " disconnessa. Riconnettere!", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            }));
+            //var dispatcher = System.Windows.Application.Current.Dispatcher;
+            //dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+            //{
+            //    System.Windows.MessageBox.Show("Board" + board_id + " disconnessa. Riconnettere!", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            //}));
+
+            new Thread(() => System.Windows.MessageBox.Show(
+                                                    "Board" + board_id + " disconnessa. Riconnettere!",
+                                                    "Alert",
+                                                    System.Windows.MessageBoxButton.OK,
+                                                    System.Windows.MessageBoxImage.Error)
+                                                ).Start();
         }
 
         private void signalBoardConnected_(int board_id)
         {
-            var dispatcher = System.Windows.Application.Current.Dispatcher;
-            dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-            {
-                System.Windows.MessageBox.Show("Board" + board_id + " connessa.", "Info", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            }));
+            //var dispatcher = System.Windows.Application.Current.Dispatcher;
+            //dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+            //{
+            //    System.Windows.MessageBox.Show("Board" + board_id + " connessa.", "Info", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            //}));
+
+            new Thread(() => System.Windows.MessageBox.Show(
+                                                   "Board" + board_id + " connessa.",
+                                                   "Info",
+                                                   System.Windows.MessageBoxButton.OK,
+                                                   System.Windows.MessageBoxImage.Information)
+                                               ).Start();
         }
 
         /**
