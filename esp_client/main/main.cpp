@@ -121,6 +121,12 @@ void initializeWifi(const char* wifi_ssid, const char* wifi_password, uint8_t wi
 	std::cout << "IP Address:  " << ip4addr_ntoa(&ip_info.ip) << std::endl;
 	std::cout << "Subnet mask: " << ip4addr_ntoa(&ip_info.netmask) << std::endl;
 	std::cout << "Gateway:     " << ip4addr_ntoa(&ip_info.gw) << std::endl;
+    
+    // set LED on
+    const gpio_num_t LED_GPIO =  GPIO_NUM_2;
+    gpio_pad_select_gpio(LED_GPIO);
+    gpio_set_direction(LED_GPIO, GPIO_MODE_OUTPUT);
+    gpio_set_level(LED_GPIO, 1);
 
     // All packets of the currently joined 802.11 network (with a specific SSID and channel) are captured
     esp_wifi_set_promiscuous(true);
