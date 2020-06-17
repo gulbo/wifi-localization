@@ -107,25 +107,43 @@ namespace PDSClient.ConnectionManager
         }
         
         /**
-         * Legge bytes e li scrive in un buffer
+         * Legge bytes e li scrive in un buffer, 3 secondi di timeout (return false se il timeout finisce)
          */
         public bool receiveBytes(byte[] buff, int bytes)
         {
             int result = 0;
-            while (true)
+            // 3 secondi di timeout
+            if (socket_.Poll(3000000, SelectMode.SelectRead))
             {
-                if (socket_.Poll(500000, SelectMode.SelectRead))
-                {
-                    result = socket_.Receive(buff, bytes, SocketFlags.None);
-                    break;
-                }
-                else if (cancellation_token_.IsCancellationRequested || !socket_.Connected)
-                {
-                        throw new Exception("ReceiveBytes interrotto");
-                        //return false;
-                }
+                result = socket_.Receive(buff, bytes, SocketFlags.None);
+            }
+            else if (cancellation_token_.IsCancellationRequested || !socket_.Connected || socket_.Poll(100000, SelectMode.SelectError))
+            {
+                    throw new Exception("ReceiveBytes interrotto");
             }
             return result == bytes;
+        }
+
+        /**
+         * Riceve ogni secondo un numero da 1 fino a <seconds>
+         * Ritorna false in caso di errore
+         */
+        public bool pingFor(int seconds)
+        {
+            byte[] buffer = new byte[4];
+            for (int ping = 1; ping <= seconds; ping++)
+            {
+                bool result = receiveBytes(buffer, 4);
+                if (!result)
+                    return false;
+                int ping_read = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, 0));
+                if (ping_read != ping)
+                {
+                    writeDebugLine_("Expected ping: " + ping + " Obtained: " + ping_read);
+                    return false;
+                }
+            }
+            return true;
         }
 
         /**
