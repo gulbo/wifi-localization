@@ -90,7 +90,9 @@ namespace PDSClient.ConnectionManager
                 // creo un thread per gestire questa connessione con la board
                 Thread board_handler = new Thread(new ParameterizedThreadStart(this.boardHandler));
                 board_handler.Start(new Tuple<Socket, Thread>(socket, board_handler));
+                Monitor.Enter(board_handlers_);
                 board_handlers_.Add(board_handler);
+                Monitor.Exit(board_handlers_);
             }
             writeDebugLine_("ConnectionHandler fermato");
         }
@@ -136,7 +138,9 @@ namespace PDSClient.ConnectionManager
                         signalBoardDisconnected_(board.getBoardID());
                     }
                 }
+                Monitor.Enter(board_handlers_);
                 board_handlers_.Remove(thread);
+                Monitor.Exit(board_handlers_);
             }
         }
 
@@ -214,7 +218,7 @@ namespace PDSClient.ConnectionManager
                 connection_handler_.Abort();
 
             // interrompo i board handlers
-            for (int i = 0; i < boards_number_; i++)
+            Monitor.Enter(board_handlers_);
             foreach (Thread thread in board_handlers_)
             {
                 if (thread.IsAlive)
@@ -227,6 +231,7 @@ namespace PDSClient.ConnectionManager
                 if (!result)
                     thread.Abort();
             }
+            Monitor.Exit(board_handlers_);
         }
 
         /**
@@ -244,7 +249,10 @@ namespace PDSClient.ConnectionManager
 
         public int getBoardsConnected()
         {
-            return board_handlers_.Count;
+            Monitor.Enter(board_handlers_);
+            int connected_boards_count = board_handlers_.Count;
+            Monitor.Exit(board_handlers_);
+            return connected_boards_count;
         }
     }
 }

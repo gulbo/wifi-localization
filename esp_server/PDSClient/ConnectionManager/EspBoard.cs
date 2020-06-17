@@ -46,6 +46,13 @@ namespace PDSClient.ConnectionManager
             return cancellation_token_;
         }
 
+        /** Initializza la board
+         * Client: <HI BoardID>
+         * Server: <HI>
+         * Client: aspetta di ricevere il timestamp
+         * Server: aspetta che tutte le boards si connettano
+         * Server: <GO  timestamp>
+         */
         public bool initialize()
         {
             const int PROTOCOL_MESSAGE_LENGTH = 2;
@@ -98,7 +105,10 @@ namespace PDSClient.ConnectionManager
 
             return true;
         }
-
+        
+        /**
+         * Legge bytes e li scrive in un buffer
+         */
         public bool receiveBytes(byte[] buff, int bytes)
         {
             int result = 0;
@@ -118,6 +128,9 @@ namespace PDSClient.ConnectionManager
             return result == bytes;
         }
 
+        /**
+         * Ricevi i pacchetti inviati dalle boards, e sincronizza tutte le boards sul timestamp corrente
+         */
         public List<Pacchetto> receivePackets()
         {
             List<Pacchetto> packet_list = new List<Pacchetto>();
@@ -147,10 +160,11 @@ namespace PDSClient.ConnectionManager
             waitForTimeSync_();
 
             // invio timestamp
-            int network_epoch = IPAddress.HostToNetworkOrder((int)EspServer.getUnixEpoch());
+            int epoch = EspServer.getUnixEpoch();
+            int network_epoch = IPAddress.HostToNetworkOrder(epoch);
             socket_.Send(BitConverter.GetBytes(network_epoch), 4, SocketFlags.None);
 
-            writeDebugLine_("Timestamp inviato: " + network_epoch);
+            writeDebugLine_("Timestamp inviato: " + epoch);
             return packet_list;
         }
 
@@ -162,12 +176,16 @@ namespace PDSClient.ConnectionManager
                 System.Diagnostics.Debug.WriteLine("Board non initializzata: " + str);
         }
 
+        /**
+         * Entra in attesa fino a quando tutti gli eventi in time_sync_events_ risultano seegnalati (set)
+         */
         private void waitForTimeSync_()
         {
             writeDebugLine_("Attendo di sincronizzarmi con le altre boards");
-            time_sync_events_[board_id_ - 1].Reset();
             time_sync_events_[board_id_ - 1].Set();
             ManualResetEvent.WaitAll(time_sync_events_);
+            Thread.Sleep(1000); // sleep per 1 secondo, aspetto che gli altri threads si sveglino prima di fare reset
+            time_sync_events_[board_id_ - 1].Reset();
             writeDebugLine_("Risvegliato dall'attesa");
         }
     }
