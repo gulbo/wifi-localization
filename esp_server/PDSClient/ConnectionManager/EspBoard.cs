@@ -141,6 +141,7 @@ namespace PDSClient.ConnectionManager
                 Pacchetto packet = Pacchetto.RiceviPacchetto(this);
                 packet_list.Add(packet);
             }
+            writeDebugLine_("Pacchetti ricevuti");
 
             // mi sincronizzo con le altre boards
             waitForTimeSync_();
@@ -149,7 +150,7 @@ namespace PDSClient.ConnectionManager
             int network_epoch = IPAddress.HostToNetworkOrder((int)EspServer.getUnixEpoch());
             socket_.Send(BitConverter.GetBytes(network_epoch), 4, SocketFlags.None);
 
-            writeDebugLine_("Ricezione dati terminata");
+            writeDebugLine_("Timestamp inviato: " + network_epoch);
             return packet_list;
         }
 
