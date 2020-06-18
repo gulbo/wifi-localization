@@ -155,12 +155,6 @@ namespace PDSClient.ConnectionManager
             byte[] buffer = new byte[1024];
             writeDebugLine_("In attesa di ricevere dati");
 
-            // ricevo IDBoard
-            receiveBytes(buffer, 4);
-            int board_id = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, 0));
-            if (board_id != board_id_)
-                throw new Exception("BoardID atteso: " + board_id_ + " ottenuto: " + board_id);
-
             // ricevo #pacchetti
             receiveBytes(buffer, 4);
             int packet_number = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, 0));

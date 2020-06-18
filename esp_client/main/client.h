@@ -6,8 +6,6 @@
 #include "protocol_code.h"
 #include <list>
 
-#define PROTO_NUM_LEN (4)
-
 /**
  * @brief Client class that groups all the client interface to the server
  */

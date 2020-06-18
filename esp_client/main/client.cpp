@@ -108,7 +108,6 @@ bool Client::sendHi_(){
     uint8_t mac_addr[SniffedPacket::MAC_ADDRESS_BYTES];
     char buff[MAX_MESSAGE_LENGTH];
 
-    // TODO wrap this in a method in another class (like in a Wifi class maybe?)
     esp_err_t err = esp_wifi_get_mac(ESP_IF_WIFI_STA, mac_addr);
     switch(err){
         case ESP_OK:
@@ -125,15 +124,13 @@ bool Client::sendHi_(){
     }
     // send [ HI IdBoard mac_addr ]
     memcpy(buff, ProtocolCode::HI.c_str(), 2);
-    // TODO no sense to send idBoard as an int over the network (4 bytes)
-    // and have to do also all the htonl shit
-    // we should think about sending it as a char (1 byte).
-    int board_id_net = htonl(board_id_);
-    memcpy(&(buff[ProtocolCode::CODE_LENGTH]), &board_id_net, sizeof(board_id_net));
-    memcpy(&(buff[ProtocolCode::CODE_LENGTH + PROTO_NUM_LEN]), mac_addr, 6*sizeof(uint8_t));
 
-    int bytes_sent = ::send(socket_, buff, ProtocolCode::CODE_LENGTH + PROTO_NUM_LEN + 6, 0);
-    if(bytes_sent != ProtocolCode::CODE_LENGTH + PROTO_NUM_LEN + 6)
+    int32_t board_id_net = htonl(board_id_);
+    memcpy(&(buff[ProtocolCode::CODE_LENGTH]), &board_id_net, sizeof(board_id_net));
+    memcpy(&(buff[ProtocolCode::CODE_LENGTH + sizeof(int32_t)]), mac_addr, 6*sizeof(uint8_t));
+
+    int bytes_sent = ::send(socket_, buff, ProtocolCode::CODE_LENGTH + sizeof(int32_t) + 6, 0);
+    if(bytes_sent != ProtocolCode::CODE_LENGTH + sizeof(int32_t) + 6)
     {
         return false;
     }
