@@ -1,6 +1,6 @@
 {
     "server_ip" : "localhost",
-    "server_port" : 7999,
+    "server_port" : 60006,
     "num_boards": 2,
     "sleep_rate": 10 
 }

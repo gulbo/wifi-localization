@@ -22,7 +22,7 @@
 #define WIFI_CHANNEL 1
 #define SNIFFING_TIME_SEC 60
 #define SERVER_IP "192.168.43.214"
-#define SERVER_PORT 7999
+#define SERVER_PORT 60006
 #define BOARD_ID 2
 
 std::list<SniffedPacket> sniffed_packets;
