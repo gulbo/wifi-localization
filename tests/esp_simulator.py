@@ -115,6 +115,13 @@ class Board:
             self.socket.sendall(packet_parser.getPacketChecksum(packet))
         self.debug_(f"Packets sent")
 
+    def sendPing(self, ping_list):
+        if self.socket is None:
+            raise RuntimeError(self.debug_(f"SendPing error! Not connected!"))
+
+        for ping in ping_list:
+            self.socket.sendall(ping.to_bytes(4, "big"))
+
 devices = list()
 with open('config.json') as config_file:
     config = json.load(config_file)
@@ -142,7 +149,23 @@ for device in devices:
 packet_parser = PacketParser("packets.csv")
 packet_parser.parse()
 sending_turn = 0
-while True:
+while True:    
+
+    # sleep before the next turn, send the ping to keep the connection alive
+    print("sleep sending ping to the server")
+    for second in range(1,config["sleep_rate"]+1):
+        time.sleep(1)
+        for device in devices:
+            device.sendPing([second])
+        
+        # if the sleep rate is not enough
+        # send the remaining pings until 60 (the server expects a ping per second until 60)
+        if second == config["sleep_rate"] and second < 60:
+            for device in devices:
+                device.sendPing(range(second+1, 61))
+        print(second, end="...", flush=True)
+        print("")
+
     print(f"TURN {sending_turn}")
 
     # send packets
@@ -154,12 +177,6 @@ while True:
     for device in devices:
         device.receiveTimestamp()
 
-    # sleep before the next turn
-    print("sleep")
-    for i in range(1,config["sleep_rate"]+1):
-        time.sleep(1)
-        print(i, end="...", flush=True)
-        print("")
         
     # next turn
     sending_turn += 1
