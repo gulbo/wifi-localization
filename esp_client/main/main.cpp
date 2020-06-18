@@ -187,12 +187,6 @@ void sendTask(void *parameters){
         std::cout << "New send phase: interrupting data acquisition" << std::endl;
         esp_wifi_set_promiscuous_rx_cb(&wifiSnifferNullHandler);
 
-        if (!client.sendBoardID())
-        {
-            std::cout << "Error sending Board ID" << std::endl;
-            exit(1);
-        }
-
         client.sendPackets(sniffed_packets);
 
         std::cout << "Waiting to receive time from server..." << std::endl;

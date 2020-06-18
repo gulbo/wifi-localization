@@ -95,8 +95,7 @@ class Board:
         if self.socket is None:
             raise RuntimeError(self.debug_(f"SendPackets error! Not connected!"))
 
-        # first send IDDevice and #packets
-        self.socket.sendall(bytes((0,0,0,self.id)))
+        # first send #packets
         self.socket.sendall(len(packets).to_bytes(4, "big"))
 
         turn_timestamp = 0
