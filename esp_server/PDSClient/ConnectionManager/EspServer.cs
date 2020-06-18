@@ -10,7 +10,7 @@ namespace PDSClient.ConnectionManager
 {
     public class EspServer
     {
-        private const int ESP_SERVER_PORT = 7999;
+        private const int ESP_SERVER_PORT = 60006;
         private TcpListener tcp_listener_;                              /** listener per nuove connessioni tcp in ingresso */
         private Thread connection_handler_;                             /** thread che gestisce le connessioni in ingresso */
         private ManualResetEvent[] time_sync_events_;                   /** evento per sincronizzare il tempo su tutte le boards */    
