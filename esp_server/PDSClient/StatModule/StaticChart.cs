@@ -69,7 +69,7 @@ namespace PDSClient.StatModule
             });
         }
 
-        public void CreateListBox(int start, int end)
+        public void CreateListBox(long start, long end)
         {
        
             macList.Clear();
@@ -109,8 +109,7 @@ namespace PDSClient.StatModule
             {
                 if (ph.MacAddr == mac)
                 {
-                    if (animationCurrTimestamp >= ph.Timestamp)
-                    {
+                 
                         scatter.Add(ph);
                         if (ph.Position.Ascissa < minX)
                             minX = ph.Position.Ascissa;
@@ -120,7 +119,7 @@ namespace PDSClient.StatModule
                             minY = ph.Position.Ordinata;
                         if (ph.Position.Ordinata > maxY)
                             maxY = ph.Position.Ordinata;
-                    }
+                    
                 }
             }
             _movement.Series.Add(new LineSeries() {
@@ -146,102 +145,6 @@ namespace PDSClient.StatModule
             _movement.AxisY[0].MaxValue = maxY + 0.1;
         }
 
-        public void AddNextPoint() {
-            long tmp=animationTimestampEnd;
-            PhoneInfo p=null;
-            bool found=false;
-
-            foreach (string mac in macToIndex.Keys)
-            { 
-                //aggiungere l'elemento minore timestamp e poi reinserie la serie
-                foreach (PhoneInfo ph in macList)
-                {
-                    if (ph.MacAddr == mac)
-                    {
-                        if (ph.Timestamp > animationCurrTimestamp && ph.Timestamp <= animationTimestampEnd && ph.Timestamp < tmp)
-                        {
-                            p = ph;
-                            tmp = ph.Timestamp;
-                            found = true;
-                        }
-                    }
-                }
-            }
-
-            if (found)
-            {
-                animationCurrTimestamp = tmp;
-                _movement.Series[macToIndex[p.MacAddr]].Values.Add(p);
-                if (p.Position.Ascissa < minX)
-                    minX = p.Position.Ascissa;
-                if (p.Position.Ascissa > maxX)
-                    maxX = p.Position.Ascissa;
-                if (p.Position.Ordinata < minY)
-                    minY = p.Position.Ordinata;
-                if (p.Position.Ordinata > maxY)
-                    maxY = p.Position.Ordinata;
-                _movement.AxisX[0].MinValue = minX - 0.1;
-                _movement.AxisX[0].MaxValue = maxX + 0.1;
-                _movement.AxisY[0].MinValue = minY - 0.1;
-                _movement.AxisY[0].MaxValue = maxY + 0.1;
-            }    
-            
-        }
-
-        public void PreviousPoint() {
-            long tmp = animationStartTimestamp;
-            animationCurrTimestamp = animationStartTimestamp;
-            PhoneInfo p = null;
-            bool found = false;
-            long[] timestamps = new long[2]{0, 0};
-
-            foreach (string mac in macToIndex.Keys)
-            {
-                foreach (PhoneInfo ph in _movement.Series[macToIndex[mac]].Values)
-                {  
-                    if (ph.MacAddr == mac)
-                    {
-                        if (ph.Timestamp > timestamps[0])
-                        {
-                            if (ph.Timestamp > timestamps[1])
-                            {
-                                timestamps[0] = timestamps[1];
-                                timestamps[1] = ph.Timestamp;
-                            }
-                            else {
-                                timestamps[0] = ph.Timestamp;
-                            }
-                        }
-
-                        if (ph.Timestamp < animationTimestampEnd && ph.Timestamp >= tmp)
-                        {
-                            p = ph;
-                            tmp = ph.Timestamp;
-                            found = true;
-                        }
-                    }
-                }
-            }
-
-            if (found)
-            {
-                animationCurrTimestamp = timestamps[0];
-                _movement.Series[macToIndex[p.MacAddr]].Values.Remove(p);
-                if (p.Position.Ascissa<minX)
-                    minX = p.Position.Ascissa;
-                if (p.Position.Ascissa > maxX)
-                    maxX = p.Position.Ascissa;
-                if (p.Position.Ordinata<minY)
-                    minY = p.Position.Ordinata;
-                if (p.Position.Ordinata > maxY)
-                    maxY = p.Position.Ordinata;
-                _movement.AxisX[0].MinValue = minX - 0.1;
-                _movement.AxisX[0].MaxValue = maxX + 0.1;
-                _movement.AxisY[0].MinValue = minY - 0.1;
-                _movement.AxisY[0].MaxValue = maxY + 0.1;
-            }
-
-        }
         public void RemoveSeries(string rmac) {
             long tmp = animationStartTimestamp;//trovo il massimo timestamp
             bool found = false;

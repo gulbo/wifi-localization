@@ -151,11 +151,12 @@ namespace PDSClient.StatModule
 
             return count;
         }
+        //interfaccia per prelevare dal DB le posizioni all'interno dell'intervallo temporale 
+        public List<PhoneInfo> PhonesInRange(long min, long max, int threshold = 0) {
 
-        public List<PhoneInfo> PhonesInRange(int min, int max, int threshold = 0) {
-
-            return DBConnection.PhonesInRange(min, max);
+            return DBConnection.PhonesInRange(Convert.ToInt32(min), Convert.ToInt32(max));
         }
+
 
     }
 }
