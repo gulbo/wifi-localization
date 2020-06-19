@@ -79,7 +79,6 @@ namespace PDSClient
             dr = new DataReceiver(this,_boards.Count, client, DBConnection, scatterplot, fiveMinutes, keyNotFoundAction);
             sc = new StaticChart(DBConnection, CheckListbox,movement,temporalDistribution);
             //sc.CreateHeatChart(-1,-1);
-            txtB.Text = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
             sc.animationCurrTimestamp = (DateTime.Now.Ticks - 621355968000000000) / 10000000;
             //sc.animationCurrTimestamp = DateTime.Now.Ticks;
             DataContext = this;
@@ -114,16 +113,24 @@ namespace PDSClient
 
         private void CheckBoxChecked(object sender, System.Windows.RoutedEventArgs e)
         {
-            var checkBox = e.OriginalSource as CheckBox;
+            //valore in minuti
+            int temporalRange = Int32.Parse(sliderText.Text);
 
+
+            if (temporalRange < 1)
+            {
+                System.Windows.MessageBox.Show("Specificare un intervallo temporale maggiore di 0", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                return;
+            }
+            long endRange = sc.animationCurrTimestamp;
+            long startRange = endRange - (temporalRange *60); 
+            var checkBox = e.OriginalSource as CheckBox;
+            List<PhoneInfo> phoneLocations;
             PhoneInfo ph = checkBox?.DataContext as PhoneInfo;
 
             if (ph != null)
-            {
+            {               
                 sc.AddSeries(ph.MacAddr);
-                System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0,System.DateTimeKind.Local);
-                dtDateTime = dtDateTime.AddSeconds(sc.animationCurrTimestamp).ToLocalTime();
-                txtB.Text = dtDateTime.ToString("dd/MM/yyyy HH:mm");
             }
         }
 
@@ -136,9 +143,6 @@ namespace PDSClient
             if (ph != null)
             {
                 sc.RemoveSeries(ph.MacAddr);
-                System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Local);
-                dtDateTime = dtDateTime.AddSeconds(sc.animationCurrTimestamp).ToLocalTime();
-                txtB.Text = dtDateTime.ToString("dd/MM/yyyy HH:mm");
             }
 
         }
@@ -146,53 +150,19 @@ namespace PDSClient
         //popola la list box con i mac di cui abbiamo le posizioni nell'intervallo definito 
         private void Search(object sender, System.Windows.RoutedEventArgs e)
         {
-            if (startDate.Value != null && endDate.Value != null)
+            int temporalRange = Int32.Parse(sliderText.Text);
+
+
+            if (temporalRange < 1)
             {
-                if (startDate.Value >= endDate.Value)
-                {
-                    System.Windows.MessageBox.Show("Intervallo temporale non valido", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
-                    return;
-                }
-                DateTime _startDate = (DateTime)startDate.Value;
-                DateTime _endDate = (DateTime)endDate.Value;
-                //time in second 
-                int start =(Int32)( _startDate.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-                int end = (Int32)(_endDate.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-
-                //accoda la creazione della lista in un threadPool (sc è staticChart)
-                Task.Run(() => sc.CreateListBox(start, end));
-                //sc.CreateListBox(start,end);
-                //aggiornare la textbox tra i pulsanti
-                System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Local);
-                dtDateTime = dtDateTime.AddSeconds(sc.animationCurrTimestamp).ToLocalTime();
-                txtB.Text = dtDateTime.ToString("dd/MM/yyyy HH:mm");
+                System.Windows.MessageBox.Show("Specificare un intervallo temporale maggiore di 0", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                return;
             }
+            long endRange = sc.animationCurrTimestamp;
+            long startRange = endRange - (temporalRange * 60);
 
-        }
-
-        private void Previous(object sender, System.Windows.RoutedEventArgs e)
-        {
-            sc.PreviousPoint();
-            //aggiornare la textbox tra i pulsanti
-            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Local);
-            dtDateTime = dtDateTime.AddSeconds(sc.animationCurrTimestamp).ToLocalTime();
-            if(dtDateTime.Year != 1970)
-                txtB.Text = dtDateTime.ToString("dd/MM/yyyy HH:mm");
-        }
-
-        private void Next(object sender, System.Windows.RoutedEventArgs e)
-        {
-            sc.AddNextPoint();
-            //aggiornare la textbox tra i pulsanti
-            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Local);
-            dtDateTime = dtDateTime.AddSeconds(sc.animationCurrTimestamp).ToLocalTime();
-            txtB.Text = dtDateTime.ToString("dd/MM/yyyy HH:mm");
-
-        }
-
-        private void TabablzControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            
+            //accoda la creazione della lista in un threadPool 
+            Task.Run(() => sc.CreateListBox(startRange, endRange));
         }
 
         private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)

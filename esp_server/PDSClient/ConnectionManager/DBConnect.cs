@@ -138,6 +138,11 @@ namespace PDSClient.ConnectionManager
             }
         }
 
+        internal List<PhoneInfo> PhoneLocationsInRange(int v1, int v2)
+        {
+            throw new NotImplementedException();
+        }
+
         //Rimuovi scheda (selezionando l'ID_scheda) nella tabella 'schede' del DB
 
         public bool RemoveScheda(int id_scheda)
@@ -790,6 +795,41 @@ namespace PDSClient.ConnectionManager
                 catch (MySqlException e)
                 {
                     System.Diagnostics.Debug.WriteLine("MySqlException catched." + e.ToString());
+                    Connesso = false;
+                    return null;
+                }
+            }
+        }
+
+        public List<PhoneInfo> PhoneLocationsInRange(int min, int max, string MAC, int threshold = 0)
+        {
+            List<PhoneInfo> list = new List<PhoneInfo>();
+            string query = "SELECT DISTINCT MAC, timestamp, x, y " +
+                "FROM posizioni WHERE timestamp < " + max + " AND timestamp > " + min +
+                "AND MAC == " + MAC +
+                " ORDER BY timestamp";
+
+            using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+            using (MySqlCommand cmd = connessione.CreateCommand())
+            {
+                try
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    using (var dataReader = cmd.ExecuteReader())
+                    {
+                        while (dataReader.Read())
+                        {
+                            PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), dataReader.GetDouble(2), dataReader.GetDouble(3));
+                            list.Add(pi);
+                        }
+                        Connesso = true;
+                        return list;
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    System.Diagnostics.Debug.WriteLine("MySqlException catched" + e.ToString());
                     Connesso = false;
                     return null;
                 }
