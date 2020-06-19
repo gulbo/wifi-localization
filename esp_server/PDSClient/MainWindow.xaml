@@ -84,10 +84,6 @@
                 </Button.Style>
 
             </Button>
-
-
-
-
         </Grid>
 
         <Grid x:Name="chartMenu" Width="60" HorizontalAlignment="Left" Background="#FF0C505B" Panel.ZIndex="1">
@@ -255,7 +251,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Grid Grid.Row="0" Grid.Column="0">
-                        <TextBox Grid.Column="0" TextWrapping="Wrap" Text="Seleziona Intervallo:"  BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <TextBox Grid.Column="0" TextWrapping="Wrap" Text="Seleziona Intervallo [minuti]:"  BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center" />
 
                         <Grid Grid.Column="1" Visibility="Hidden">
                             <Grid.ColumnDefinitions>
@@ -293,7 +289,7 @@
                         Click="Search" FontSize="12" />
 
                     <DockPanel Grid.Row="0" Grid.Column="1"  VerticalAlignment="Center" Margin="10">
-                        <TextBox Text="{Binding ElementName=slValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Margin="5,0,0,0" Width="40" CaretBrush="#FFFF9800" SelectionBrush="#FFFF9800" />
+                        <TextBox x:Name="sliderText" Text="{Binding ElementName=slValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Margin="5,0,0,0" Width="40" CaretBrush="#FFFF9800" SelectionBrush="#FFFF9800" />
                         <Slider Maximum="2880"   IsSnapToTickEnabled="True" Name="slValue" Foreground="#FFFF9800" BorderBrush="#FF7EF10B" />
                     </DockPanel>
                     
@@ -321,53 +317,13 @@
                             <HierarchicalDataTemplate>
                                 <CheckBox Name="checkBox" Content="{Binding FormattedMacAddr}"  
                                                   Background="LightSeaGreen" Checked="CheckBoxChecked" Unchecked="CheckBoxUnchecked">
-
-
                                 </CheckBox>
                             </HierarchicalDataTemplate>
                         </ListBox.ItemTemplate>
 
                     </ListBox>
 
-                    <lvc:CartesianChart Name="movement" Grid.Column="1" LegendLocation="Bottom" Grid.ColumnSpan="2">
-
-                    </lvc:CartesianChart>
-                    
-                    <Grid Grid.Row="1" Grid.ColumnSpan="2" Visibility="Hidden">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="30*"></ColumnDefinition>
-                            <ColumnDefinition Width="40*"></ColumnDefinition>
-                            <ColumnDefinition Width="30*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <Button  Click="Previous" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,3" Background="#FF018DCC" Foreground="#FFFFFFFF">
-                            <materialDesign:PackIcon Kind="ArrowLeftBoldHexagonOutline" Height="40" Width="40" RenderTransformOrigin="0.567,1.1"/>
-                            <Button.Style>
-                                <Style>
-                                    <Style.Triggers>
-                                        <Trigger Property="Button.IsMouseOver" Value="true">
-
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-
-                        </Button>
-                        <TextBlock Name='txtB' Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Foreground="#FF018DCC" />
-
-                        <Button  Click="Next" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,3" Background="#FF018DCC" Foreground="#FFFFFFFF">
-                            <materialDesign:PackIcon Kind="ArrowRightBoldHexagonOutline" Height="40" Width="40" RenderTransformOrigin="0.567,1.1"/>
-                            <Button.Style>
-                                <Style>
-                                    <Style.Triggers>
-                                        <Trigger Property="Button.IsMouseOver" Value="true">
-
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Button.Style>
-
-                        </Button>
-                    </Grid>
+                    <lvc:CartesianChart Name="movement" Grid.Column="1" LegendLocation="Bottom" Grid.ColumnSpan="2"/>
                 </Grid>
 
 
