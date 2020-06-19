@@ -106,7 +106,7 @@ namespace PDSClient.StatModule
             yAxis.Title = "Numero dispositivi";
             yAxis.Separator.Step = 1;
             xAxis.MinValue = 0;
-            xAxis.MaxValue = 20;
+            xAxis.MaxValue = 5;
             yAxis.MinValue = 0;
             yAxis.MaxValue = 10;
 
@@ -257,17 +257,15 @@ namespace PDSClient.StatModule
 
             foreach(PhoneInfo phone in hiddenMacs)
             {
-                if(!countedMacs.Contains(phone.MacAddr))
-                {
-                    List<String> res = _statCalc.Connection.CountHiddenPhones(phone, 0.6);
-                    //correlatedPhones += res.Count - 1;
+                List<String> res = _statCalc.Connection.CountHiddenPhones(phone, 0.6);
+  
                     foreach (String mac in res)
-                        countedMacs.Add(mac);
-                }
+                        if (!countedMacs.Contains(mac)) 
+                            countedMacs.Add(mac);
             }
             correlatedPhones = countedMacs.Count;
             totalHiddenPhones = hiddenMacs.Count;
-            error = (double) correlatedPhones / totalHiddenPhones;
+            error =(double) 1 -  correlatedPhones / totalHiddenPhones;
 
             _window.UpdateTextBlocks(totalHiddenPhones,correlatedPhones,error);
 
