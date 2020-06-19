@@ -143,20 +143,23 @@ namespace PDSClient
 
         }
         
-
+        //popola la list box con i mac di cui abbiamo le posizioni nell'intervallo definito 
         private void Search(object sender, System.Windows.RoutedEventArgs e)
         {
             if (startDate.Value != null && endDate.Value != null)
             {
                 if (startDate.Value >= endDate.Value)
                 {
-                    System.Windows.MessageBox.Show("Intervallo di date non valido", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                    System.Windows.MessageBox.Show("Intervallo temporale non valido", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                     return;
                 }
                 DateTime _startDate = (DateTime)startDate.Value;
                 DateTime _endDate = (DateTime)endDate.Value;
+                //time in second 
                 int start =(Int32)( _startDate.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 int end = (Int32)(_endDate.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+
+                //accoda la creazione della lista in un threadPool (sc è staticChart)
                 Task.Run(() => sc.CreateListBox(start, end));
                 //sc.CreateListBox(start,end);
                 //aggiornare la textbox tra i pulsanti
@@ -303,6 +306,49 @@ namespace PDSClient
             error.Text = (err * 100).ToString("0.00", CultureInfo.InvariantCulture) + " %";
         }
 
+        private void openMenuBtn_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            closeMenuBtn.Visibility = System.Windows.Visibility.Visible;
+            openMenuBtn.Visibility = System.Windows.Visibility.Collapsed;
+        }
+
+        private void closeMenuBtn_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            openMenuBtn.Visibility = System.Windows.Visibility.Visible;
+            closeMenuBtn.Visibility = System.Windows.Visibility.Collapsed;
+        }
+
+        private void realTimeChartBtnUp(object sender, MouseButtonEventArgs e)
+        {
+            realTimePosChart.Visibility = System.Windows.Visibility.Visible;
+            deviceNumberChart.Visibility = System.Windows.Visibility.Hidden;
+            movementChart.Visibility = System.Windows.Visibility.Hidden;
+            temporalDistrChart.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        private void deviceNumberChartBtnUp(object sender, MouseButtonEventArgs e)
+        {
+            realTimePosChart.Visibility = System.Windows.Visibility.Hidden;
+            deviceNumberChart.Visibility = System.Windows.Visibility.Visible;
+            movementChart.Visibility = System.Windows.Visibility.Hidden;
+            temporalDistrChart.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        private void movementChartBtnUp(object sender, MouseButtonEventArgs e)
+        {
+            realTimePosChart.Visibility = System.Windows.Visibility.Hidden;
+            deviceNumberChart.Visibility = System.Windows.Visibility.Hidden;
+            movementChart.Visibility = System.Windows.Visibility.Visible;
+            temporalDistrChart.Visibility = System.Windows.Visibility.Hidden;
+        }
+
+        private void MACDistributionChartBtnUp(object sender, MouseButtonEventArgs e)
+        {
+            realTimePosChart.Visibility = System.Windows.Visibility.Hidden;
+            deviceNumberChart.Visibility = System.Windows.Visibility.Hidden;
+            movementChart.Visibility = System.Windows.Visibility.Hidden;
+            temporalDistrChart.Visibility = System.Windows.Visibility.Visible;
+        }
     }
 
 }

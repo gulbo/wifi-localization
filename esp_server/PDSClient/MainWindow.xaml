@@ -15,8 +15,34 @@
              d:DataContext="{d:DesignInstance local:MainWindow}" WindowStyle="None" Visibility="Visible"  
              MouseDown="Window_MouseDown">
 
-    <Grid >
-        <Grid Height="60" VerticalAlignment="Top" Background="#FF00867D">
+    <Window.Resources>
+        
+        <Storyboard x:Key="menuOpen">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Width)" Storyboard.TargetName="chartMenu">
+                <EasingDoubleKeyFrame KeyTime="0" Value="60"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0:0.5" Value="280"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        
+        <Storyboard x:Key="menuClose">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(FrameworkElement.Width)" Storyboard.TargetName="chartMenu">
+                <EasingDoubleKeyFrame KeyTime="0" Value="280"/>
+                <EasingDoubleKeyFrame KeyTime="0:0:0:0.5" Value="60"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+    </Window.Resources>
+
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="openMenuBtn" >
+            <BeginStoryboard Storyboard="{StaticResource menuOpen}" />
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="closeMenuBtn" >
+            <BeginStoryboard Storyboard="{StaticResource menuClose}" />
+        </EventTrigger>
+    </Window.Triggers>
+
+    <Grid  >
+        <Grid Height="60" VerticalAlignment="Top" Background="#FF4DB6AC">
             <TextBlock Text="Wifi Localization" Foreground="Black" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="22" FontFamily="Champagne &amp; Limousines" />
             <Button Name="Close" Click="Button_Close" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Height="26" Margin="0,16,16.2,20" Width="26" ScrollViewer.CanContentScroll="True" Padding="0" ToolTip="Close">
                 <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="24" Width="24" UseLayoutRounding="False" Foreground="Black"/>
@@ -59,49 +85,86 @@
 
             </Button>
 
+
+
+
         </Grid>
 
-        <Grid Margin="0 60 0 0">
-            <dragablz:TabablzControl SelectionChanged="TabablzControl_SelectionChanged" FixedHeaderCount="4" BorderBrush="#FF00867D">
-                <dragablz:TabablzControl.InterTabController>
-                    <dragablz:InterTabController/>
-                </dragablz:TabablzControl.InterTabController>
-                <TabItem Name="Scatter" Header="Posizione in tempo reale" >
-                    
-                    <Grid >
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="10*" />
-                            <RowDefinition Height="80*" />
-                            <RowDefinition Height="10*" />
-                        </Grid.RowDefinitions>
+        <Grid x:Name="chartMenu" Width="60" HorizontalAlignment="Left" Background="#FF0C505B" Panel.ZIndex="1">
+            <StackPanel>
+                <Grid Height="60" Background="Snow">
+                    <Button x:Name="closeMenuBtn" Width="60" Height="60" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top" HorizontalAlignment="Right" Visibility="Collapsed" Click="closeMenuBtn_Click">
+                        <materialDesign:PackIcon Foreground="#FF0C505B" Kind="ArrowLeft" Width="25" Height="25"/>
+                    </Button>
+                    <Button x:Name="openMenuBtn" Width="60" Height="60" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top" HorizontalAlignment="Right" Click="openMenuBtn_Click">
+                        <materialDesign:PackIcon Foreground="#FF0C505B" Kind="Menu" Width="25" Height="25"/>
+                    </Button>
+                </Grid>
+                <ListView ScrollViewer.HorizontalScrollBarVisibility="Disabled" Foreground="#ff9800" >
+                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="realTimeChartBtnUp">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="CellphoneWireless" Width="25" Height="25" Margin="10" VerticalAlignment="Center"  />
+                            <TextBlock Text="Posizioni in Real Time" Margin="20 10" Foreground="#FFFFCF89"/>
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="deviceNumberChartBtnUp">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ChartLine" Width="25" Height="25" Margin="10" VerticalAlignment="Center" />
+                            <TextBlock Text="Numero Dispositivi" Margin="20 10" Foreground="#FFFFCF89"/>
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="movementChartBtnUp">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="CrosshairsGps" Width="25" Height="25" Margin="10" VerticalAlignment="Center" />
+                            <TextBlock Text="Movimento Dispositivo" Margin="20 10" Foreground="#FFFFCF89"/>
+                        </StackPanel>
+                    </ListViewItem>
+                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="MACDistributionChartBtnUp">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="filter" Width="25" Height="25" Margin="10" VerticalAlignment="Center" />
+                            <TextBlock Text="Distribuzione MAC" Margin="20 10" Foreground="#FFFFCF89"/>
+                        </StackPanel>
+                    </ListViewItem>
+                </ListView>
+            </StackPanel>
+        </Grid>
 
-                        <Grid  Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="15*"></ColumnDefinition>
-                                <ColumnDefinition Width="30*"></ColumnDefinition>
-                                <ColumnDefinition Width="15*"></ColumnDefinition>
-                                <ColumnDefinition Width="40*"></ColumnDefinition>
-                            </Grid.ColumnDefinitions>
-                            
-                            <TextBlock Grid.Column="0" Text="trova MAC:" Margin="25,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                            
-                            <Grid x:Name="MACTextBoxGrid" Grid.Column="1" Height="30" Margin="0,10,0,5" >
-                                <TextBox   Name="MAC" BorderThickness="1" Margin="0,0,0,4" ForceCursor="True" Background="Transparent" FontSize="14" MaxLength="17" FontStretch="Expanded" CharacterCasing="Upper" SelectionBrush="#FF00867D"/>
-                                <TextBlock  IsHitTestVisible="False" Text="AA:AA:AA:AA:AA:AA" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
-                                    <TextBlock.Style>
-                                        <Style TargetType="{x:Type TextBlock}">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Text, ElementName=MAC}" Value="">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </Grid>
+        <Grid Margin="0 60 0 0" >
 
-                            <Button
+            <Grid x:Name="realTimePosChart" Visibility="Visible" Margin="80,0,0,0" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10*" />
+                    <RowDefinition Height="80*" />
+                    <RowDefinition Height="10*" />
+                </Grid.RowDefinitions>
+
+                <Grid  Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="15*"></ColumnDefinition>
+                        <ColumnDefinition Width="30*"></ColumnDefinition>
+                        <ColumnDefinition Width="15*"></ColumnDefinition>
+                        <ColumnDefinition Width="40*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="trova MAC:" Margin="25,0,0,0" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center" />
+
+                    <Grid x:Name="MACTextBoxGrid" Grid.Column="1" Height="30" Margin="0,10,0,5" >
+                        <TextBox   Name="MAC" BorderThickness="1" Margin="0,0,0,4" ForceCursor="True" Background="Transparent" FontSize="14" MaxLength="17" FontStretch="Expanded" CharacterCasing="Upper" SelectionBrush="#FF00867D"/>
+                        <TextBlock  IsHitTestVisible="False" Text="AA:AA:AA:AA:AA:AA" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0,0,0" Foreground="DarkGray">
+                            <TextBlock.Style>
+                                <Style TargetType="{x:Type TextBlock}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Text, ElementName=MAC}" Value="">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Grid>
+
+                    <Button
                                     x:Name="startButton"
                                     Grid.Column="2"
                                     Foreground="black"
@@ -111,7 +174,7 @@
                                     Height="30"
                                     MaxWidth="90"
                                     Click="SearchMac" FontSize="12" />
-                            <Button
+                    <Button
                                     x:Name="stopButton"
                                     Grid.Column="2"
                                     Foreground="black"
@@ -123,166 +186,128 @@
                                     Visibility="Hidden"
                                     Click="RemoveMac" FontSize="12" />
 
-                            <Grid Grid.Column="3" Grid.Row="0">
-                                
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="30*"></ColumnDefinition>
-                                    <ColumnDefinition Width="30*"></ColumnDefinition>
-                                    <ColumnDefinition Width="30*"></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="3" Grid.Row="0">
 
-                                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                                    <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="MAC nascosti totali:"/>
-                                    <TextBlock x:Name="total" Margin="10,0,0,0" Height="23" TextWrapping="Wrap" Foreground="#FFFF9800" FontWeight="Bold" Width="50"  />
-                                </StackPanel>
-                                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                                    <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="MAC nascosti correlati:"/>
-                                    <TextBlock x:Name="correlated" Margin="10,0,0,0"  Height="23" TextWrapping="Wrap" Foreground="#FFFF9800" FontWeight="Bold" Width="50" />
-                                </StackPanel>
-                                <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,20,0">
-                                    <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Percentuale Errore:" />
-                                    <TextBlock x:Name="error" Margin="10,0,0,0"  Height="23" TextWrapping="Wrap" Foreground="#FFFF9800" FontWeight="Bold" Width="50"/>
-                                </StackPanel>
-
-                            </Grid>
-                            
-                        </Grid>
-                        
-                        <Grid Grid.Column="1" Grid.Row="1">
-                            <lvc:CartesianChart x:Name="scatterplot" LegendLocation="Left"  Grid.Row="0" >
-                            </lvc:CartesianChart>
-                        </Grid>
-
-                        <Grid Grid.Column="2" Grid.Row="1">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            
-                            <Grid Grid.Row="1">
-                                
-                            </Grid>
-
-                        </Grid>
-
-                        <TextBlock Grid.Row="2" Grid.Column="2" Text="[m]" VerticalAlignment="Bottom" FontSize="14" />
-                    </Grid>
-
-
-                </TabItem>
-                <TabItem Header="DEVICE NUMBER">
-                    <Grid>
-
-                        <lvc:CartesianChart Name="fiveMinutes" Grid.Column="0" LegendLocation="Right">
-
-                        </lvc:CartesianChart>
-
-                    </Grid>
-
-                </TabItem>
-                <TabItem Header="MOVEMENT ANIMATION">
-                    <Grid  ScrollViewer.VerticalScrollBarVisibility="Visible">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="78*"></ColumnDefinition>
-                            <ColumnDefinition Width="22*"></ColumnDefinition>
+                            <ColumnDefinition Width="30*"></ColumnDefinition>
+                            <ColumnDefinition Width="30*"></ColumnDefinition>
+                            <ColumnDefinition Width="30*"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
-                        <Grid Grid.Column="0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="85*"/>
-                                <RowDefinition Height="15*"/>
-                            </Grid.RowDefinitions>
-                            <lvc:CartesianChart Name="movement" Grid.Row="0" LegendLocation="Bottom">
 
-                            </lvc:CartesianChart>
-                            <Grid Grid.Row="1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="30*"></ColumnDefinition>
-                                    <ColumnDefinition Width="40*"></ColumnDefinition>
-                                    <ColumnDefinition Width="30*"></ColumnDefinition>
-                                </Grid.ColumnDefinitions>
-                                <Button  Click="Previous" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,3" Background="#FF018DCC" Foreground="#FFFFFFFF">
-                                    <materialDesign:PackIcon Kind="ArrowLeftBoldHexagonOutline" Height="40" Width="40" RenderTransformOrigin="0.567,1.1"/>
-                                    <Button.Style>
-                                        <Style>
-                                            <Style.Triggers>
-                                                <Trigger Property="Button.IsMouseOver" Value="true">
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="MAC nascosti totali:"/>
+                            <TextBlock x:Name="total" Margin="10,0,0,0" Height="23" TextWrapping="Wrap" Foreground="#FFFF9800" FontWeight="Bold" Width="50"  />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="MAC nascosti correlati:"/>
+                            <TextBlock x:Name="correlated" Margin="10,0,0,0"  Height="23" TextWrapping="Wrap" Foreground="#FFFF9800" FontWeight="Bold" Width="50" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="0,0,20,0">
+                            <TextBlock Height="23" HorizontalAlignment="Left" TextWrapping="Wrap" Text="Percentuale Errore:" />
+                            <TextBlock x:Name="error" Margin="10,0,0,0"  Height="23" TextWrapping="Wrap" Foreground="#FFFF9800" FontWeight="Bold" Width="50"/>
+                        </StackPanel>
 
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
+                    </Grid>
 
-                                </Button>
-                                <TextBlock Name='txtB' Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Foreground="#FF018DCC" />
+                </Grid>
 
-                                <Button  Click="Next" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,3" Background="#FF018DCC" Foreground="#FFFFFFFF">
-                                    <materialDesign:PackIcon Kind="ArrowRightBoldHexagonOutline" Height="40" Width="40" RenderTransformOrigin="0.567,1.1"/>
-                                    <Button.Style>
-                                        <Style>
-                                            <Style.Triggers>
-                                                <Trigger Property="Button.IsMouseOver" Value="true">
+                <Grid Grid.Column="1" Grid.Row="1">
+                    <lvc:CartesianChart x:Name="scatterplot" LegendLocation="Bottom"  Grid.Row="0" >
+                    </lvc:CartesianChart>
+                </Grid>
 
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
+                <Grid Grid.Column="2" Grid.Row="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                                </Button>
-                            </Grid>
+                    <Grid Grid.Row="1">
+
+                    </Grid>
+
+                </Grid>
+
+                <TextBlock Grid.Row="2" Grid.Column="2" Text="[m]" VerticalAlignment="Bottom" FontSize="14" />
+            </Grid>
+
+            <Grid x:Name="deviceNumberChart" Visibility="Hidden" Margin="80,0,0,0">
+
+                <lvc:CartesianChart Name="fiveMinutes" Grid.Column="0" LegendLocation="Right">
+
+                </lvc:CartesianChart>
+
+            </Grid>
+
+            <Grid x:Name="movementChart" ScrollViewer.VerticalScrollBarVisibility="Visible" Visibility="Hidden" Margin="80,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="15*"/>
+                    <RowDefinition Height="85*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="15*"></ColumnDefinition>
+                        <ColumnDefinition Width="30*"></ColumnDefinition>
+                        <ColumnDefinition Width="15*"></ColumnDefinition>
+                        <ColumnDefinition Width="40*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Row="0" Grid.Column="0">
+                        <TextBox Grid.Column="0" TextWrapping="Wrap" Text="Seleziona Intervallo:"  BorderThickness="0" HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                        <Grid Grid.Column="1" Visibility="Hidden">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20*"/>
+                                <ColumnDefinition Width="80*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="From: " BorderThickness="0" VerticalAlignment="Center" />
+
+
+                            <xctk:DateTimeUpDown Name="startDate" Initialized="StartDateInitialized" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Grid.Column="1" Margin="3,5"/>
                         </Grid>
-                        <Grid Grid.Column="1">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="35*"/>
-                                <RowDefinition Height="65*"/>
-                            </Grid.RowDefinitions>
-                            <Grid Grid.Row="0">
+                    </Grid>
 
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="20*"/>
-                                    <RowDefinition Height="30*"/>
-                                    <RowDefinition Height="30*"/>
-                                    <RowDefinition Height="20*"/>
-                                </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Grid.Column="1" Visibility="Hidden">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="20*"/>
+                            <ColumnDefinition Width="80*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Text="To: " BorderThickness="0" VerticalAlignment="Center" />
+                        <xctk:DateTimeUpDown Name="endDate" Initialized="EndDateInitialized" Grid.Column="1" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Margin="3,5"/>
 
-                                <TextBox TextWrapping="Wrap" Text="SELECT AN INTERVAL " Margin="3,3,32.4,0" BorderThickness="0" HorizontalAlignment="Center" />
+                    </Grid>
+                    
+                    <Button 
+                        Grid.Row="0" 
+                        Grid.Column="2"
+                        Content="Cerca"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Center"
+                        Margin="0,3"
+                        Foreground="black"
+                        Background ="#ff9800"
+                        Height="30"
+                        MaxWidth="90"
+                        Click="Search" FontSize="12" />
 
-                                <Grid Grid.Row="1">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20*"/>
-                                        <ColumnDefinition Width="80*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Text="From: " BorderThickness="0" VerticalAlignment="Center" />
+                    <DockPanel Grid.Row="0" Grid.Column="1"  VerticalAlignment="Center" Margin="10">
+                        <TextBox Text="{Binding ElementName=slValue, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Margin="5,0,0,0" Width="40" CaretBrush="#FFFF9800" SelectionBrush="#FFFF9800" />
+                        <Slider Maximum="2880"   IsSnapToTickEnabled="True" Name="slValue" Foreground="#FFFF9800" BorderBrush="#FF7EF10B" />
+                    </DockPanel>
+                    
+                    
+                </Grid>
 
+                <Grid Grid.Row="1" Margin="0,0,0,10">
+                    
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="15*"/>
+                        <ColumnDefinition Width="75*"/>
+                    </Grid.ColumnDefinitions>
 
-                                    <xctk:DateTimeUpDown Name="startDate" Initialized="StartDateInitialized" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Grid.Column="1" Margin="3,5"/>
-                                </Grid>
-
-                                <Grid Grid.Row="2">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20*"/>
-                                        <ColumnDefinition Width="80*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Text="To: " BorderThickness="0" VerticalAlignment="Center" />
-                                    <xctk:DateTimeUpDown Name="endDate" Initialized="EndDateInitialized" Grid.Column="1" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Margin="3,5"/>
-
-                                </Grid>
-                                <Button Content="Search" Click="Search" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,3" Background="#FF018DCC" Foreground="#FFFFFFFF">
-                                    <Button.Style>
-                                        <Style>
-                                            <Style.Triggers>
-                                                <Trigger Property="Button.IsMouseOver" Value="True">
-
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-
-                                </Button>
-
-
-                            </Grid>
-
-                            <ListBox Name="CheckListbox"  
+                    <ListBox Grid.Column="0" Name="CheckListbox"  
                                      Grid.Row="1" 
                                      Background="Transparent"  
                                      ScrollViewer.VerticalScrollBarVisibility="Visible" 
@@ -292,84 +317,122 @@
                                      VirtualizingPanel.IsVirtualizing="True"
                                      VirtualizingPanel.VirtualizationMode="Recycling">
 
-                                <ListBox.ItemTemplate>
-                                    <HierarchicalDataTemplate>
-                                        <CheckBox Name="checkBox" Content="{Binding FormattedMacAddr}"  
-                                                  Background="LightBlue" Checked="CheckBoxChecked" Unchecked="CheckBoxUnchecked">
+                        <ListBox.ItemTemplate>
+                            <HierarchicalDataTemplate>
+                                <CheckBox Name="checkBox" Content="{Binding FormattedMacAddr}"  
+                                                  Background="LightSeaGreen" Checked="CheckBoxChecked" Unchecked="CheckBoxUnchecked">
 
 
-                                        </CheckBox>
-                                    </HierarchicalDataTemplate>
-                                </ListBox.ItemTemplate>
+                                </CheckBox>
+                            </HierarchicalDataTemplate>
+                        </ListBox.ItemTemplate>
 
-                            </ListBox>
+                    </ListBox>
 
-                        </Grid>
+                    <lvc:CartesianChart Name="movement" Grid.Column="1" LegendLocation="Bottom" Grid.ColumnSpan="2">
 
-                    </Grid>
-
-                </TabItem>
-                <TabItem Header="TEMPORAL DISTRIBUTION">
-                    <Grid>
+                    </lvc:CartesianChart>
+                    
+                    <Grid Grid.Row="1" Grid.ColumnSpan="2" Visibility="Hidden">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80*"></ColumnDefinition>
-                            <ColumnDefinition Width="20*"></ColumnDefinition>
+                            <ColumnDefinition Width="30*"></ColumnDefinition>
+                            <ColumnDefinition Width="40*"></ColumnDefinition>
+                            <ColumnDefinition Width="30*"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
-                        <lvc:CartesianChart Name="temporalDistribution" LegendLocation="None" Grid.Column="0" Margin="10">
-                        </lvc:CartesianChart>
+                        <Button  Click="Previous" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,3" Background="#FF018DCC" Foreground="#FFFFFFFF">
+                            <materialDesign:PackIcon Kind="ArrowLeftBoldHexagonOutline" Height="40" Width="40" RenderTransformOrigin="0.567,1.1"/>
+                            <Button.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <Trigger Property="Button.IsMouseOver" Value="true">
 
-                        <Grid Grid.Column="1">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="35*"/>
-                                <RowDefinition Height="65*"/>
-                            </Grid.RowDefinitions>
-                            <Grid Grid.Row="0">
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
 
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="20*"/>
-                                    <RowDefinition Height="30*"/>
-                                    <RowDefinition Height="30*"/>
-                                    <RowDefinition Height="20*"/>
-                                </Grid.RowDefinitions>
+                        </Button>
+                        <TextBlock Name='txtB' Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" Foreground="#FF018DCC" />
 
-                                <TextBox TextWrapping="Wrap" Text="SELECT AN INTERVAL " Margin="3,3,32.4,0" BorderThickness="0" HorizontalAlignment="Center" />
+                        <Button  Click="Next" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,3" Background="#FF018DCC" Foreground="#FFFFFFFF">
+                            <materialDesign:PackIcon Kind="ArrowRightBoldHexagonOutline" Height="40" Width="40" RenderTransformOrigin="0.567,1.1"/>
+                            <Button.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <Trigger Property="Button.IsMouseOver" Value="true">
 
-                                <Grid Grid.Row="1">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20*"/>
-                                        <ColumnDefinition Width="80*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Text="From: " BorderThickness="0" VerticalAlignment="Center" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
 
-
-                                    <xctk:DateTimeUpDown Name="sDate" Initialized="SDateInitialized" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Grid.Column="1" Margin="3,5"/>
-                                </Grid>
-
-                                <Grid Grid.Row="2">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="20*"/>
-                                        <ColumnDefinition Width="80*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox Text="To: " BorderThickness="0" VerticalAlignment="Center" />
-                                    <xctk:DateTimeUpDown Name="eDate" Initialized="EDateInitialized" Grid.Column="1" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Margin="3,5"/>
-
-                                </Grid>
-                                <Button Content="Search" Click="SearchRange" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,3" Background="#FF018DCC" Foreground="White">
-                                    <Button.Style>
-                                        <Style>
-                                            <Style.Triggers>
-                                                <Trigger Property="Button.IsMouseOver" Value="True">
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </Grid>
-                        </Grid>
+                        </Button>
                     </Grid>
-                </TabItem>
+                </Grid>
 
-            </dragablz:TabablzControl>
+
+            </Grid>
+
+            <Grid x:Name="temporalDistrChart" Visibility="Hidden">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80*"></ColumnDefinition>
+                    <ColumnDefinition Width="20*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <lvc:CartesianChart Name="temporalDistribution" LegendLocation="None" Grid.Column="0" Margin="10">
+                </lvc:CartesianChart>
+
+                <Grid Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="35*"/>
+                        <RowDefinition Height="65*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="20*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="30*"/>
+                            <RowDefinition Height="20*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBox TextWrapping="Wrap" Text="SELECT AN INTERVAL " Margin="3,3,32.4,0" BorderThickness="0" HorizontalAlignment="Center" />
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20*"/>
+                                <ColumnDefinition Width="80*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="From: " BorderThickness="0" VerticalAlignment="Center" />
+
+
+                            <xctk:DateTimeUpDown Name="sDate" Initialized="SDateInitialized" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Grid.Column="1" Margin="3,5"/>
+                        </Grid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="20*"/>
+                                <ColumnDefinition Width="80*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="To: " BorderThickness="0" VerticalAlignment="Center" />
+                            <xctk:DateTimeUpDown Name="eDate" Initialized="EDateInitialized" Grid.Column="1" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Margin="3,5"/>
+
+                        </Grid>
+                        <Button Content="Search" Click="SearchRange" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,3" Background="#FF018DCC" Foreground="White">
+                            <Button.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <Trigger Property="Button.IsMouseOver" Value="True">
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Grid>
+
+
+
         </Grid>
 
     </Grid>

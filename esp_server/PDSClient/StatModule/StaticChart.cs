@@ -82,12 +82,12 @@ namespace PDSClient.StatModule
             if (phoneInfo == null)
             {
                 //TODO messaggio di errore
-                System.Windows.MessageBox.Show("Error with the database connection. Please check that the database is online.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Windows.MessageBox.Show("Errore con la connessione al database. Controllare che il database sia online.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
             else if(phoneInfo.Count == 0)
             {
-                System.Windows.MessageBox.Show("No data found within the given time interval.",
+                System.Windows.MessageBox.Show("Nessuna posizione rilevata nell'intervallo specificato",
                     "No data found",
                     MessageBoxButton.OK,
                     MessageBoxImage.Warning);
