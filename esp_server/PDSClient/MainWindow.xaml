@@ -117,7 +117,7 @@
                     </ListViewItem>
                     <ListViewItem Height="60" PreviewMouseLeftButtonUp="MACDistributionChartBtnUp">
                         <StackPanel Orientation="Horizontal">
-                            <materialDesign:PackIcon Kind="filter" Width="25" Height="25" Margin="10" VerticalAlignment="Center" />
+                            <materialDesign:PackIcon Kind="podium" Width="25" Height="25" Margin="10" VerticalAlignment="Center" />
                             <TextBlock Text="Distribuzione MAC" Margin="20 10" Foreground="#FFFFCF89"/>
                         </StackPanel>
                     </ListViewItem>
