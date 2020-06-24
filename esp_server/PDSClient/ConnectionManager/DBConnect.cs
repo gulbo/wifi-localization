@@ -696,12 +696,18 @@ namespace PDSClient.ConnectionManager
 
         public List<PhoneInfo> MostFrequentPhones(int n, int min, int max, int threshold = 0)
         {
-            List<PhoneInfo> list = new List<PhoneInfo>();
-            string query = "SELECT MAC, timestamp, x, y FROM posizioni AS p1 WHERE p1.MAC IN " +
-                "(SELECT * FROM " +
-                "(SELECT MAC " +
-                "FROM posizioni AS p2 WHERE p2.timestamp < " + max + " AND p2.timestamp > " + min +
-                " GROUP BY p2.MAC ORDER BY COUNT(*) DESC LIMIT " + n+") AS p3) AND p1.timestamp < " + max + " AND p1.timestamp > " + min + ";";
+            List<PhoneInfo> MACList = new List<PhoneInfo>();
+            string query = "SELECT DISTINCT MAC, timestamp " +
+                "FROM posizioni AS p1" +
+                " WHERE p1.MAC IN (SELECT * " +
+                                    "FROM (SELECT MAC " +
+                                          "FROM posizioni AS p2 " +
+                                          "WHERE p2.timestamp < " + max + " AND p2.timestamp > " + min +
+                                          " GROUP BY p2.MAC" +
+                                          " ORDER BY COUNT(*) DESC" +
+                                          " LIMIT " + n+")" +
+                                   " AS p3)" +
+               " AND p1.timestamp < " + max + " AND p1.timestamp > " + min + ";";
 
             using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
             using (MySqlCommand cmd = connessione.CreateCommand())
@@ -714,11 +720,11 @@ namespace PDSClient.ConnectionManager
                     {
                         while (dataReader.Read())
                         {
-                            PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), dataReader.GetDouble(2), dataReader.GetDouble(3));
-                            list.Add(pi);
+                            PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), 0, 0);
+                            MACList.Add(pi);
                         }
                         Connesso = true;
-                        return list;
+                        return MACList;
                     }
                 }
                 catch (MySqlException e)

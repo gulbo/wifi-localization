@@ -1,11 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
-
+using System.Windows.Media;
 
 namespace PDSClient.StatModule
 {
     class Utils
     {
+        public static SolidColorBrush orange  = Brushes.Orange;
+        public static SolidColorBrush purple  = Brushes.MediumSlateBlue;
+        public static SolidColorBrush green  = Brushes.Teal;
+        public static SolidColorBrush red = Brushes.IndianRed;
+
         public static DateTime UnixTimestampToDateTime(long unixTimestamp)
         {
             // Unix timestamp is seconds past epoch
