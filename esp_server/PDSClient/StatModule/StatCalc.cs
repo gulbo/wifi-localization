@@ -54,18 +54,15 @@ namespace PDSClient.StatModule
                                                                 item.Select(it => it.Position.Ordinata).Average()),
                                                         item.Select(it => it.Global).First())).ToList();
 
-            //return list;
-            //return list.GroupBy(pi => pi.MacAddr)
-            //        .Select(item => item.OrderByDescending(it => it.Timestamp).First()).ToList();
         }
 
         public List<Scheda> GetBoardsPosition() {
             return DBConnection.SelezionaSchede();
         }
-
-        public List<PhoneInfo> MostFrequentPhones(int n, int min, int max, int threshold = 0)
+        //interfaccia per contattare il DB
+        public List<PhoneInfo> MostFrequentPhones(int numberOfMACs, int min, int max, int threshold = 0)
         {
-            List<PhoneInfo> list = DBConnection.MostFrequentPhones(n, min, max, threshold);
+            List<PhoneInfo> list = DBConnection.MostFrequentPhones(numberOfMACs, min, max, threshold);
 
             return list;
         }

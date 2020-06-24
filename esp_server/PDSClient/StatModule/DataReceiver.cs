@@ -52,29 +52,41 @@ namespace PDSClient.StatModule
             scatterChart.Series.Add(new ScatterSeries(boardsPos)
             {
                 Title = "Schede",
+                MinPointShapeDiameter = 15,
                 PointGeometry = DefaultGeometries.Triangle,
-                Fill = System.Windows.Media.Brushes.DarkGreen
+                StrokeThickness = 4,
+                Fill = System.Windows.Media.Brushes.Transparent,
+                Stroke = Utils.green
 
             }) ;
             scatterChart.Series.Add(new ScatterSeries(phonePos)
             {
                 Title = "Dispositivi Visibili",
+                MinPointShapeDiameter = 15,
                 PointGeometry = DefaultGeometries.Diamond,
-                Fill = System.Windows.Media.Brushes.Orange,
+                StrokeThickness = 4,
+                Fill = System.Windows.Media.Brushes.Transparent,
+                Stroke = Utils.orange,
                 
             });
             scatterChart.Series.Add(new ScatterSeries(hiddenPhonePos)
             {
                 Title = "Dispositivi Nascosti",
-                PointGeometry = DefaultGeometries.Square,
-                Fill = System.Windows.Media.Brushes.Purple
+                MinPointShapeDiameter = 15,
+                PointGeometry = DefaultGeometries.Diamond,
+                StrokeThickness = 4,
+                Fill = System.Windows.Media.Brushes.Transparent,
+                Stroke = Utils.purple
             });
 
             scatterChart.Series.Add(new ScatterSeries(selectedPhonePos)
             {
                 Title = "MAC selezionato",
-                PointGeometry = DefaultGeometries.Circle,
-                Fill =System.Windows.Media.Brushes.DarkRed
+                MinPointShapeDiameter = 20,
+                PointGeometry = DefaultGeometries.Cross,                
+                StrokeThickness = 4,
+                Fill = System.Windows.Media.Brushes.Transparent,
+                Stroke = Utils.red
             });
 
             scatterChart.AxisX.Add(new Axis
@@ -344,7 +356,7 @@ namespace PDSClient.StatModule
                 PointGeometrySize = 20,
                 StrokeThickness = 4,
                 Fill = System.Windows.Media.Brushes.Transparent,
-                Stroke = System.Windows.Media.Brushes.DarkGreen,
+                Stroke = Utils.green,
                 Title = "Dispositivi"
             });
 
@@ -354,7 +366,7 @@ namespace PDSClient.StatModule
                 PointGeometrySize = 20,
                 StrokeThickness = 4,
                 Fill = System.Windows.Media.Brushes.Transparent,
-                Stroke = System.Windows.Media.Brushes.Purple,
+                Stroke = Utils.purple,
                 Title= "Dispositivi Nascosti"
    
             });
@@ -365,7 +377,7 @@ namespace PDSClient.StatModule
                 PointGeometrySize = 20,
                 StrokeThickness = 4,
                 Fill = System.Windows.Media.Brushes.Transparent,
-                Stroke = System.Windows.Media.Brushes.Orange,
+                Stroke = Utils.orange,
                 Title = "Dispositivi Visibili"
             });
 
