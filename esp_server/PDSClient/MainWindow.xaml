@@ -87,7 +87,11 @@
         </Grid>
 
         <Grid x:Name="chartMenu" Width="60" HorizontalAlignment="Left" Background="#FF0C505B" Panel.ZIndex="1">
-            <StackPanel>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="90*" />
+                <RowDefinition Height="10*" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0">
                 <Grid Height="60" Background="Snow">
                     <Button x:Name="closeMenuBtn" Width="60" Height="60" Background="{x:Null}" BorderBrush="{x:Null}" VerticalAlignment="Top" HorizontalAlignment="Right" Visibility="Collapsed" Click="closeMenuBtn_Click">
                         <materialDesign:PackIcon Foreground="#FF0C505B" Kind="ArrowLeft" Width="25" Height="25"/>
@@ -96,6 +100,7 @@
                         <materialDesign:PackIcon Foreground="#FF0C505B" Kind="Menu" Width="25" Height="25"/>
                     </Button>
                 </Grid>
+
                 <ListView ScrollViewer.HorizontalScrollBarVisibility="Disabled" Foreground="#ff9800" >
                     <ListViewItem Height="60" PreviewMouseLeftButtonUp="realTimeChartBtnUp">
                         <StackPanel Orientation="Horizontal">
@@ -115,20 +120,24 @@
                             <TextBlock Text="Movimento Dispositivo" Margin="20 10" Foreground="#FFFFCF89"/>
                         </StackPanel>
                     </ListViewItem>
-                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="MACDistributionChartBtnUp">
+                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="MACDistributionChartBtnUp" >
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="podium" Width="25" Height="25" Margin="10" VerticalAlignment="Center" />
                             <TextBlock Text="Distribuzione MAC" Margin="20 10" Foreground="#FFFFCF89"/>
                         </StackPanel>
                     </ListViewItem>
-                    
+
                 </ListView>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="1">
+                <TextBlock x:Name="boardCounter" Text="0" Margin="25, 10" Foreground="#FFFF9800"  FontFamily="Source Serif Pro Black" FontSize="22"/>
+                <TextBlock Text="Schede Connesse" Margin="20 20" Foreground="#FFFFCF89"/>
             </StackPanel>
         </Grid>
 
         <Grid Margin="0 60 0 0" >
 
-            <Grid x:Name="realTimePosChart" Visibility="Hidden" Margin="80,0,0,0" >
+            <Grid x:Name="realTimePosChart" Visibility="Visible" Margin="80,0,0,0" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="10*" />
                     <RowDefinition Height="80*" />
@@ -317,7 +326,7 @@
                         <ListBox.ItemTemplate>
                             <HierarchicalDataTemplate>
                                 <CheckBox Name="checkBox" Content="{Binding FormattedMacAddr}"  
-                                                  Background="LightSeaGreen" Checked="CheckBoxChecked" Unchecked="CheckBoxUnchecked">
+                                                  Background="#ff9800" Checked="CheckBoxChecked" Unchecked="CheckBoxUnchecked">
                                 </CheckBox>
                             </HierarchicalDataTemplate>
                         </ListBox.ItemTemplate>
@@ -330,7 +339,7 @@
 
             </Grid>
 
-            <Grid x:Name="temporalDistrChart" Visibility="Visible" Margin="80,0,0,0">
+            <Grid x:Name="temporalDistrChart" Visibility="Hidden" Margin="80,0,0,0">
                 
                 <Grid.RowDefinitions>
                     <RowDefinition Height="15*"/>
@@ -355,7 +364,7 @@
                                 <ColumnDefinition Width="85*"/>
                             </Grid.ColumnDefinitions>
                         <TextBlock Text="Da: " VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        <xctk:DateTimeUpDown materialDesign:ThemeAssist.Theme="Dark" Name="sDate" Initialized="SDateInitialized" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Grid.Column="1" Margin="0,5" MaxHeight="30"/>
+                        <xctk:DateTimePicker   Name="sDate" Initialized="SDateInitialized" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Grid.Column="1" Margin="0,5" MaxHeight="30"/>
                         </Grid>
 
                     <Grid Grid.Column="2">
@@ -364,7 +373,7 @@
                             <ColumnDefinition Width="85*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="A: " VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                        <xctk:DateTimePicker materialDesign:ThemeAssist.Theme="Dark" Name="eDate"  Initialized="EDateInitialized" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Grid.Column="1" Margin="0,5" MaxHeight="30" MouseWheelActiveOnFocus="False"/>
+                        <xctk:DateTimePicker  Name="eDate"  Initialized="EDateInitialized" Format="Custom" FormatString="dddd dd/MMM/yyyy  HH:mm" Grid.Column="1" Margin="0,5" MaxHeight="30" MouseWheelActiveOnFocus="False"/>
                     </Grid>
                     
                     <Button

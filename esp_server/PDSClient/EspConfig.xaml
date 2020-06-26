@@ -23,7 +23,7 @@
 
         </Grid.RowDefinitions>
 
-        <Grid Height="60" VerticalAlignment="Top" Grid.Row="1" Background="#FF00867D">
+        <Grid Height="60" VerticalAlignment="Top" Grid.Row="0" Background="#FF00867D">
             <TextBlock Text="Wifi Localization" Foreground="black" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" FontFamily="Champagne &amp; Limousines" />
             <Button Name="Close" Click="closeButton" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Height="26" Margin="0,16,16.2,20" Width="26" ScrollViewer.CanContentScroll="True" Padding="0" ToolTip="Close">
                 <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="24" Width="24" UseLayoutRounding="False" Foreground="black"/>
@@ -40,16 +40,17 @@
 
         </Grid>
 
-        <Grid VerticalAlignment="Top" Background="#4db6ac" Grid.Row="2">
+        <Grid VerticalAlignment="Top" Background="#4db6ac" Grid.Row="1">
             <TextBlock Text="Configuration" Foreground="black" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontFamily="Champagne &amp; Limousines" />
         </Grid>
 
-        <Grid Grid.Row="3" Margin="0 60 0 0">
+        <Grid Grid.Row="2" Margin="0 30 0 0">
 
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="85*"/>
-                <RowDefinition Height="15*"/>
+                <RowDefinition Height="10*"/>
+                <RowDefinition Height="5*"/>
             </Grid.RowDefinitions>
 
             <StackPanel x:Name="parentPanel"
@@ -125,14 +126,12 @@
 
             </ScrollViewer>
 
-
-
             <StackPanel x:Name="ButtonPanel"
               Grid.Row="2"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               Orientation="Horizontal"
-              Margin="5,50,5,5">
+              Margin="5 30">
                 <Button x:Name="btn_ok"
                 Foreground="black"
                 Background ="#ff9800"
@@ -146,6 +145,10 @@
                 Click="backButton"/>
             </StackPanel>
 
+            <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="5 0">
+                <CheckBox x:Name="trunkateCheckBox" Background ="#ff9800" Margin="10 0" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
+                <TextBlock x:Name="checkBlockText" Text="elimina storia pacchetti catturati" Foreground="LightGray"/>
+            </StackPanel>
         </Grid>
     </Grid>
 </Window>

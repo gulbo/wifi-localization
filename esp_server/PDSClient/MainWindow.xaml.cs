@@ -75,10 +75,11 @@ namespace PDSClient
             _boards = boards;
             this.DBConnection = DBConnection;
 
-            espServer = new EspServer(_boards.Count, DBConnection, connectionErrorAction);
+            espServer = new EspServer(_boards.Count, DBConnection, connectionErrorAction, this);
             dr = new DataReceiver(this,_boards.Count, espServer, DBConnection, scatterplot, fiveMinutes, keyNotFoundAction);
             sc = new StaticChart(DBConnection, CheckListbox,movement,temporalDistribution);
             sc.animationCurrTimestamp = (DateTime.Now.Ticks - 621355968000000000) / 10000000;
+            boardCounter.Text = espServer.getBoardsConnected().ToString();
             DataContext = this;
         }
 
@@ -261,6 +262,11 @@ namespace PDSClient
             total.Text = tot.ToString();
             correlated.Text = corr.ToString();
             error.Text = (err * 100).ToString("0.00", CultureInfo.InvariantCulture) + " %";
+        }
+
+        public void UpdateBoardCounterTextBlock (int boardCount)
+        {
+            boardCounter.Text = boardCount.ToString();
         }
 
         //metodo per aprire il menù laterale
