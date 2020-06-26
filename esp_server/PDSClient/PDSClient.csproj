@@ -154,9 +154,6 @@
       <DependentUpon>EspConfig.xaml</DependentUpon>
     </Compile>
     <Compile Include="ConnectionManager\PhoneInfoComparer.cs" />
-    <Compile Include="StartConfiguration.xaml.cs">
-      <DependentUpon>StartConfiguration.xaml</DependentUpon>
-    </Compile>
     <Compile Include="StatModule\DataReceiver.cs" />
     <Compile Include="StatModule\StatCalc.cs" />
     <Compile Include="StatModule\StaticChart.cs" />
@@ -184,10 +181,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="StartConfiguration.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

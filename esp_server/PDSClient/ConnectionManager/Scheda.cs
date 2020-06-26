@@ -32,6 +32,24 @@ namespace PDSClient.ConnectionManager
             return ID_scheda == scheda.ID_scheda;
         }
 
+        public override bool Equals(object obj)
+        {
+            //Check for null and compare run-time types.
+            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                Scheda board = (Scheda)obj;
+                if (ID_scheda == board.ID_scheda)
+                {
+                    return Punto.Equals(board.Punto);
+                }
+            }
+            return false;
+        }
+
         public override string ToString()
         {
             StringBuilder builderStringa = new StringBuilder();
