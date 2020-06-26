@@ -11,7 +11,7 @@ namespace PDSClient.StatModule
         public static SolidColorBrush purple  = Brushes.MediumSlateBlue;
         public static SolidColorBrush green  = Brushes.Teal;
         public static SolidColorBrush red = Brushes.IndianRed;
-        public static SolidColorBrush lightOrange = Brushes.PeachPuff;
+        public static SolidColorBrush lightOrange = Brushes.LightSalmon;
         
 
         public static DateTime UnixTimestampToDateTime(long unixTimestamp)
