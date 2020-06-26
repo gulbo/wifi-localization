@@ -373,7 +373,30 @@ namespace PDSClient.ConnectionManager
                 return false;
             }
         }
+        
+        public bool RemovePosizioni()
+        {
+            try
+            {
+                string query = String.Format("DELETE FROM posizioni");
 
+                using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (MySqlCommand cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Errore durante la cancellazione della storia delle posizioni" + e.ToString());
+                Connesso = false;
+                return false;
+            }
+        }
         //Seleziona l'elenco dei pacchetti dalla tabella 'pacchetti' del DB
 
         public List<Pacchetto> SelezionaPacchetti(string query)
