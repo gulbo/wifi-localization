@@ -12,7 +12,7 @@ namespace PDSClient.ConnectionManager
 
         public Scheda()
         {
-
+            Punto = new Punto(0, 0);
         }
 
         public Scheda(int id_scheda, Punto punto)

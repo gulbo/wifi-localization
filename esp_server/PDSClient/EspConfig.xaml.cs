@@ -15,6 +15,7 @@ using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using System.Globalization;
 using System.Collections.ObjectModel;
+using PDSClient.StatModule;
 
 namespace PDSClient.ConnectionManager
 {
@@ -174,28 +175,41 @@ namespace PDSClient.ConnectionManager
                 return;
             }
             System.Diagnostics.Debug.WriteLine("Boards correctly inserted into db");
+            if ((bool) trunkateCheckBox.IsChecked)
+            {
+                _dbConnection.RemovePacchetti();
+                _dbConnection.RemovePosizioni();
+            }
             MainWindow mw = new MainWindow(_dbConnection, boards);
 
             this.Close();
             _initialWindow.Close();
             mw.Show();
+            
         }
 
-        private void ButtonCancel(object sender, RoutedEventArgs e)
-        {
-            this.Close();
-        }
         private void ButtonDelete(object sender, RoutedEventArgs e)
         {
             Button ClickedButton = (Button) sender;
             Scheda DeletedBoard = (Scheda) ClickedButton.DataContext;
             Boards.Remove(DeletedBoard);
+            
         }
 
         private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
                 this.DragMove();
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            checkBlockText.Foreground = Utils.lightOrange;
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e)
+        {
+            checkBlockText.Foreground = Brushes.LightGray;
         }
     }
 }

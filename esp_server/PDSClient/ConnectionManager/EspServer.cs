@@ -20,11 +20,13 @@ namespace PDSClient.ConnectionManager
         private CancellationTokenSource cancellation_token_source_;     /** generatore di Tokens per fermare i threads in esecuzione */
         private int boards_number_;                                     /** numbero di boards presenti */
         private List<Thread> board_handlers_;                           /** lista dei threads che gestiscono le connessioni con le boards */
+        private MainWindow mainWindow;                                  /** MainWindow chiamante*/
         private bool is_running_;                                      
 
-        public EspServer(int boards_number, DBConnect DBConnection, Action ConnectionErrorAction)
+        public EspServer(int boards_number, DBConnect DBConnection, Action ConnectionErrorAction, MainWindow caller)
         {
             boards_number_ = boards_number;
+            mainWindow = caller;
             tcp_listener_ = new TcpListener(IPAddress.Any, ESP_SERVER_PORT);
             board_handlers_ = new List<Thread>();
             is_running_ = false;
@@ -118,7 +120,7 @@ namespace PDSClient.ConnectionManager
                     while (!token.IsCancellationRequested)
                     {
                         writeDebugLine_(getBoardsConnected() + " boards connesse");
-
+                        
                         int ping_seconds = 60;
                         if (!board.pingFor(ping_seconds))
                             throw new Exception("Ping lost for board" + board.getBoardID());
@@ -164,6 +166,8 @@ namespace PDSClient.ConnectionManager
                                                     System.Windows.MessageBoxButton.OK,
                                                     System.Windows.MessageBoxImage.Error)
                                                 ).Start();
+            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
+           
         }
 
         private void signalBoardConnected_(int board_id)
@@ -180,6 +184,7 @@ namespace PDSClient.ConnectionManager
                                                    System.Windows.MessageBoxButton.OK,
                                                    System.Windows.MessageBoxImage.Information)
                                                ).Start();
+            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
         }
 
         /**
