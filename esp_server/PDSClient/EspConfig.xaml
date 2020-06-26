@@ -16,45 +16,113 @@
 
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
 
-        </Grid.RowDefinitions>
+        <Button Name="Close"
+                Click="closeButton"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Top"
+                Background="{x:Null}"
+                BorderBrush="{x:Null}"
+                Height="26"               
+                Width="26"
+                Margin="0,16,16.2,20"
+                ScrollViewer.CanContentScroll="True"
+                Padding="0"
+                ToolTip="Close" Panel.ZIndex="1">
+            <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="24" Width="24" UseLayoutRounding="False" Foreground="WhiteSmoke"/>
+            <Button.Style>
+                <Style>
+                    <Style.Triggers>
+                        <Trigger Property="Button.IsMouseOver" Value="True">
 
-        <Grid Height="60" VerticalAlignment="Top" Grid.Row="0" Background="#FF00867D">
-            <TextBlock Text="Wifi Localization" Foreground="black" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" FontFamily="Champagne &amp; Limousines" />
-            <Button Name="Close" Click="closeButton" HorizontalAlignment="Right" VerticalAlignment="Center" Background="{x:Null}" BorderBrush="{x:Null}" Height="26" Margin="0,16,16.2,20" Width="26" ScrollViewer.CanContentScroll="True" Padding="0" ToolTip="Close">
-                <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="24" Width="24" UseLayoutRounding="False" Foreground="black"/>
-                <Button.Style>
-                    <Style>
-                        <Style.Triggers>
-                            <Trigger Property="Button.IsMouseOver" Value="True">
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Button.Style>
+        </Button>
 
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
 
-        </Grid>
+        <Grid >
 
-        <Grid VerticalAlignment="Top" Background="#4db6ac" Grid.Row="1">
-            <TextBlock Text="Configuration" Foreground="black" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontFamily="Champagne &amp; Limousines" />
-        </Grid>
+            <Grid Background="Teal"  x:Name="startWindow" Visibility="Visible" >
 
-        <Grid Grid.Row="2" Margin="0 30 0 0">
 
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="85*"/>
-                <RowDefinition Height="10*"/>
-                <RowDefinition Height="5*"/>
-            </Grid.RowDefinitions>
 
-            <StackPanel x:Name="parentPanel"
-                    Grid.Row="0"
+
+                <StackPanel Orientation="Vertical"  HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <materialDesign:PackIcon Kind="MapMarker" Width="100" Height="100" Foreground="WhiteSmoke" HorizontalAlignment="Center"  />
+                    <TextBlock Text="Wifi Localization" Foreground="WhiteSmoke"  Margin="0 0 0 70"  FontSize="45" FontFamily="MingLiU-ExtB" FontWeight="Bold" />
+                    <Button               
+                Foreground="#FF1D3232"
+                Background ="Orange"
+                FontSize="16"
+                Height="70"
+                Width ="196"
+                Margin="0 0 0 130"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Click="StartConfiguration" 
+                >
+                        <StackPanel>
+                            <TextBlock Text="Inizia" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Configurazione" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                <materialDesign:PackIcon Kind="Wifi" Width="430" Height="341" Foreground="WhiteSmoke" HorizontalAlignment="Left" VerticalAlignment="Bottom" RenderTransformOrigin="0.5,0.5" Margin="-164,0,0,-109" >
+                    <materialDesign:PackIcon.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform Angle="45.952"/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </materialDesign:PackIcon.RenderTransform>
+                </materialDesign:PackIcon>
+
+            </Grid>
+
+
+            <Grid x:Name="configurationGrid" Visibility="Hidden">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0">
+                    <Grid Height="60" VerticalAlignment="Top" Background="#FF00867D">
+                        <TextBlock Text="Wifi Localization" Foreground="WhiteSmoke" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" FontFamily="Champagne &amp; Limousines" />
+                    </Grid>
+                    <Grid VerticalAlignment="Top" Background="#4db6ac"  Margin="0 60 0 0">
+                        <TextBlock  Text="Configurazione"   Foreground="GhostWhite" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" FontFamily="Champagne &amp; Limousines" />
+                    </Grid>
+                </Grid>
+
+
+                <Button x:Name="btn_loadDB"
+                        Content="Carica dal DB"
+                        Grid.Row="1"
+                        Foreground="DarkSlateGray"
+                        Background ="#ff9800"
+                        FontSize="9"
+                        Height="Auto"
+                        Width ="Auto"
+                        Margin="0,10,20,10"
+                        HorizontalAlignment="Right"
+                        HorizontalContentAlignment="Center"
+                        VerticalContentAlignment="Center"
+                        Click ="ButtonLoadFromDB"
+                        >
+                </Button>
+
+                <StackPanel x:Name="parentPanel"
+                    Grid.Row="2"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Top"
                     Margin="10,10,0,0"
@@ -62,93 +130,85 @@
                     RenderTransformOrigin="0.463,0.451"
                     CanVerticallyScroll="True">
 
-                <TextBlock x:Name="lbl_Title" Text="Insert new Board" FontSize =" 16" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                <Button x:Name="btn_add"
-                    FontSize="20"
-                    Foreground="black"
-                    Width="40"
-                    Height="40"
-                    Margin="50,0,20,0"
-                    Content="+"
-                    Click="ButtonAdd">
-                    <Button.Template>
-                        <ControlTemplate TargetType="{x:Type Button}">
-                            <Grid >
-                                <Ellipse Fill="#ff9800"/>
-                                <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-            </StackPanel>
-
-            <ScrollViewer x:Name="BoardList"  Grid.Row="1" VerticalScrollBarVisibility="Auto" Height="Auto" MaxHeight="300">
-                <ListView x:Name="Boards_box" Height="Auto" Margin="100,20,80,30"  VerticalAlignment="Bottom">
-                    <ListView.BindingGroup>
-                        <BindingGroup Name="{x:Null}" NotifyOnValidationError="False" />
-                    </ListView.BindingGroup>
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150"/>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="35"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Name ="id_text" Grid.Column="0" Text="Board id:" Margin="12,6,0,0"/>
-                                <TextBox  Name ="id_box"  Grid.Column="0" Text="{Binding Path=ID_scheda}" Height="30" Width="20" Margin="15,0,0,0" TextAlignment="Right" VerticalAlignment="Center" />
-                                <TextBlock Name ="x_text" Grid.Column="1" Text="x:" />
-                                <TextBox  Name ="x_box" Grid.Column="1" Text="{Binding Path=Punto.Ascissa}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                <TextBlock Name ="y_text"  Grid.Column="1" Grid.Row="1" Text="y:" />
-                                <TextBox  Name ="y_box" Grid.Column="1" Grid.Row="1" Text="{Binding Path=Punto.Ordinata}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                <Button  Grid.Column="2" Name="Delete" Click="ButtonDelete"  Background="{x:Null}" BorderBrush="{x:Null}" Height="16" Margin="0,5,0,0" Width="26"  ToolTip="Close" >
-                                    <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="13" Width="15" UseLayoutRounding="False" Foreground="black"/>
-                                    <Button.Style>
-                                        <Style>
-                                            <Style.Triggers>
-                                                <Trigger Property="Button.IsMouseOver" Value="True">
-
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </Button.Style>
-                                </Button>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                    <TextBlock x:Name="lbl_Title" Text="Inserire nuova scheda" FontSize =" 16" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <Button x:Name="btn_add" Background="{x:Null}" BorderBrush="{x:Null}" Width="25" Height="25" Margin="50,0,20,0" Click="ButtonAdd" Padding="0">
+                        <materialDesign:PackIcon Kind="PLus" Width="25" Height="25"  Foreground="Orange"  />
+                    </Button>
 
 
 
-            </ScrollViewer>
+                </StackPanel>
 
-            <StackPanel x:Name="ButtonPanel"
-              Grid.Row="2"
+                <ScrollViewer x:Name="BoardList"  Grid.Row="3" VerticalScrollBarVisibility="Auto" Height="Auto" MaxHeight="300">
+                    <ListView x:Name="Boards_box" Height="Auto" Margin="100,20,80,30"  VerticalAlignment="Bottom">
+                        <ListView.BindingGroup>
+                            <BindingGroup Name="{x:Null}" NotifyOnValidationError="False" />
+                        </ListView.BindingGroup>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="100"/>
+                                        <ColumnDefinition Width="35"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Name ="id_text" Grid.Column="0" Text="Board id:" Margin="12,6,0,0"/>
+                                    <TextBox  Name ="id_box"  Grid.Column="0" Text="{Binding Path=ID_scheda}" Height="30" Width="20" Margin="15,0,0,0" TextAlignment="Right" VerticalAlignment="Center" />
+                                    <TextBlock Name ="x_text" Grid.Column="1" Text="x:" />
+                                    <TextBox  Name ="x_box" Grid.Column="1" Text="{Binding Path=Punto.Ascissa}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <TextBlock Name ="y_text"  Grid.Column="1" Grid.Row="1" Text="y:" />
+                                    <TextBox  Name ="y_box" Grid.Column="1" Grid.Row="1" Text="{Binding Path=Punto.Ordinata}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                                    <Button  Grid.Column="2" Name="Delete" Click="ButtonDelete"  Background="{x:Null}" BorderBrush="{x:Null}" Height="16" Margin="0,5,0,0" Width="26"  ToolTip="Close" >
+                                        <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="13" Width="15" UseLayoutRounding="False" Foreground="black"/>
+                                        <Button.Style>
+                                            <Style>
+                                                <Style.Triggers>
+                                                    <Trigger Property="Button.IsMouseOver" Value="True">
+
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+
+
+                </ScrollViewer>
+
+                <StackPanel x:Name="ButtonPanel"
+              Grid.Row="4"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               Orientation="Horizontal"
               Margin="5 30">
-                <Button x:Name="btn_ok"
+                    <Button x:Name="btn_ok"
                 Foreground="black"
                 Background ="#ff9800"
                 Content="OK"
                 Click="ButtonOk"/>
-                <Button x:Name="btn_back"
+                    <Button x:Name="btn_back"
                 Foreground="black"
                 Background ="#ff9800"
-                Content="Cancel"
+                Content="Indietro"
                 Margin="5"
                 Click="backButton"/>
-            </StackPanel>
+                </StackPanel>
 
-            <StackPanel Orientation="Horizontal" Grid.Row="3" Margin="5 0">
-                <CheckBox x:Name="trunkateCheckBox" Background ="#ff9800" Margin="10 0" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
-                <TextBlock x:Name="checkBlockText" Text="elimina storia pacchetti catturati" Foreground="LightGray"/>
-            </StackPanel>
+                <StackPanel Orientation="Horizontal" Grid.Row="5" Margin="5 0">
+                    <CheckBox x:Name="trunkateCheckBox" Background ="#ff9800" Margin="10 0" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked"/>
+                    <TextBlock x:Name="checkBlockText" Text="elimina storia pacchetti catturati" Foreground="DarkGray"/>
+                </StackPanel>
+            </Grid>
         </Grid>
+
+
     </Grid>
 </Window>
