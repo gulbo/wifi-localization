@@ -50,7 +50,7 @@
 
 
                 <StackPanel Orientation="Vertical"  HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <materialDesign:PackIcon Kind="MapMarker" Width="100" Height="100" Foreground="WhiteSmoke" HorizontalAlignment="Center"  />
+                    <materialDesign:PackIcon Kind="MapMarker" Width="100" Height="100" Foreground="#FFFFCD72" HorizontalAlignment="Center"  />
                     <TextBlock Text="Wifi Localization" Foreground="WhiteSmoke"  Margin="0 0 0 70"  FontSize="45" FontFamily="MingLiU-ExtB" FontWeight="Bold" />
                     <Button               
                 Foreground="#FF1D3232"
@@ -63,7 +63,7 @@
                 VerticalAlignment="Center"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
-                Click="StartConfiguration" 
+                Click="StartConfiguration" RenderTransformOrigin="0.643,0.186" FontFamily="Linux Biolinum G" FontWeight="Bold" 
                 >
                         <StackPanel>
                             <TextBlock Text="Inizia" HorizontalAlignment="Center"/>
@@ -71,12 +71,12 @@
                         </StackPanel>
                     </Button>
                 </StackPanel>
-                <materialDesign:PackIcon Kind="Wifi" Width="430" Height="341" Foreground="WhiteSmoke" HorizontalAlignment="Left" VerticalAlignment="Bottom" RenderTransformOrigin="0.5,0.5" Margin="-164,0,0,-109" >
+                <materialDesign:PackIcon Kind="Wifi" Width="446" Height="338" Foreground="WhiteSmoke" HorizontalAlignment="Left" VerticalAlignment="Bottom" RenderTransformOrigin="0.5,0.5" Margin="-167,0,0,-116" >
                     <materialDesign:PackIcon.RenderTransform>
                         <TransformGroup>
                             <ScaleTransform/>
                             <SkewTransform/>
-                            <RotateTransform Angle="45.952"/>
+                            <RotateTransform Angle="44.394"/>
                             <TranslateTransform/>
                         </TransformGroup>
                     </materialDesign:PackIcon.RenderTransform>
