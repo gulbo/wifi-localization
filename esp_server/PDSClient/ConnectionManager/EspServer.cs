@@ -159,14 +159,14 @@ namespace PDSClient.ConnectionManager
             //{
             //    System.Windows.MessageBox.Show("Board" + board_id + " disconnessa. Riconnettere!", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             //}));
-
+            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
             new Thread(() => System.Windows.MessageBox.Show(
                                                     "Board" + board_id + " disconnessa. Riconnettere!",
                                                     "Alert",
                                                     System.Windows.MessageBoxButton.OK,
                                                     System.Windows.MessageBoxImage.Error)
                                                 ).Start();
-            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
+            
            
         }
 
@@ -177,14 +177,14 @@ namespace PDSClient.ConnectionManager
             //{
             //    System.Windows.MessageBox.Show("Board" + board_id + " connessa.", "Info", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
             //}));
-
+            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
             new Thread(() => System.Windows.MessageBox.Show(
                                                    "Board" + board_id + " connessa.",
                                                    "Info",
                                                    System.Windows.MessageBoxButton.OK,
                                                    System.Windows.MessageBoxImage.Information)
                                                ).Start();
-            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
+            
         }
 
         /**
