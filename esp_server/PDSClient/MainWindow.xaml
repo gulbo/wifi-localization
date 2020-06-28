@@ -39,6 +39,18 @@
         <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="closeMenuBtn" >
             <BeginStoryboard Storyboard="{StaticResource menuClose}" />
         </EventTrigger>
+        <EventTrigger RoutedEvent="ListViewItem.PreviewMouseLeftButtonUp" SourceName="positionChartBtn" >
+            <BeginStoryboard Storyboard="{StaticResource menuClose}" />
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ListViewItem.PreviewMouseLeftButtonUp" SourceName="deviceNumChartBtn" >
+            <BeginStoryboard Storyboard="{StaticResource menuClose}" />
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ListViewItem.PreviewMouseLeftButtonUp" SourceName="movementChartBtn" >
+            <BeginStoryboard Storyboard="{StaticResource menuClose}" />
+        </EventTrigger>
+        <EventTrigger RoutedEvent="ListViewItem.PreviewMouseLeftButtonUp" SourceName="MacDistrChartBtn" >
+            <BeginStoryboard Storyboard="{StaticResource menuClose}" />
+        </EventTrigger>
     </Window.Triggers>
 
     <Grid  >
@@ -102,25 +114,25 @@
                 </Grid>
 
                 <ListView ScrollViewer.HorizontalScrollBarVisibility="Disabled" Foreground="#ff9800" >
-                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="realTimeChartBtnUp">
+                    <ListViewItem x:Name="positionChartBtn" Height="60" PreviewMouseLeftButtonUp="realTimeChartBtnUp">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="CellphoneWireless" Width="25" Height="25" Margin="10" VerticalAlignment="Center"  />
                             <TextBlock Text="Posizioni in Real Time" Margin="20 10" Foreground="#FFFFCF89"/>
                         </StackPanel>
                     </ListViewItem>
-                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="deviceNumberChartBtnUp">
+                    <ListViewItem x:Name="deviceNumChartBtn" Height="60" PreviewMouseLeftButtonUp="deviceNumberChartBtnUp">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ChartLine" Width="25" Height="25" Margin="10" VerticalAlignment="Center" />
                             <TextBlock Text="Numero Dispositivi" Margin="20 10" Foreground="#FFFFCF89"/>
                         </StackPanel>
                     </ListViewItem>
-                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="movementChartBtnUp">
+                    <ListViewItem x:Name="movementChartBtn" Height="60" PreviewMouseLeftButtonUp="movementChartBtnUp">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="CrosshairsGps" Width="25" Height="25" Margin="10" VerticalAlignment="Center" />
                             <TextBlock Text="Movimento Dispositivo" Margin="20 10" Foreground="#FFFFCF89"/>
                         </StackPanel>
                     </ListViewItem>
-                    <ListViewItem Height="60" PreviewMouseLeftButtonUp="MACDistributionChartBtnUp" >
+                    <ListViewItem x:Name="MacDistrChartBtn" Height="60" PreviewMouseLeftButtonUp="MACDistributionChartBtnUp" >
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="podium" Width="25" Height="25" Margin="10" VerticalAlignment="Center" />
                             <TextBlock Text="Distribuzione MAC" Margin="20 10" Foreground="#FFFFCF89"/>
