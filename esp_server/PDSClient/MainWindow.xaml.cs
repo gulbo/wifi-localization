@@ -288,6 +288,7 @@ namespace PDSClient
             deviceNumberChart.Visibility = System.Windows.Visibility.Hidden;
             movementChart.Visibility = System.Windows.Visibility.Hidden;
             temporalDistrChart.Visibility = System.Windows.Visibility.Hidden;
+            CollapseMenuCharts();
         }
         //metodo per il bottone (all'interno del menù) numero di dispositivi
         private void deviceNumberChartBtnUp(object sender, MouseButtonEventArgs e)
@@ -296,6 +297,7 @@ namespace PDSClient
             deviceNumberChart.Visibility = System.Windows.Visibility.Visible;
             movementChart.Visibility = System.Windows.Visibility.Hidden;
             temporalDistrChart.Visibility = System.Windows.Visibility.Hidden;
+            CollapseMenuCharts();
         }
         //metodo per il bottone (all'interno del menù) movimento
         private void movementChartBtnUp(object sender, MouseButtonEventArgs e)
@@ -304,6 +306,7 @@ namespace PDSClient
             deviceNumberChart.Visibility = System.Windows.Visibility.Hidden;
             movementChart.Visibility = System.Windows.Visibility.Visible;
             temporalDistrChart.Visibility = System.Windows.Visibility.Hidden;
+            CollapseMenuCharts();
         }
         //metodo per il bottone (all'interno del menù) ricorrenze MAC
         private void MACDistributionChartBtnUp(object sender, MouseButtonEventArgs e)
@@ -312,10 +315,17 @@ namespace PDSClient
             deviceNumberChart.Visibility = System.Windows.Visibility.Hidden;
             movementChart.Visibility = System.Windows.Visibility.Hidden;
             temporalDistrChart.Visibility = System.Windows.Visibility.Visible;
+            CollapseMenuCharts();
         }
-        private void BackToConfigBtnUp(object sender, MouseButtonEventArgs e)
+        private void CollapseMenuCharts()
         {
-
+            //controllo se il menù è aperto controllando il bottone relativo
+            if(closeMenuBtn.Visibility == System.Windows.Visibility.Visible)
+            {
+                openMenuBtn.Visibility = System.Windows.Visibility.Visible;
+                closeMenuBtn.Visibility = System.Windows.Visibility.Collapsed;
+            }
+           
         }
     }
 
