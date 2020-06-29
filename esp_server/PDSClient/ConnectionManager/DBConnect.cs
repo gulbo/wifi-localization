@@ -30,6 +30,7 @@ namespace PDSClient.ConnectionManager
             this.Connesso = false;
             schede = new ConcurrentDictionary<int, Scheda>();
         }
+
         public Scheda GetScheda(int id_scheda)
         {
             return schede[id_scheda];
@@ -42,7 +43,7 @@ namespace PDSClient.ConnectionManager
 
         //Inserisci schede nella tabella 'schede' del DB e nel local dictionary
 
-        public bool InsertScheda(Scheda scheda)
+        public bool InserisciScheda(Scheda scheda)
         {
             try
             {
@@ -69,7 +70,7 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public bool InsertScheda(IEnumerable<Scheda> schede)
+        public bool InserisciScheda(IEnumerable<Scheda> schede)
         {
             if (schede.Count() == 0)
             {
@@ -113,7 +114,7 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public bool InsertScheda(int id_scheda, double x, double y)
+        public bool InserisciScheda(int id_scheda, double x, double y)
         {
             try
             {
@@ -138,14 +139,9 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        internal List<PhoneInfo> PhoneLocationsInRange(int v1, int v2)
-        {
-            throw new NotImplementedException();
-        }
-
         //Rimuovi scheda (selezionando l'ID_scheda) nella tabella 'schede' del DB
 
-        public bool RemoveScheda(int id_scheda)
+        public bool RimuoviScheda(int id_scheda)
         {
             try
             {
@@ -169,7 +165,7 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public bool RemoveSchede()
+        public bool RimuoviSchede()
         {
             try
             {
@@ -231,7 +227,7 @@ namespace PDSClient.ConnectionManager
 
         //Inserisci pacchetti nella tabella 'pacchetti' del DB
 
-        public bool InsertPacchetto(Pacchetto pacchetto)
+        public bool InserisciPacchetto(Pacchetto pacchetto)
         {
             try
             {
@@ -256,7 +252,7 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public bool InsertPacchetto(List<Pacchetto> pacchetti)
+        public bool InserisciPacchetto(List<Pacchetto> pacchetti)
         {
             if (pacchetti.Count() == 0)
             {
@@ -299,7 +295,7 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public bool InsertPacchetto(string mac, int rssi, string ssid, int timestamp, string checksum, string id_scheda, bool global)
+        public bool InserisciPacchetto(string mac, int rssi, string ssid, int timestamp, string checksum, string id_scheda, bool global)
         {
             try
             {
@@ -326,7 +322,7 @@ namespace PDSClient.ConnectionManager
 
         //Rimuovi pacchetti (selezionando l'ID_pacchetto) nella tabella 'pacchetti' del DB
 
-        public bool RemovePacchetto(int id_pacchetto)
+        public bool RimuoviPacchetto(int id_pacchetto)
         {
             try
             {
@@ -350,7 +346,7 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public bool RemovePacchetti()
+        public bool RimuoviPacchetti()
         {
             try
             {
@@ -374,29 +370,6 @@ namespace PDSClient.ConnectionManager
             }
         }
         
-        public bool RemovePosizioni()
-        {
-            try
-            {
-                string query = String.Format("DELETE FROM posizioni");
-
-                using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (MySqlCommand cmd = connessione.CreateCommand())
-                {
-                    connessione.Open();
-                    cmd.CommandText = query;
-                    cmd.ExecuteNonQuery();
-                }
-                Connesso = true;
-                return true;
-            }
-            catch (MySqlException e)
-            {
-                System.Diagnostics.Debug.WriteLine("Errore durante la cancellazione della storia delle posizioni" + e.ToString());
-                Connesso = false;
-                return false;
-            }
-        }
         //Seleziona l'elenco dei pacchetti dalla tabella 'pacchetti' del DB
 
         public List<Pacchetto> SelezionaPacchetti(string query)
@@ -609,6 +582,33 @@ namespace PDSClient.ConnectionManager
                 return null;
             }
         }
+
+
+        public bool RimuoviPosizioni()
+        {
+            try
+            {
+                string query = String.Format("DELETE FROM posizioni");
+
+                using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (MySqlCommand cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Errore durante la cancellazione della storia delle posizioni" + e.ToString());
+                Connesso = false;
+                return false;
+            }
+        }
+
+
 
 
         public int CountLast5MinutesPhones(int nBoards, int threshold = 0)
