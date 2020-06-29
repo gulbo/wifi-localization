@@ -12,8 +12,6 @@ namespace PDSClient.ConnectionManager
     {
         public const int LUNGHEZZA_CHECKSUM = 4;
 
-        //Proprietà
-
         public PhysicalAddress MAC_address { get; private set; }
         public int RSSI { get; private set; }
         public string SSID { get; private set; }
@@ -26,7 +24,6 @@ namespace PDSClient.ConnectionManager
         {
 
         }
-
         public Pacchetto(string mac, int rssi, string ssid, int timestamp, string checksum, int id_scheda, bool global)
         {
             MAC_address = PhysicalAddress.Parse(mac);
@@ -112,7 +109,7 @@ namespace PDSClient.ConnectionManager
             {
                 System.Diagnostics.Debug.WriteLine("Errore critico: la lunghezza del ssid è errata");
                 socket.Close();
-                throw new Exception("Invalid SSID length: " + lunghezza_ssid);
+                throw new Exception("Lunghezza SSID non valida: " + lunghezza_ssid);
             }
             string ssid = "";
 

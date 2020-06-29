@@ -3,8 +3,6 @@
     public class Punto
     {
 
-        //Proprietà
-
         public double Ascissa { get; set; }
         public double Ordinata { get; set; }
 
@@ -19,22 +17,7 @@
             Ordinata = y;
         }
 
-        public override bool Equals(object obj)
-        {
-            //Check for null and compare run-time types.
-            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
-            {
-                return false;
-            }
-            else
-            {
-                Punto p = (Punto)obj;
-                return (Ordinata == p.Ordinata) && (Ascissa == p.Ascissa);
-            }
-        }
-
-        // Operators
-        public static bool operator ==(Punto  a, Punto b)
+        public static bool operator == (Punto  a, Punto b)
         {
             return Equals(a, b);
         }
@@ -42,6 +25,19 @@
         public static bool operator != (Punto a, Punto b)
         {
             return !Equals(a, b);
+        }
+
+        public override bool Equals(object oggetto)
+        {
+            if ((oggetto == null) || !this.GetType().Equals(oggetto.GetType()))
+            {
+                return false;
+            }
+            else
+            {
+                Punto punto = (Punto)oggetto;
+                return (Ordinata == punto.Ordinata) && (Ascissa == punto.Ascissa);
+            }
         }
 
         public override string ToString()

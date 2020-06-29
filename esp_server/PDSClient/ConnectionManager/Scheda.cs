@@ -5,8 +5,6 @@ namespace PDSClient.ConnectionManager
     public class Scheda
     {
 
-        //Proprietà
-
         public int ID_scheda { get; set; }
         public Punto Punto { get; set; }
 
@@ -32,19 +30,18 @@ namespace PDSClient.ConnectionManager
             return ID_scheda == scheda.ID_scheda;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object oggetto)
         {
-            //Check for null and compare run-time types.
-            if ((obj == null) || !this.GetType().Equals(obj.GetType()))
+            if ((oggetto == null) || !this.GetType().Equals(oggetto.GetType()))
             {
                 return false;
             }
             else
             {
-                Scheda board = (Scheda)obj;
-                if (ID_scheda == board.ID_scheda)
+                Scheda scheda = (Scheda)oggetto;
+                if (ID_scheda == scheda.ID_scheda)
                 {
-                    return Punto.Equals(board.Punto);
+                    return Punto.Equals(scheda.Punto);
                 }
             }
             return false;
