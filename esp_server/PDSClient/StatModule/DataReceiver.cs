@@ -20,9 +20,9 @@ namespace PDSClient.StatModule
         private CartesianChart scatterChart;
         private CartesianChart fiveMinutesChart;
         private ChartValues<Scheda> boardsPos;
-        private ChartValues<PhoneInfo> phonePos;
-        private ChartValues<PhoneInfo> hiddenPhonePos;
-        private ChartValues<PhoneInfo> selectedPhonePos;
+        private ChartValues<DatiDispositivo> phonePos;
+        private ChartValues<DatiDispositivo> hiddenPhonePos;
+        private ChartValues<DatiDispositivo> selectedPhonePos;
         private ChartValues<double> fiveMinutesPhone;
         private ChartValues<double> fiveMinutesHiddenPhone;
         private ChartValues<double> fiveMinutesVisiblePhone;
@@ -30,9 +30,9 @@ namespace PDSClient.StatModule
         private CancellationToken _ct;
         private Action _errorAction;
         private string selectedMAC="";
-        List<PhoneInfo> phoneInfos;
+        List<DatiDispositivo> phoneInfos;
 
-        public List<PhoneInfo> PhoneInfos { get { return phoneInfos; } }
+        public List<DatiDispositivo> DatiDispositivi { get { return DatiDispositivi; } }
 
         public DataReceiver(MainWindow window,int nBoards, EspServer esp_client, DBConnect dbC, CartesianChart scatterChart, CartesianChart fiveMinutesChart, Action errorAction)
         {
@@ -46,9 +46,9 @@ namespace PDSClient.StatModule
             this.scatterChart = scatterChart;
             this.fiveMinutesChart = fiveMinutesChart;
             boardsPos = new ChartValues<Scheda>();
-            hiddenPhonePos = new ChartValues<PhoneInfo>();
-            phonePos = new ChartValues<PhoneInfo>();
-            selectedPhonePos = new ChartValues<PhoneInfo>();
+            hiddenPhonePos = new ChartValues<DatiDispositivo>();
+            phonePos = new ChartValues<DatiDispositivo>();
+            selectedPhonePos = new ChartValues<DatiDispositivo>();
             scatterChart.Series.Add(new ScatterSeries(boardsPos)
             {
                 Title = "Schede",
@@ -127,11 +127,11 @@ namespace PDSClient.StatModule
 
             scatterChart.Series[0].Configuration = Mappers.Xy<Scheda>().X(b => b.Punto.Ascissa).Y(b => b.Punto.Ordinata);
             scatterChart.Series[0].Values = boardsPos;
-            scatterChart.Series[1].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
+            scatterChart.Series[1].Configuration = Mappers.Xy<DatiDispositivo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
             scatterChart.Series[1].Values = phonePos;
-            scatterChart.Series[2].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
+            scatterChart.Series[2].Configuration = Mappers.Xy<DatiDispositivo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
             scatterChart.Series[2].Values = hiddenPhonePos;
-            scatterChart.Series[3].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
+            scatterChart.Series[3].Configuration = Mappers.Xy<DatiDispositivo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
             scatterChart.Series[3].Values = selectedPhonePos;
 
             scatterChart.Series[0].LabelPoint = point => string.Format("ID scheda: {0}\n X:{1} Y:{2}",
@@ -139,20 +139,20 @@ namespace PDSClient.StatModule
                                                             Math.Round(((Scheda)point.Instance).Punto.Ascissa, 2),
                                                             Math.Round(((Scheda)point.Instance).Punto.Ordinata, 2));
             scatterChart.Series[1].LabelPoint = point => string.Format(" MAC: {0}\n Timestamp:{1} \n X:{2}  Y:{3}",
-                                                                Utils.FormatMACAddr(((PhoneInfo)point.Instance).MacAddr),
-                                                                Utils.UnixTimestampToDateTime(((PhoneInfo)point.Instance).Timestamp),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ascissa, 2),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ordinata, 2));
+                                                                Utils.FormatMACAddr(((DatiDispositivo)point.Instance).MacAddr),
+                                                                Utils.UnixTimestampToDateTime(((DatiDispositivo)point.Instance).Timestamp),
+                                                                Math.Round(((DatiDispositivo)point.Instance).Position.Ascissa, 2),
+                                                                Math.Round(((DatiDispositivo)point.Instance).Position.Ordinata, 2));
             scatterChart.Series[2].LabelPoint = point => string.Format(" MAC: {0}\n Timestamp:{1} \n X:{2}  Y:{3}",
-                                                                Utils.FormatMACAddr(((PhoneInfo)point.Instance).MacAddr),
-                                                                Utils.UnixTimestampToDateTime(((PhoneInfo)point.Instance).Timestamp),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ascissa, 2),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ordinata, 2));
+                                                                Utils.FormatMACAddr(((DatiDispositivo)point.Instance).MacAddr),
+                                                                Utils.UnixTimestampToDateTime(((DatiDispositivo)point.Instance).Timestamp),
+                                                                Math.Round(((DatiDispositivo)point.Instance).Position.Ascissa, 2),
+                                                                Math.Round(((DatiDispositivo)point.Instance).Position.Ordinata, 2));
             scatterChart.Series[3].LabelPoint = point => string.Format(" MAC: {0}\n Timestamp:{1} \n X:{2}  Y:{3}",
-                                                                Utils.FormatMACAddr(((PhoneInfo)point.Instance).MacAddr),
-                                                                Utils.UnixTimestampToDateTime(((PhoneInfo)point.Instance).Timestamp),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ascissa, 2),
-                                                                Math.Round(((PhoneInfo)point.Instance).Position.Ordinata, 2));
+                                                                Utils.FormatMACAddr(((DatiDispositivo)point.Instance).MacAddr),
+                                                                Utils.UnixTimestampToDateTime(((DatiDispositivo)point.Instance).Timestamp),
+                                                                Math.Round(((DatiDispositivo)point.Instance).Position.Ascissa, 2),
+                                                                Math.Round(((DatiDispositivo)point.Instance).Position.Ordinata, 2));
 
 
             t = new Thread(new ThreadStart(this.ReceiverFunc));
@@ -213,7 +213,7 @@ namespace PDSClient.StatModule
             }
         }
 
-        private void DrawOneMinutesChart(List<Scheda> schede, List<PhoneInfo> phoneInfos)
+        private void DrawOneMinutesChart(List<Scheda> schede, List<DatiDispositivo> phoneInfos)
         {
             double minX, minY, maxX, maxY;
 
@@ -221,7 +221,7 @@ namespace PDSClient.StatModule
             int totalHiddenPhones;
             double error;
 
-            List<PhoneInfo> hiddenMacs = new List<PhoneInfo>();
+            List<DatiDispositivo> hiddenMacs = new List<DatiDispositivo>();
             HashSet<String> countedMacs = new HashSet<String>();
 
             minX = maxX = schede.First().Punto.Ascissa;
@@ -244,7 +244,7 @@ namespace PDSClient.StatModule
             phonePos.Clear();
             hiddenPhonePos.Clear();
             selectedPhonePos.Clear();
-            foreach (PhoneInfo p in phoneInfos)
+            foreach (DatiDispositivo p in phoneInfos)
             {
                 if (p.Position.Ascissa > maxX)
                     maxX = p.Position.Ascissa;
@@ -267,7 +267,7 @@ namespace PDSClient.StatModule
                 }
             }
 
-            foreach(PhoneInfo phone in hiddenMacs)
+            foreach(DatiDispositivo phone in hiddenMacs)
             {
                 List<String> res = _statCalc.Connection.CountHiddenPhones(phone, 0.6);
   
@@ -291,7 +291,7 @@ namespace PDSClient.StatModule
 
         }
 
-        private void DrawFiveMinutesChart(List<PhoneInfo> phoneInfos)
+        private void DrawFiveMinutesChart(List<DatiDispositivo> phoneInfos)
         {
 
             var phoneTuple = SplitList(phoneInfos);
@@ -324,12 +324,12 @@ namespace PDSClient.StatModule
             }
         }
 
-        private Tuple<List<PhoneInfo>, List<PhoneInfo>> SplitList(List<PhoneInfo> phoneInfos)
+        private Tuple<List<DatiDispositivo>, List<DatiDispositivo>> SplitList(List<DatiDispositivo> phoneInfos)
         {
-            List<PhoneInfo> visiblePhones = new List<PhoneInfo>();
-            List<PhoneInfo> hiddenPhones = new List<PhoneInfo>();
+            List<DatiDispositivo> visiblePhones = new List<DatiDispositivo>();
+            List<DatiDispositivo> hiddenPhones = new List<DatiDispositivo>();
 
-            foreach(PhoneInfo pi in phoneInfos)
+            foreach(DatiDispositivo pi in phoneInfos)
             {
                 if (!pi.Global)
                 {
@@ -340,7 +340,7 @@ namespace PDSClient.StatModule
                     hiddenPhones.Add(pi);                }
             }
 
-            return new Tuple<List<PhoneInfo>, List<PhoneInfo>>(visiblePhones, hiddenPhones);
+            return new Tuple<List<DatiDispositivo>, List<DatiDispositivo>>(visiblePhones, hiddenPhones);
         }
 
         
@@ -392,7 +392,7 @@ namespace PDSClient.StatModule
                 if(Pacchetto.CntrlGlobal(selectedMAC))
                 {
                     //hiddenPhone
-                    foreach (PhoneInfo p in scatterChart.Series[2].Values)
+                    foreach (DatiDispositivo p in scatterChart.Series[2].Values)
                     {
                         if (p.MacAddr.CompareTo(cleanSelectedMAC) == 0)
                         {
@@ -404,7 +404,7 @@ namespace PDSClient.StatModule
                 else
                 {
                     //visiblePhone
-                    foreach (PhoneInfo p in scatterChart.Series[1].Values)
+                    foreach (DatiDispositivo p in scatterChart.Series[1].Values)
                     {
                         if (p.MacAddr.CompareTo(cleanSelectedMAC) == 0)
                         {
@@ -424,7 +424,7 @@ namespace PDSClient.StatModule
             if (selectedPhonePos.Count == 1)
             {
                 String cleanSelectedMAC = selectedMAC.Replace(":", "");
-                PhoneInfo p = selectedPhonePos.First<PhoneInfo>();
+                DatiDispositivo p = selectedPhonePos.First<DatiDispositivo>();
                 selectedPhonePos.Remove(p);
 
                 if (Pacchetto.CntrlGlobal(selectedMAC))
