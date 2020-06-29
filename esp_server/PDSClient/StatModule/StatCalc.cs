@@ -35,9 +35,9 @@ namespace PDSClient.StatModule
             return DBConnection.CountLast5MinutesPhones(nBoards, 1);
         }
 
-        public List<PhoneInfo> GetLastMinutePositions(int nBoards, int threshold = 0)
+        public List<DatiDispositivo> GetLastMinutePositions(int nBoards, int threshold = 0)
         {
-            List<PhoneInfo> list = DBConnection.GetLastMinuteData(nBoards, threshold);
+            List<DatiDispositivo> list = DBConnection.GetLastMinuteData(nBoards, threshold);
 
             if(list == null)
             {
@@ -49,7 +49,7 @@ namespace PDSClient.StatModule
             {
                 MacAddr = pi.MacAddr,
             })
-                            .Select(item => new PhoneInfo(item.Key.MacAddr, item.Select(it => it.Timestamp).First(),
+                            .Select(item => new DatiDispositivo(item.Key.MacAddr, item.Select(it => it.Timestamp).First(),
                                                         new Punto(item.Select(it => it.Position.Ascissa).Average(),
                                                                 item.Select(it => it.Position.Ordinata).Average()),
                                                         item.Select(it => it.Global).First())).ToList();
@@ -60,14 +60,14 @@ namespace PDSClient.StatModule
             return DBConnection.SelezionaSchede();
         }
         //interfaccia per contattare il DB
-        public List<PhoneInfo> MostFrequentPhones(int numberOfMACs, int min, int max, int threshold = 0)
+        public List<DatiDispositivo> MostFrequentPhones(int numberOfMACs, int min, int max, int threshold = 0)
         {
-            List<PhoneInfo> list = DBConnection.MostFrequentPhones(numberOfMACs, min, max, threshold);
+            List<DatiDispositivo> list = DBConnection.MostFrequentPhones(numberOfMACs, min, max, threshold);
 
             return list;
         }
 
-        public int FiveMinuteHiddenPhones(List<PhoneInfo> hiddenPhones)
+        public int FiveMinuteHiddenPhones(List<DatiDispositivo> hiddenPhones)
         {
             int count = 0;
             HashSet<String> removeKeys = new HashSet<String>();
@@ -89,7 +89,7 @@ namespace PDSClient.StatModule
                 nMacHidden.Remove(s);
             }
 
-            foreach (PhoneInfo p in hiddenPhones)
+            foreach (DatiDispositivo p in hiddenPhones)
             {
                 if (nMacHidden.ContainsKey(p.MacAddr))
                 {
@@ -108,7 +108,7 @@ namespace PDSClient.StatModule
             return count;
         }
 
-        public int FiveMinuteVisiblePhones(List<PhoneInfo> phoneInfos)
+        public int FiveMinuteVisiblePhones(List<DatiDispositivo> phoneInfos)
         {
             int count = 0;
             HashSet<String> removeKeys = new HashSet<String>();
@@ -130,7 +130,7 @@ namespace PDSClient.StatModule
                 nMacVisible.Remove(s);
             }
 
-            foreach (PhoneInfo p in phoneInfos)
+            foreach (DatiDispositivo p in phoneInfos)
             {
                 if (nMacVisible.ContainsKey(p.MacAddr))
                 {
@@ -149,7 +149,7 @@ namespace PDSClient.StatModule
             return count;
         }
         //interfaccia per prelevare dal DB le posizioni all'interno dell'intervallo temporale 
-        public List<PhoneInfo> PhonesInRange(long min, long max, int threshold = 0) {
+        public List<DatiDispositivo> PhonesInRange(long min, long max, int threshold = 0) {
 
             return DBConnection.PhonesInRange(Convert.ToInt32(min), Convert.ToInt32(max));
         }
