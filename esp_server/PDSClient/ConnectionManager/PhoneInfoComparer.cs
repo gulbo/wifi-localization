@@ -3,14 +3,14 @@
 
 namespace PDSClient.ConnectionManager
 {
-    class PhoneInfoComparer : IEqualityComparer<PhoneInfo>
+    class PhoneInfoComparer : IEqualityComparer<DatiDispositivo>
     {
-        public bool Equals(PhoneInfo x, PhoneInfo y)
+        public bool Equals(DatiDispositivo x, DatiDispositivo y)
         {
             return (x.MacAddr.CompareTo(y.MacAddr)==0);
         }
 
-        public int GetHashCode(PhoneInfo obj)
+        public int GetHashCode(DatiDispositivo obj)
         {
             return obj.MacAddr.GetHashCode();
         }
