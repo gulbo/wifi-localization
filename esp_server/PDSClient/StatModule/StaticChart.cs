@@ -20,10 +20,10 @@ namespace PDSClient.StatModule
         CartesianChart _movement;
         CartesianChart _temporalDistribution;
         ListBox _listBox;
-        ChartValues<PhoneInfo> scatter;
+        ChartValues<DatiDispositivo> scatter;
         ChartValues<int>[] occurenceCounter;
         StatCalc _statCalc;
-        ObservableCollection<PhoneInfo> macList;
+        ObservableCollection<DatiDispositivo> macList;
         Dictionary<string, List<int>> map;
         Dictionary<string, int> macToIndex;
         public long animationCurrTimestamp { get; set; }
@@ -37,8 +37,8 @@ namespace PDSClient.StatModule
             _movement = mv;
             _temporalDistribution = td;
             _statCalc = new StatCalc(dbC);
-            macList = new ObservableCollection<PhoneInfo>();
-            scatter = new ChartValues<PhoneInfo>();
+            macList = new ObservableCollection<DatiDispositivo>();
+            scatter = new ChartValues<DatiDispositivo>();
             occurenceCounter = new ChartValues<int>[3];
             map = new Dictionary<string, List<int>>();
             macToIndex = new Dictionary<string, int>();
@@ -73,7 +73,7 @@ namespace PDSClient.StatModule
             animationStartTimestamp = start;
             animationCurrTimestamp = end;
 
-            List<PhoneInfo> phoneInfo = _statCalc.PhonesInRange(start, end);
+            List<DatiDispositivo> phoneInfo = _statCalc.PhonesInRange(start, end);
 
             if (phoneInfo == null)
             {
@@ -91,7 +91,7 @@ namespace PDSClient.StatModule
                 return;
             }
 
-            foreach (PhoneInfo ph in phoneInfo)
+            foreach (DatiDispositivo ph in phoneInfo)
                 macList.Add(ph);
 
             var macListDistinct = macList.Distinct(new PhoneInfoComparer());
@@ -104,7 +104,7 @@ namespace PDSClient.StatModule
         {
             scatter.Clear();
 
-            foreach (PhoneInfo ph in macList)
+            foreach (DatiDispositivo ph in macList)
             {
                 if (ph.MacAddr == mac)
                 {
@@ -134,11 +134,11 @@ namespace PDSClient.StatModule
                 macToIndex.Add(mac, _movement.Series.Count - 1); //associa un indice ad un determinato mac per poi recuperare la serie corrispondente 
 
             _movement.Series[macToIndex[mac]].LabelPoint = point => string.Format("Timestamp:{0} \n X:{1}  Y:{2}",
-                new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(((PhoneInfo)point.Instance).Timestamp),
-                ((PhoneInfo)point.Instance).Position.Ascissa, ((PhoneInfo)point.Instance).Position.Ordinata);
+                new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(((DatiDispositivo)point.Instance).Timestamp),
+                ((DatiDispositivo)point.Instance).Position.Ascissa, ((DatiDispositivo)point.Instance).Position.Ordinata);
 
-            _movement.Series[macToIndex[mac]].Configuration = Mappers.Xy<PhoneInfo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
-            _movement.Series[macToIndex[mac]].Values = new ChartValues<PhoneInfo>(scatter);
+            _movement.Series[macToIndex[mac]].Configuration = Mappers.Xy<DatiDispositivo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
+            _movement.Series[macToIndex[mac]].Values = new ChartValues<DatiDispositivo>(scatter);
             _movement.AxisX[0].MinValue = minX - 0.1;
             _movement.AxisX[0].MaxValue = maxX + 0.1;
             _movement.AxisY[0].MinValue = minY - 0.1;
@@ -176,7 +176,7 @@ namespace PDSClient.StatModule
 
             foreach (string mac in macToIndex.Keys)
             {
-                foreach (PhoneInfo ph in _movement.Series[macToIndex[mac]].Values)
+                foreach (DatiDispositivo ph in _movement.Series[macToIndex[mac]].Values)
                 {
                     if (ph.MacAddr == mac)
                     {
@@ -219,7 +219,7 @@ namespace PDSClient.StatModule
                 _temporalDistribution.AxisY.Clear();
             });
             //se le date sono valide cerco i 3 MAC più ricorrenti
-            List<PhoneInfo> mostFreq = (start == -1 && end == -1) ? new List<PhoneInfo>() : _statCalc.MostFrequentPhones(3, start, end);
+            List<DatiDispositivo> mostFreq = (start == -1 && end == -1) ? new List<DatiDispositivo>() : _statCalc.MostFrequentPhones(3, start, end);
             map.Clear();
 
             if (start == -1 && end == -1)
@@ -241,7 +241,7 @@ namespace PDSClient.StatModule
             }
 
             //conta le occorrenze per MAC
-            foreach (PhoneInfo ph in mostFreq)
+            foreach (DatiDispositivo ph in mostFreq)
             {
                 if (map.ContainsKey(ph.MacAddr))
                 {

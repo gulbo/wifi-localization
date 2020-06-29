@@ -1,9 +1,10 @@
-﻿using PDSClient.StatModule;
-using System;
+﻿using System;
+using PDSClient.StatModule;
+
 
 namespace PDSClient.ConnectionManager
 {
-    public class PhoneInfo 
+    public class DatiDispositivo
     {
         //attributes
         private String macAddr;
@@ -37,7 +38,7 @@ namespace PDSClient.ConnectionManager
             get { return global; }
         }
 
-        public PhoneInfo(String macAddr, int timestamp, Punto position, bool global)
+        public DatiDispositivo(String macAddr, int timestamp, Punto position, bool global)
         {
             this.macAddr = macAddr;
             this.timestamp = timestamp;
@@ -45,14 +46,14 @@ namespace PDSClient.ConnectionManager
             this.global = global;
         }
 
-        public PhoneInfo(String macAddr, int timestamp, Punto position)
+        public DatiDispositivo(String macAddr, int timestamp, Punto position)
         {
             this.macAddr = macAddr;
             this.timestamp = timestamp;
             this.position = position;
         }
 
-        public PhoneInfo(String macAddr, int timestamp, double x, double y)
+        public DatiDispositivo(String macAddr, int timestamp, double x, double y)
         {
             this.macAddr = macAddr;
             this.timestamp = timestamp;

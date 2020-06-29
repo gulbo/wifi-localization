@@ -116,7 +116,7 @@ namespace PDSClient
             long endRange = sc.animationCurrTimestamp;
             long startRange = sc.animationStartTimestamp;
             var checkBox = e.OriginalSource as CheckBox;
-            PhoneInfo ph = checkBox?.DataContext as PhoneInfo;
+            DatiDispositivo ph = checkBox?.DataContext as DatiDispositivo;
 
             if (ph != null)
             {               
@@ -128,7 +128,7 @@ namespace PDSClient
         {
             var checkBox = e.OriginalSource as CheckBox;
 
-            PhoneInfo ph = checkBox?.DataContext as PhoneInfo;
+            DatiDispositivo ph = checkBox?.DataContext as DatiDispositivo;
 
             if (ph != null)
             {
