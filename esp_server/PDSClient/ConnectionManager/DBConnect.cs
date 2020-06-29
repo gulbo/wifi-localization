@@ -165,6 +165,8 @@ namespace PDSClient.ConnectionManager
             }
         }
 
+        //Rimuovi schede nella tabella 'schede' del DB
+
         public bool RimuoviSchede()
         {
             try
@@ -320,7 +322,7 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        //Rimuovi pacchetti (selezionando l'ID_pacchetto) nella tabella 'pacchetti' del DB
+        //Rimuovi pacchetto (selezionando l'ID_pacchetto) nella tabella 'pacchetti' del DB
 
         public bool RimuoviPacchetto(int id_pacchetto)
         {
@@ -345,6 +347,8 @@ namespace PDSClient.ConnectionManager
                 return false;
             }
         }
+
+        //Rimuovi pacchetti nella tabella 'pacchetti' del DB
 
         public bool RimuoviPacchetti()
         {
@@ -454,30 +458,23 @@ namespace PDSClient.ConnectionManager
 
         }
 
+        //Inserisci posizioni (dispositivi) nella tabella 'posizioni' del DB
 
-        //CONTINUO DA QUI ... DANIELE
-
-
-
-
-
-        //Inserisci telefoni nella tabella 'posizioni' del DB
-
-        private void InsertTelefono(IEnumerable<PhoneInfo> telefoni, MySqlConnection connessione)
+        private void InserisciPosizioni(IEnumerable<DatiDispositivo> dispositivi, MySqlConnection connessione)
         {
-            if(telefoni.Count() == 0)
+            if (dispositivi.Count() == 0)
             {
                 return;
             }
             StringBuilder builderQuery = new StringBuilder();
             builderQuery.Append("INSERT INTO posizioni (MAC, x, y, timestamp, global) VALUES ");
             CultureInfo culture = CultureInfo.CreateSpecificCulture("en-US");
-            foreach (PhoneInfo telefono in telefoni)
+            foreach (DatiDispositivo telefono in dispositivi)
             {
                 builderQuery.Append(string.Format("('{0}',{1},{2},{3},{4})",
                     telefono.MacAddr, Math.Round(telefono.Position.Ascissa, 2).ToString(culture),
                     Math.Round(telefono.Position.Ordinata, 2).ToString(culture), telefono.Timestamp, telefono.Global));
-                if (telefono.Equals(telefoni.Last<PhoneInfo>()))
+                if (telefono.Equals(dispositivi.Last<DatiDispositivo>()))
                 {
                     builderQuery.Append(";");
                 }
@@ -506,8 +503,46 @@ namespace PDSClient.ConnectionManager
         }
 
 
+
+
+
+
+
+        //Rimuovi posizioni (dispositivi) nella tabella 'posizioni' del DB
+
+        public bool RimuoviPosizioni()
+        {
+            try
+            {
+                string query = String.Format("DELETE FROM posizioni");
+
+                using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
+                using (MySqlCommand cmd = connessione.CreateCommand())
+                {
+                    connessione.Open();
+                    cmd.CommandText = query;
+                    cmd.ExecuteNonQuery();
+                }
+                Connesso = true;
+                return true;
+            }
+            catch (MySqlException e)
+            {
+                System.Diagnostics.Debug.WriteLine("Errore durante la cancellazione della storia delle posizioni" + e.ToString());
+                Connesso = false;
+                return false;
+            }
+        }
+
+
+
+
+
+
+
+
         //calculate position of the phones received by all boards in the last minute and insert them in the table
-        public List<PhoneInfo> GetLastMinuteData(int nBoards, int threshold = 0)
+        public List<DatiDispositivo> GetLastMinuteData(int nBoards, int threshold = 0)
         {
             try
             {
@@ -517,7 +552,7 @@ namespace PDSClient.ConnectionManager
                 int time = EspServer.getUnixEpoch() - 60;
 
                 //Create a list to store the result
-                List<PhoneInfo> list = new List<PhoneInfo>();
+                List<DatiDispositivo> list = new List<DatiDispositivo>();
 
                 using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
                 using (MySqlCommand cmd = connessione.CreateCommand())
@@ -554,13 +589,13 @@ namespace PDSClient.ConnectionManager
                             Punto point = Cerchio.Intersezione(cerchi);
                             if(!(Double.IsNaN(point.Ascissa) || Double.IsNaN(point.Ordinata)))
                             {
-                                PhoneInfo p = new PhoneInfo(mac, timestamp, point, global);
+                                DatiDispositivo p = new DatiDispositivo(mac, timestamp, point, global);
                                 list.Add(p);
                             }
                         }
                     }
 
-                    InsertTelefono(list, connessione);
+                    InserisciPosizioni(list, connessione);
                 }
                 Connesso = true;
                 return list;
@@ -584,29 +619,7 @@ namespace PDSClient.ConnectionManager
         }
 
 
-        public bool RimuoviPosizioni()
-        {
-            try
-            {
-                string query = String.Format("DELETE FROM posizioni");
-
-                using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-                using (MySqlCommand cmd = connessione.CreateCommand())
-                {
-                    connessione.Open();
-                    cmd.CommandText = query;
-                    cmd.ExecuteNonQuery();
-                }
-                Connesso = true;
-                return true;
-            }
-            catch (MySqlException e)
-            {
-                System.Diagnostics.Debug.WriteLine("Errore durante la cancellazione della storia delle posizioni" + e.ToString());
-                Connesso = false;
-                return false;
-            }
-        }
+       
 
 
 
@@ -681,45 +694,9 @@ namespace PDSClient.ConnectionManager
 
         }
 
-        private List<PhoneInfo> ReduceList(List<PhoneInfo> list, ReduceType reduceType)
+        public List<DatiDispositivo> MostFrequentPhones(int n, int min, int max, int threshold = 0)
         {
-            List<PhoneInfo> result = new List<PhoneInfo>();
-            switch (reduceType)
-            {
-                case ReduceType.Mean:
-                    result = list.GroupBy(pi => new
-                    {
-                        MacAddr = pi.MacAddr,
-                        Timestamp = pi.Timestamp
-                    })
-                            .Select(item => new PhoneInfo(item.Key.MacAddr,
-                                                        item.Key.Timestamp,
-                                                        new Punto(item.Select(it => it.Position.Ascissa).Average(),
-                                                                item.Select(it => it.Position.Ordinata).Average()),
-                                                        item.Select(it => it.Global).First())).ToList();
-                    break;
-                case ReduceType.Random:
-                    result = list.GroupBy(pi => new
-                    {
-                        MacAddr = pi.MacAddr,
-                        Timestamp = pi.Timestamp
-                    })
-                            .Select(item =>
-                            {
-                                var rand = new Random();
-                                return item.ElementAt(rand.Next(item.Count()));
-                            }).ToList();
-                    break;
-                default:
-                    return null;
-            }
-            return result;
-        }
-
-
-        public List<PhoneInfo> MostFrequentPhones(int n, int min, int max, int threshold = 0)
-        {
-            List<PhoneInfo> MACList = new List<PhoneInfo>();
+            List<DatiDispositivo> MACList = new List<DatiDispositivo>();
             string query = "SELECT DISTINCT MAC, timestamp " +
                 "FROM posizioni AS p1" +
                 " WHERE p1.MAC IN (SELECT * " +
@@ -743,7 +720,7 @@ namespace PDSClient.ConnectionManager
                     {
                         while (dataReader.Read())
                         {
-                            PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), 0, 0);
+                            DatiDispositivo pi = new DatiDispositivo(dataReader.GetString(0), dataReader.GetInt32(1), 0, 0);
                             MACList.Add(pi);
                         }
                         Connesso = true;
@@ -759,9 +736,9 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public List<PhoneInfo> PhonesInRange(int min, int max, int threshold = 0)
+        public List<DatiDispositivo> PhonesInRange(int min, int max, int threshold = 0)
         {
-            List<PhoneInfo> list = new List<PhoneInfo>();
+            List<DatiDispositivo> list = new List<DatiDispositivo>();
             string query = "SELECT MAC, timestamp, x, y " +
                 "FROM posizioni WHERE timestamp < " + max + " AND timestamp > " + min+" ORDER BY timestamp";
 
@@ -776,7 +753,7 @@ namespace PDSClient.ConnectionManager
                     {
                         while (dataReader.Read())
                         {
-                            PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), dataReader.GetDouble(2), dataReader.GetDouble(3));
+                            DatiDispositivo pi = new DatiDispositivo(dataReader.GetString(0), dataReader.GetInt32(1), dataReader.GetDouble(2), dataReader.GetDouble(3));
                             list.Add(pi);
                         }
                         Connesso = true;
@@ -792,7 +769,7 @@ namespace PDSClient.ConnectionManager
             }
         }
 
-        public List<string> CountHiddenPhones(PhoneInfo p, double threshold)
+        public List<string> CountHiddenPhones(DatiDispositivo p, double threshold)
         {
             int time = EspServer.getUnixEpoch() - 60;
             List<string> list = new List<string>();
@@ -824,41 +801,6 @@ namespace PDSClient.ConnectionManager
                 catch (MySqlException e)
                 {
                     System.Diagnostics.Debug.WriteLine("MySqlException catched." + e.ToString());
-                    Connesso = false;
-                    return null;
-                }
-            }
-        }
-
-        public List<PhoneInfo> PhoneLocationsInRange(int min, int max, string MAC, int threshold = 0)
-        {
-            List<PhoneInfo> list = new List<PhoneInfo>();
-            string query = "SELECT DISTINCT MAC, timestamp, x, y " +
-                "FROM posizioni WHERE timestamp < " + max + " AND timestamp > " + min +
-                "AND MAC == " + MAC +
-                " ORDER BY timestamp";
-
-            using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
-            using (MySqlCommand cmd = connessione.CreateCommand())
-            {
-                try
-                {
-                    connessione.Open();
-                    cmd.CommandText = query;
-                    using (var dataReader = cmd.ExecuteReader())
-                    {
-                        while (dataReader.Read())
-                        {
-                            PhoneInfo pi = new PhoneInfo(dataReader.GetString(0), dataReader.GetInt32(1), dataReader.GetDouble(2), dataReader.GetDouble(3));
-                            list.Add(pi);
-                        }
-                        Connesso = true;
-                        return list;
-                    }
-                }
-                catch (MySqlException e)
-                {
-                    System.Diagnostics.Debug.WriteLine("MySqlException catched" + e.ToString());
                     Connesso = false;
                     return null;
                 }
