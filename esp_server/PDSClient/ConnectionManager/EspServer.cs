@@ -129,7 +129,7 @@ namespace PDSClient.ConnectionManager
                         List<Pacchetto> packet_list = board.receivePackets();
 
                         // inserisco i pacchetti nel DB
-                        db_connect.InsertPacchetto(packet_list);
+                        db_connect.InserisciPacchetto(packet_list);
                         packets_ready_events[board.getBoardID() -1].Set();
                     }
                 }

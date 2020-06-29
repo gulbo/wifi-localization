@@ -139,7 +139,7 @@ namespace PDSClient.ConnectionManager
 
             try
             {
-                bool res = _dbConnection.RemoveSchede();
+                bool res = _dbConnection.RimuoviSchede();
                 if (!res)
                 {
                     System.Windows.MessageBox.Show("Unable to connect to database.",
@@ -148,7 +148,7 @@ namespace PDSClient.ConnectionManager
                         MessageBoxImage.Error);
                     return;
                 }
-                res = _dbConnection.InsertScheda(boards);
+                res = _dbConnection.InserisciScheda(boards);
                 if (!res)
                 {
                     System.Windows.MessageBox.Show("Unable to insert boards' information to the database. Please check the connection and retry.",
@@ -169,8 +169,8 @@ namespace PDSClient.ConnectionManager
             System.Diagnostics.Debug.WriteLine("Boards correctly inserted into db");
             if ((bool) trunkateCheckBox.IsChecked)
             {
-                _dbConnection.RemovePacchetti();
-                _dbConnection.RemovePosizioni();
+                _dbConnection.RimuoviPacchetti();
+                _dbConnection.RimuoviPosizioni();
             }
             MainWindow mw = new MainWindow(_dbConnection, boards);
 
