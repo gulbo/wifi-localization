@@ -94,7 +94,7 @@ namespace PDSClient.StatModule
             foreach (DatiDispositivo ph in phoneInfo)
                 macList.Add(ph);
 
-            var macListDistinct = macList.Distinct(new PhoneInfoComparer());
+            var macListDistinct = macList.Distinct(new ComparatoreDatiDispositivo());
 
             Application.Current.Dispatcher.Invoke(() => _listBox.ItemsSource = macListDistinct);
         }
