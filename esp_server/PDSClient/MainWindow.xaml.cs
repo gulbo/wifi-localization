@@ -120,7 +120,7 @@ namespace PDSClient
 
             if (ph != null)
             {               
-                sc.AddSeries(ph.MacAddr);
+                sc.AddSeries(ph.MAC_Address);
             }
         }
 
@@ -132,7 +132,7 @@ namespace PDSClient
 
             if (ph != null)
             {
-                sc.RemoveSeries(ph.MacAddr);
+                sc.RemoveSeries(ph.MAC_Address);
             }
 
         }

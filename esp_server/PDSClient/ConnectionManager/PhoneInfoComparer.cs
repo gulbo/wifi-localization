@@ -7,12 +7,12 @@ namespace PDSClient.ConnectionManager
     {
         public bool Equals(DatiDispositivo x, DatiDispositivo y)
         {
-            return (x.MacAddr.CompareTo(y.MacAddr)==0);
+            return (x.MAC_Address.CompareTo(y.MAC_Address) ==0);
         }
 
         public int GetHashCode(DatiDispositivo obj)
         {
-            return obj.MacAddr.GetHashCode();
+            return obj.MAC_Address.GetHashCode();
         }
     }
 }
