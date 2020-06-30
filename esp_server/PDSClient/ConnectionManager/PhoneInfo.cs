@@ -6,21 +6,20 @@ namespace PDSClient.ConnectionManager
 {
     public class DatiDispositivo
     {
-        //attributes
-        private String macAddr;
-        private int timestamp;
-        private Punto position;
-        private bool global;
+        private readonly String MAC_address;
+        private readonly Punto posizione;
+        private readonly int timestamp;
+        private readonly bool global;
 
-        //properties
-        public String MacAddr 
+
+        public String MAC_Address
         {
-            get { return macAddr; }
+            get { return MAC_address; }
         }
 
-        public String FormattedMacAddr
+        public Punto Posizione
         {
-            get { return Utils.FormatMACAddr(MacAddr); }
+            get { return posizione; }
         }
 
         public int Timestamp
@@ -35,29 +34,29 @@ namespace PDSClient.ConnectionManager
 
         public DatiDispositivo(String macAddr, int timestamp, Punto position, bool global)
         {
-            this.macAddr = macAddr;
+            this.MAC_address = macAddr;
             this.timestamp = timestamp;
-            this.position = position;
+            this.posizione = position;
             this.global = global;
         }
 
         public DatiDispositivo(String macAddr, int timestamp, Punto position)
         {
-            this.macAddr = macAddr;
+            this.MAC_address = macAddr;
             this.timestamp = timestamp;
-            this.position = position;
+            this.posizione = position;
         }
 
         public DatiDispositivo(String macAddr, int timestamp, double x, double y)
         {
-            this.macAddr = macAddr;
+            this.MAC_address = macAddr;
             this.timestamp = timestamp;
-            this.position = new Punto(x, y);
+            this.posizione = new Punto(x, y);
         }
 
         public override string ToString()
         {
-            return macAddr + " " + timestamp + " " + "(" + position.Ascissa + ", " + position.Ordinata + ")";
+            return MAC_address + " " + timestamp + " " + "(" + posizione.Ascissa + ", " + posizione.Ordinata + ")";
         }
     }
 }

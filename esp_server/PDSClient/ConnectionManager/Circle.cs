@@ -7,8 +7,6 @@ namespace PDSClient.ConnectionManager
     public class Cerchio
     {
 
-        //Proprietà
-
         public Punto Centro { get; set; }
         public double Raggio { get; set; }
         
