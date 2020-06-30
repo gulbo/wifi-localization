@@ -39,18 +39,6 @@
         <EventTrigger RoutedEvent="ButtonBase.Click" SourceName="closeMenuBtn" >
             <BeginStoryboard Storyboard="{StaticResource menuClose}" />
         </EventTrigger>
-        <EventTrigger RoutedEvent="ListViewItem.PreviewMouseLeftButtonUp" SourceName="positionChartBtn" >
-            <BeginStoryboard Storyboard="{StaticResource menuClose}" />
-        </EventTrigger>
-        <EventTrigger RoutedEvent="ListViewItem.PreviewMouseLeftButtonUp" SourceName="deviceNumChartBtn" >
-            <BeginStoryboard Storyboard="{StaticResource menuClose}" />
-        </EventTrigger>
-        <EventTrigger RoutedEvent="ListViewItem.PreviewMouseLeftButtonUp" SourceName="movementChartBtn" >
-            <BeginStoryboard Storyboard="{StaticResource menuClose}" />
-        </EventTrigger>
-        <EventTrigger RoutedEvent="ListViewItem.PreviewMouseLeftButtonUp" SourceName="MacDistrChartBtn" >
-            <BeginStoryboard Storyboard="{StaticResource menuClose}" />
-        </EventTrigger>
     </Window.Triggers>
 
     <Grid  >
@@ -344,7 +332,7 @@
 
                     </ListBox>
 
-                    <lvc:CartesianChart Name="movement" Grid.Column="1" LegendLocation="Bottom" Grid.ColumnSpan="2"/>
+                    <lvc:CartesianChart x:Name="movement" Grid.Column="1" LegendLocation="Bottom" Grid.ColumnSpan="2"/>
                 </Grid>
 
 

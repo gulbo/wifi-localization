@@ -123,7 +123,7 @@ namespace PDSClient.StatModule
             }
             _movement.Series.Add(new LineSeries()
             {
-                Title = Utils.FormatMACAddr(mac),
+                Title = Utils.Formatta_MAC_Address(mac),
                 PointGeometry = DefaultGeometries.Diamond,
                 PointGeometrySize = 10,
                 StrokeThickness = 4,
@@ -195,7 +195,7 @@ namespace PDSClient.StatModule
         {
             _temporalDistribution.Series.Add(new StackedRowSeries()
             {
-                Title =Utils.FormatMACAddr(mac),
+                Title =Utils.Formatta_MAC_Address(mac),
                 Values = values,
                 StackMode = StackMode.Values,
                 DataLabels = true,

@@ -148,6 +148,7 @@ namespace PDSClient
                 System.Windows.MessageBox.Show("Specificare un intervallo temporale maggiore di 0", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return;
             }
+            movement.Series.Clear();
             long endRange = (DateTime.Now.Ticks - 621355968000000000) / 10000000;
             long startRange = endRange - (temporalRange * 60);
 
@@ -288,7 +289,6 @@ namespace PDSClient
             deviceNumberChart.Visibility = System.Windows.Visibility.Hidden;
             movementChart.Visibility = System.Windows.Visibility.Hidden;
             temporalDistrChart.Visibility = System.Windows.Visibility.Hidden;
-            CollapseMenuCharts();
         }
         //metodo per il bottone (all'interno del menù) numero di dispositivi
         private void deviceNumberChartBtnUp(object sender, MouseButtonEventArgs e)
@@ -297,7 +297,6 @@ namespace PDSClient
             deviceNumberChart.Visibility = System.Windows.Visibility.Visible;
             movementChart.Visibility = System.Windows.Visibility.Hidden;
             temporalDistrChart.Visibility = System.Windows.Visibility.Hidden;
-            CollapseMenuCharts();
         }
         //metodo per il bottone (all'interno del menù) movimento
         private void movementChartBtnUp(object sender, MouseButtonEventArgs e)
@@ -306,7 +305,6 @@ namespace PDSClient
             deviceNumberChart.Visibility = System.Windows.Visibility.Hidden;
             movementChart.Visibility = System.Windows.Visibility.Visible;
             temporalDistrChart.Visibility = System.Windows.Visibility.Hidden;
-            CollapseMenuCharts();
         }
         //metodo per il bottone (all'interno del menù) ricorrenze MAC
         private void MACDistributionChartBtnUp(object sender, MouseButtonEventArgs e)
@@ -315,17 +313,6 @@ namespace PDSClient
             deviceNumberChart.Visibility = System.Windows.Visibility.Hidden;
             movementChart.Visibility = System.Windows.Visibility.Hidden;
             temporalDistrChart.Visibility = System.Windows.Visibility.Visible;
-            CollapseMenuCharts();
-        }
-        private void CollapseMenuCharts()
-        {
-            //controllo se il menù è aperto controllando il bottone relativo
-            if(closeMenuBtn.Visibility == System.Windows.Visibility.Visible)
-            {
-                openMenuBtn.Visibility = System.Windows.Visibility.Visible;
-                closeMenuBtn.Visibility = System.Windows.Visibility.Collapsed;
-            }
-           
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using PDSClient.StatModule;
 
 namespace PDSClient.ConnectionManager
 {
@@ -14,7 +15,7 @@ namespace PDSClient.ConnectionManager
 
         }
 
-        public String MAC_Address
+        public string MAC_Address
         {
             get { return MAC; }
         }
@@ -32,6 +33,11 @@ namespace PDSClient.ConnectionManager
         public bool Global
         {
             get { return global; }
+        }
+
+        public string FormattedMacAddr
+        {
+            get { return Utils.Formatta_MAC_Address(MAC_Address); }
         }
 
         public DatiDispositivo(String mac, int timestamp, Punto posizione)
