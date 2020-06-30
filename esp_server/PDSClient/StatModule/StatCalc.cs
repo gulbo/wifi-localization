@@ -47,11 +47,11 @@ namespace PDSClient.StatModule
 
             return list.GroupBy(pi => new
             {
-                MacAddr = pi.MacAddr,
+                MacAddr = pi.MAC_Address,
             })
                             .Select(item => new DatiDispositivo(item.Key.MacAddr, item.Select(it => it.Timestamp).First(),
-                                                        new Punto(item.Select(it => it.Position.Ascissa).Average(),
-                                                                item.Select(it => it.Position.Ordinata).Average()),
+                                                        new Punto(item.Select(it => it.Posizione.Ascissa).Average(),
+                                                                item.Select(it => it.Posizione.Ordinata).Average()),
                                                         item.Select(it => it.Global).First())).ToList();
 
         }
@@ -91,17 +91,17 @@ namespace PDSClient.StatModule
 
             foreach (DatiDispositivo p in hiddenPhones)
             {
-                if (nMacHidden.ContainsKey(p.MacAddr))
+                if (nMacHidden.ContainsKey(p.MAC_Address))
                 {
-                    nMacHidden[p.MacAddr].Modified = true;
-                    if ((++nMacHidden[p.MacAddr].Count) >= 5)
+                    nMacHidden[p.MAC_Address].Modified = true;
+                    if ((++nMacHidden[p.MAC_Address].Count) >= 5)
                     {
                         count++;
                     }
                 }
                 else
                 {
-                    nMacHidden.Add(p.MacAddr, new MyTuple());
+                    nMacHidden.Add(p.MAC_Address, new MyTuple());
                 }
             }
 
@@ -132,17 +132,17 @@ namespace PDSClient.StatModule
 
             foreach (DatiDispositivo p in phoneInfos)
             {
-                if (nMacVisible.ContainsKey(p.MacAddr))
+                if (nMacVisible.ContainsKey(p.MAC_Address))
                 {
-                    nMacVisible[p.MacAddr].Modified = true;
-                    if ((++nMacVisible[p.MacAddr].Count) >= 5)
+                    nMacVisible[p.MAC_Address].Modified = true;
+                    if ((++nMacVisible[p.MAC_Address].Count) >= 5)
                     {
                         count++;
                     }
                 }
                 else
                 {
-                    nMacVisible.Add(p.MacAddr, new MyTuple());
+                    nMacVisible.Add(p.MAC_Address, new MyTuple());
                 }
             }
 
