@@ -30,9 +30,9 @@ namespace PDSClient.StatModule
         private CancellationToken _ct;
         private Action _errorAction;
         private string selectedMAC="";
-        List<DatiDispositivo> phoneInfos;
+        List<DatiDispositivo> dati_Dispositivi;
 
-        public List<DatiDispositivo> DatiDispositivi { get { return DatiDispositivi; } }
+        public List<DatiDispositivo> DatiDispositivi { get { return dati_Dispositivi; } }
 
         public DataReceiver(MainWindow window,int nBoards, EspServer esp_client, DBConnect dbC, CartesianChart scatterChart, CartesianChart fiveMinutesChart, Action errorAction)
         {
@@ -139,17 +139,17 @@ namespace PDSClient.StatModule
                                                             Math.Round(((Scheda)point.Instance).Punto.Ascissa, 2),
                                                             Math.Round(((Scheda)point.Instance).Punto.Ordinata, 2));
             scatterChart.Series[1].LabelPoint = point => string.Format(" MAC: {0}\n Timestamp:{1} \n X:{2}  Y:{3}",
-                                                                Utils.FormatMACAddr(((DatiDispositivo)point.Instance).MAC_Address),
+                                                                Utils.Formatta_MAC_Address(((DatiDispositivo)point.Instance).MAC_Address),
                                                                 Utils.UnixTimestampToDateTime(((DatiDispositivo)point.Instance).Timestamp),
                                                                 Math.Round(((DatiDispositivo)point.Instance).Posizione.Ascissa, 2),
                                                                 Math.Round(((DatiDispositivo)point.Instance).Posizione.Ordinata, 2));
             scatterChart.Series[2].LabelPoint = point => string.Format(" MAC: {0}\n Timestamp:{1} \n X:{2}  Y:{3}",
-                                                                Utils.FormatMACAddr(((DatiDispositivo)point.Instance).MAC_Address),
+                                                                Utils.Formatta_MAC_Address(((DatiDispositivo)point.Instance).MAC_Address),
                                                                 Utils.UnixTimestampToDateTime(((DatiDispositivo)point.Instance).Timestamp),
                                                                 Math.Round(((DatiDispositivo)point.Instance).Posizione.Ascissa, 2),
                                                                 Math.Round(((DatiDispositivo)point.Instance).Posizione.Ordinata, 2));
             scatterChart.Series[3].LabelPoint = point => string.Format(" MAC: {0}\n Timestamp:{1} \n X:{2}  Y:{3}",
-                                                                Utils.FormatMACAddr(((DatiDispositivo)point.Instance).MAC_Address),
+                                                                Utils.Formatta_MAC_Address(((DatiDispositivo)point.Instance).MAC_Address),
                                                                 Utils.UnixTimestampToDateTime(((DatiDispositivo)point.Instance).Timestamp),
                                                                 Math.Round(((DatiDispositivo)point.Instance).Posizione.Ascissa, 2),
                                                                 Math.Round(((DatiDispositivo)point.Instance).Posizione.Ordinata, 2));
@@ -173,10 +173,10 @@ namespace PDSClient.StatModule
                     _esp_server.waitAllBoardsData();
                     System.Threading.Thread.Sleep(5000);
 
-                    phoneInfos = _statCalc.GetLastMinutePositions(_nBoards, 1);
+                    dati_Dispositivi = _statCalc.GetLastMinutePositions(_nBoards, 1);
                     List<Scheda> boards = _statCalc.GetBoardsPosition();
 
-                    if (phoneInfos == null || boards == null)
+                    if (dati_Dispositivi == null || boards == null)
                     {
                         //TODO stampare messaggio di errore tramite testo rosso nella GUI
                         System.Windows.MessageBox.Show("Error when connecting to database. Please check that the database is online.", "Database error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
@@ -186,12 +186,12 @@ namespace PDSClient.StatModule
 
                     scatterChart.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                     {
-                        DrawOneMinutesChart(boards, phoneInfos);
+                        DrawOneMinutesChart(boards, dati_Dispositivi);
                     }));
 
                     fiveMinutesChart.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                     {
-                        DrawFiveMinutesChart(phoneInfos);
+                        DrawFiveMinutesChart(dati_Dispositivi);
                     }));
                 }
             }
@@ -213,7 +213,7 @@ namespace PDSClient.StatModule
             }
         }
 
-        private void DrawOneMinutesChart(List<Scheda> schede, List<DatiDispositivo> phoneInfos)
+        private void DrawOneMinutesChart(List<Scheda> schede, List<DatiDispositivo> dati_Dispositivi)
         {
             double minX, minY, maxX, maxY;
 
@@ -244,7 +244,7 @@ namespace PDSClient.StatModule
             phonePos.Clear();
             hiddenPhonePos.Clear();
             selectedPhonePos.Clear();
-            foreach (DatiDispositivo p in phoneInfos)
+            foreach (DatiDispositivo p in dati_Dispositivi)
             {
                 if (p.Posizione.Ascissa > maxX)
                     maxX = p.Posizione.Ascissa;
@@ -291,10 +291,10 @@ namespace PDSClient.StatModule
 
         }
 
-        private void DrawFiveMinutesChart(List<DatiDispositivo> phoneInfos)
+        private void DrawFiveMinutesChart(List<DatiDispositivo> dati_Dispositivi)
         {
 
-            var phoneTuple = SplitList(phoneInfos);
+            var phoneTuple = SplitList(dati_Dispositivi);
             var visiblePhoneInfos = phoneTuple.Item1;
             var hiddenPhoneInfos = phoneTuple.Item2;
 
@@ -324,12 +324,12 @@ namespace PDSClient.StatModule
             }
         }
 
-        private Tuple<List<DatiDispositivo>, List<DatiDispositivo>> SplitList(List<DatiDispositivo> phoneInfos)
+        private Tuple<List<DatiDispositivo>, List<DatiDispositivo>> SplitList(List<DatiDispositivo> dati_Dispositivi)
         {
             List<DatiDispositivo> visiblePhones = new List<DatiDispositivo>();
             List<DatiDispositivo> hiddenPhones = new List<DatiDispositivo>();
 
-            foreach(DatiDispositivo pi in phoneInfos)
+            foreach(DatiDispositivo pi in dati_Dispositivi)
             {
                 if (!pi.Global)
                 {

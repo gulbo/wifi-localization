@@ -153,7 +153,7 @@
     <Compile Include="EspConfig.xaml.cs">
       <DependentUpon>EspConfig.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ConnectionManager\PhoneInfoComparer.cs" />
+    <Compile Include="ConnectionManager\ComparatoreDatiDispositivo.cs" />
     <Compile Include="StatModule\DataReceiver.cs" />
     <Compile Include="StatModule\StatCalc.cs" />
     <Compile Include="StatModule\StaticChart.cs" />
@@ -175,7 +175,7 @@
     <Compile Include="ConnectionManager\DBConnect.cs" />
     <Compile Include="ConnectionManager\EspServer.cs" />
     <Compile Include="ConnectionManager\Pacchetto.cs" />
-    <Compile Include="ConnectionManager\PhoneInfo.cs" />
+    <Compile Include="ConnectionManager\DatiDispositivo.cs" />
     <Compile Include="ConnectionManager\Punto.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
