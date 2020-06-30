@@ -9,6 +9,11 @@ namespace PDSClient.ConnectionManager
         private readonly int timestamp;
         private readonly bool global;
 
+        public DatiDispositivo()
+        {
+
+        }
+
         public String MAC_Address
         {
             get { return MAC; }
