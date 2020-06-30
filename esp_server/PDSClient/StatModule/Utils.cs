@@ -26,7 +26,7 @@ namespace PDSClient.StatModule
             return UnixTimestampToDateTime((long)unixTimestamp);
         }
 
-        public static String FormatMACAddr(String macAddr)
+        public static string Formatta_MAC_Address(String macAddr)
         {
             var regex = "(.{2})(.{2})(.{2})(.{2})(.{2})(.{2})";
             var replace = "$1:$2:$3:$4:$5:$6";
