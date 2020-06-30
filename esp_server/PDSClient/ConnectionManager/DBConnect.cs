@@ -13,8 +13,6 @@ namespace PDSClient.ConnectionManager
         private enum ReduceType { Mean, Random };
         private ConcurrentDictionary<int, Scheda> schede;
 
-        //Proprietà
-
         public string Server { get; private set; }
         public string Uid { get; private set; }
         public string Password { get; private set; }
@@ -234,7 +232,7 @@ namespace PDSClient.ConnectionManager
             try
             {
                 string query = String.Format("INSERT INTO  pacchetti(MAC, RSSI, SSID, timestamp, hash, ID_scheda, global) VALUES('{0}','{1}','{2}','{3}','{4}','{5}','{6}')",
-                    pacchetto.MAC_address, pacchetto.RSSI, pacchetto.SSID, pacchetto.Timestamp, pacchetto.Checksum, pacchetto.ID_scheda, pacchetto.Global);
+                    pacchetto.MAC_Address, pacchetto.RSSI, pacchetto.SSID, pacchetto.Timestamp, pacchetto.Checksum, pacchetto.ID_scheda, pacchetto.Global);
 
                 using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
                 using (MySqlCommand cmd = connessione.CreateCommand())
@@ -267,7 +265,7 @@ namespace PDSClient.ConnectionManager
                 foreach (Pacchetto pacchetto in pacchetti)
                 {
                     builderQuery.Append(string.Format("('{0}','{1}','{2}','{3}','{4}','{5}',{6})",
-                        pacchetto.MAC_address, pacchetto.RSSI, MySqlHelper.EscapeString(pacchetto.SSID), pacchetto.Timestamp, pacchetto.Checksum, pacchetto.ID_scheda, pacchetto.Global));
+                        pacchetto.MAC_Address, pacchetto.RSSI, MySqlHelper.EscapeString(pacchetto.SSID), pacchetto.Timestamp, pacchetto.Checksum, pacchetto.ID_scheda, pacchetto.Global));
                     if (pacchetto.Equals(pacchetti.Last<Pacchetto>()))
                     {
                         builderQuery.Append(";");
@@ -472,8 +470,8 @@ namespace PDSClient.ConnectionManager
             foreach (DatiDispositivo telefono in dispositivi)
             {
                 builderQuery.Append(string.Format("('{0}',{1},{2},{3},{4})",
-                    telefono.MacAddr, Math.Round(telefono.Position.Ascissa, 2).ToString(culture),
-                    Math.Round(telefono.Position.Ordinata, 2).ToString(culture), telefono.Timestamp, telefono.Global));
+                    telefono.MAC_Address, Math.Round(telefono.Posizione.Ascissa, 2).ToString(culture),
+                    Math.Round(telefono.Posizione.Ordinata, 2).ToString(culture), telefono.Timestamp, telefono.Global));
                 if (telefono.Equals(dispositivi.Last<DatiDispositivo>()))
                 {
                     builderQuery.Append(";");
@@ -776,9 +774,9 @@ namespace PDSClient.ConnectionManager
 
             string query = "SELECT MAC " +
                "FROM posizioni WHERE global = 1 AND timestamp > " + time +
-               " AND ABS(x - " + p.Position.Ascissa.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) +
-               " AND ABS(y - " + p.Position.Ordinata.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) + 
-               " AND MAC <> '" + p.MacAddr + "'";
+               " AND ABS(x - " + p.Posizione.Ascissa.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) +
+               " AND ABS(y - " + p.Posizione.Ordinata.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) + 
+               " AND MAC <> '" + p.MAC_Address + "'";
 
 
             using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))

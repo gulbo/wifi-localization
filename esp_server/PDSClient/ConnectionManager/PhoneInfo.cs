@@ -28,11 +28,6 @@ namespace PDSClient.ConnectionManager
             get { return timestamp; }
         }
 
-        public Punto Position
-        {
-            get { return position; }
-        }
-
         public bool Global
         {
             get { return global; }

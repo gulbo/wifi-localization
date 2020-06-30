@@ -106,18 +106,18 @@ namespace PDSClient.StatModule
 
             foreach (DatiDispositivo ph in macList)
             {
-                if (ph.MacAddr == mac)
+                if (ph.MAC_Address == mac)
                 {
 
                     scatter.Add(ph);
-                    if (ph.Position.Ascissa < minX)
-                        minX = ph.Position.Ascissa;
-                    if (ph.Position.Ascissa > maxX)
-                        maxX = ph.Position.Ascissa;
-                    if (ph.Position.Ordinata < minY)
-                        minY = ph.Position.Ordinata;
-                    if (ph.Position.Ordinata > maxY)
-                        maxY = ph.Position.Ordinata;
+                    if (ph.Posizione.Ascissa < minX)
+                        minX = ph.Posizione.Ascissa;
+                    if (ph.Posizione.Ascissa > maxX)
+                        maxX = ph.Posizione.Ascissa;
+                    if (ph.Posizione.Ordinata < minY)
+                        minY = ph.Posizione.Ordinata;
+                    if (ph.Posizione.Ordinata > maxY)
+                        maxY = ph.Posizione.Ordinata;
 
                 }
             }
@@ -135,9 +135,9 @@ namespace PDSClient.StatModule
 
             _movement.Series[macToIndex[mac]].LabelPoint = point => string.Format("Timestamp:{0} \n X:{1}  Y:{2}",
                 new DateTime(1970, 1, 1, 0, 0, 0, 0).AddSeconds(((DatiDispositivo)point.Instance).Timestamp),
-                ((DatiDispositivo)point.Instance).Position.Ascissa, ((DatiDispositivo)point.Instance).Position.Ordinata);
+                ((DatiDispositivo)point.Instance).Posizione.Ascissa, ((DatiDispositivo)point.Instance).Posizione.Ordinata);
 
-            _movement.Series[macToIndex[mac]].Configuration = Mappers.Xy<DatiDispositivo>().X(b => b.Position.Ascissa).Y(b => b.Position.Ordinata);
+            _movement.Series[macToIndex[mac]].Configuration = Mappers.Xy<DatiDispositivo>().X(b => b.Posizione.Ascissa).Y(b => b.Posizione.Ordinata);
             _movement.Series[macToIndex[mac]].Values = new ChartValues<DatiDispositivo>(scatter);
             _movement.AxisX[0].MinValue = minX - 0.1;
             _movement.AxisX[0].MaxValue = maxX + 0.1;
@@ -178,7 +178,7 @@ namespace PDSClient.StatModule
             {
                 foreach (DatiDispositivo ph in _movement.Series[macToIndex[mac]].Values)
                 {
-                    if (ph.MacAddr == mac)
+                    if (ph.MAC_Address == mac)
                     {
                         if (ph.Timestamp > tmp)
                         {
@@ -243,13 +243,13 @@ namespace PDSClient.StatModule
             //conta le occorrenze per MAC
             foreach (DatiDispositivo ph in mostFreq)
             {
-                if (map.ContainsKey(ph.MacAddr))
+                if (map.ContainsKey(ph.MAC_Address))
                 {
-                    map[ph.MacAddr].Add(ph.Timestamp);
+                    map[ph.MAC_Address].Add(ph.Timestamp);
                 }
                 else
                 {
-                    map.Add(ph.MacAddr, new List<int> { ph.Timestamp });
+                    map.Add(ph.MAC_Address, new List<int> { ph.Timestamp });
                 }
             }
 

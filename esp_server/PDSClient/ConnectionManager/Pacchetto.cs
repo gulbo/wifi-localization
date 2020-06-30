@@ -12,7 +12,7 @@ namespace PDSClient.ConnectionManager
     {
         public const int LUNGHEZZA_CHECKSUM = 4;
 
-        public PhysicalAddress MAC_address { get; private set; }
+        public PhysicalAddress MAC_Address { get; private set; }
         public int RSSI { get; private set; }
         public string SSID { get; private set; }
         public int Timestamp { get; private set; }
@@ -26,7 +26,7 @@ namespace PDSClient.ConnectionManager
         }
         public Pacchetto(string mac, int rssi, string ssid, int timestamp, string checksum, int id_scheda, bool global)
         {
-            MAC_address = PhysicalAddress.Parse(mac);
+            MAC_Address = PhysicalAddress.Parse(mac);
             RSSI = rssi;
             SSID = ssid;
             Timestamp = timestamp;
@@ -41,7 +41,7 @@ namespace PDSClient.ConnectionManager
             {
                 throw new Exception("Lunghezza MAC address non valida");
             }
-            MAC_address = new PhysicalAddress(mac);
+            MAC_Address = new PhysicalAddress(mac);
             RSSI = rssi;
             SSID = ssid;
             Timestamp = timestamp;
@@ -52,7 +52,7 @@ namespace PDSClient.ConnectionManager
 
         public Pacchetto(PhysicalAddress mac, int rssi, string ssid, int timestamp, string checksum, int id_scheda, bool global)
         {
-            MAC_address = mac;
+            MAC_Address = mac;
             RSSI = rssi;
             SSID = ssid;
             Timestamp = timestamp;
@@ -134,7 +134,7 @@ namespace PDSClient.ConnectionManager
         public override string ToString()
         {
             StringBuilder builderStringa = new StringBuilder();
-            builderStringa.Append("MAC: ").Append(MAC_address.ToString()).Append(" - ");
+            builderStringa.Append("MAC: ").Append(MAC_Address.ToString()).Append(" - ");
             builderStringa.Append("RSSI: ").Append(RSSI).Append(" - ");
             builderStringa.Append("SSID: ").Append(SSID).Append(" - ");
             builderStringa.Append("Timestamp: ").Append(Timestamp).Append(" - ");
