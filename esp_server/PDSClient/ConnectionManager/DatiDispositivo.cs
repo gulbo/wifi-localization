@@ -1,11 +1,10 @@
-﻿using System;
-using PDSClient.StatModule;
+﻿using PDSClient.StatModule;
 
 namespace PDSClient.ConnectionManager
 {
     public class DatiDispositivo
     {
-        private readonly String MAC;
+        private readonly string MAC;
         private readonly Punto posizione;
         private readonly int timestamp;
         private readonly bool global;
@@ -40,28 +39,28 @@ namespace PDSClient.ConnectionManager
             get { return Utils.Formatta_MAC_Address(MAC_Address); }
         }
 
-        public DatiDispositivo(String mac, int timestamp, Punto posizione)
+        public DatiDispositivo(string mac, int timestamp, Punto posizione)
         {
             this.MAC = mac;
             this.timestamp = timestamp;
             this.posizione = posizione;
         }
 
-        public DatiDispositivo(String mac, int timestamp, double x, double y)
+        public DatiDispositivo(string mac, int timestamp, double x, double y)
         {
             this.MAC = mac;
             this.timestamp = timestamp;
             this.posizione = new Punto(x, y);
         }
 
-        public DatiDispositivo(String mac, int timestamp, Punto posizione,  bool global)
+        public DatiDispositivo(string mac, int timestamp, Punto posizione,  bool global)
         {
             this.MAC = mac;
             this.posizione = posizione;
             this.timestamp = timestamp;
             this.global = global;
         }
-        public DatiDispositivo(String mac, int timestamp, double x, double y, bool global)
+        public DatiDispositivo(string mac, int timestamp, double x, double y, bool global)
         {
             this.MAC = mac;
             this.posizione = new Punto(x, y);
