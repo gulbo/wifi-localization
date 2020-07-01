@@ -196,7 +196,7 @@ namespace PDSClient.ConnectionManager
 
             //Creo una lista di schede per memorizzare i risultati
 
-            List<Scheda> list = new List<Scheda>();
+            List<Scheda> lista_schede = new List<Scheda>();
 
             using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
             using (MySqlCommand cmd = connessione.CreateCommand())
@@ -210,10 +210,10 @@ namespace PDSClient.ConnectionManager
                         while (leggiDati.Read())
                         {
                             Scheda scheda = new Scheda(leggiDati.GetInt32(0), leggiDati.GetDouble(1), leggiDati.GetDouble(2));
-                            list.Add(scheda);
+                            lista_schede.Add(scheda);
                         }
                         Connesso = true;
-                        return list;
+                        return lista_schede;
                     }
                 }
                 catch (MySqlException e)
@@ -378,7 +378,7 @@ namespace PDSClient.ConnectionManager
         {
             //Creo una lista di pacchetti per memorizzare i risultati
 
-            List<Pacchetto> list = new List<Pacchetto>();
+            List<Pacchetto> lista_pacchetti = new List<Pacchetto>();
 
             using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
             using (MySqlCommand cmd = connessione.CreateCommand())
@@ -393,10 +393,10 @@ namespace PDSClient.ConnectionManager
                         {
                             Pacchetto pacchetto = new Pacchetto(leggiDati.GetString(1), leggiDati.GetInt32(2), leggiDati.GetString(3),
                                 leggiDati.GetInt32(4), leggiDati.GetString(5), leggiDati.GetInt32(6), leggiDati.GetBoolean(7));
-                            list.Add(pacchetto);
+                            lista_pacchetti.Add(pacchetto);
                         }
                         Connesso = true;
-                        return list;
+                        return lista_pacchetti;
                     }
                 }
                 catch (MySqlException e)
@@ -412,15 +412,15 @@ namespace PDSClient.ConnectionManager
         {
             //Creo una lista per ogni colonna della tabella 'pacchetti' per memorizzare i risultati
 
-            List<string>[] list = new List<string>[8];   
-            list[0] = new List<string>();
-            list[1] = new List<string>();
-            list[2] = new List<string>();
-            list[3] = new List<string>();
-            list[4] = new List<string>();
-            list[5] = new List<string>();
-            list[6] = new List<string>();
-            list[7] = new List<string>();
+            List<string>[] lista = new List<string>[8];   
+            lista[0] = new List<string>();
+            lista[1] = new List<string>();
+            lista[2] = new List<string>();
+            lista[3] = new List<string>();
+            lista[4] = new List<string>();
+            lista[5] = new List<string>();
+            lista[6] = new List<string>();
+            lista[7] = new List<string>();
 
             using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
             using (MySqlCommand cmd = connessione.CreateCommand())
@@ -433,17 +433,17 @@ namespace PDSClient.ConnectionManager
                     {
                         while (leggiDati.Read())
                         {
-                            list[0].Add(leggiDati["ID_pacchetto"] + "");
-                            list[1].Add(leggiDati["MAC"] + "");
-                            list[2].Add(leggiDati["RSSI"] + "");
-                            list[3].Add(leggiDati["SSID"] + "");
-                            list[4].Add(leggiDati["Timestamp"] + "");
-                            list[5].Add(leggiDati["Checksum"] + "");
-                            list[6].Add(leggiDati["ID_scheda"] + "");
-                            list[7].Add(leggiDati["Global"] + "");
+                            lista[0].Add(leggiDati["ID_pacchetto"] + "");
+                            lista[1].Add(leggiDati["MAC"] + "");
+                            lista[2].Add(leggiDati["RSSI"] + "");
+                            lista[3].Add(leggiDati["SSID"] + "");
+                            lista[4].Add(leggiDati["Timestamp"] + "");
+                            lista[5].Add(leggiDati["Checksum"] + "");
+                            lista[6].Add(leggiDati["ID_scheda"] + "");
+                            lista[7].Add(leggiDati["Global"] + "");
                         }
                         Connesso = true;
-                        return list;
+                        return lista;
                     }
                 }
                 catch(MySqlException e)
