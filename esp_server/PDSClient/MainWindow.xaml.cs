@@ -140,12 +140,18 @@ namespace PDSClient
         //popola la list box con i mac di cui abbiamo le posizioni nell'intervallo definito 
         private void Search(object sender, System.Windows.RoutedEventArgs e)
         {
-            int temporalRange = Int32.Parse(sliderText.Text);
-
-
+            int temporalRange;
+            try
+            {
+                temporalRange = Int32.Parse(sliderText.Text);
+            }
+            catch (FormatException ex)
+            {
+                temporalRange = 0;
+            }
             if (temporalRange < 1)
             {
-                System.Windows.MessageBox.Show("Specificare un intervallo temporale maggiore di 0", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
+                System.Windows.MessageBox.Show("Inserire un intervallo di tempo valido (maggiore di 0)", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
                 return;
             }
             movement.Series.Clear();
