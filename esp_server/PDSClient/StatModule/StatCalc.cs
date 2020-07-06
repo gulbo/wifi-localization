@@ -94,10 +94,9 @@ namespace PDSClient.StatModule
                 if (nMacHidden.ContainsKey(p.MAC_Address))
                 {
                     nMacHidden[p.MAC_Address].Modified = true;
-                    if ((++nMacHidden[p.MAC_Address].Count) >= 5)
-                    {
+
                         count++;
-                    }
+                    
                 }
                 else
                 {
@@ -134,11 +133,8 @@ namespace PDSClient.StatModule
             {
                 if (nMacVisible.ContainsKey(p.MAC_Address))
                 {
-                    nMacVisible[p.MAC_Address].Modified = true;
-                    if ((++nMacVisible[p.MAC_Address].Count) >= 5)
-                    {
+                    nMacVisible[p.MAC_Address].Modified = true;                 
                         count++;
-                    }
                 }
                 else
                 {
