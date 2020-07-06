@@ -98,6 +98,12 @@ namespace PDSClient.StatModule
 
             Application.Current.Dispatcher.Invoke(() => _listBox.ItemsSource = macListDistinct);
         }
+        //pulisce Series e lista mac ricerca precedente
+        public void ClearSearchResults()
+        {
+            _movement.Series.Clear();
+            macToIndex.Clear();
+        }
 
         //aggiunge una serie per il chart di movimento dei MAC
         public void AddSeries(string mac)
