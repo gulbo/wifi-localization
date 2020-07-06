@@ -137,9 +137,6 @@
     <Reference Include="Xceed.Wpf.DataGrid.Views3D.v6.7, Version=6.7.19073.21200, Culture=neutral, PublicKeyToken=ba83ff368b7563c6, processorArchitecture=MSIL">
       <HintPath>..\packages\Xceed.Wpf.DataGrid.Views3D.6.7.19073.21201\lib\net40\Xceed.Wpf.DataGrid.Views3D.v6.7.dll</HintPath>
     </Reference>
-    <Reference Include="Xceed.Wpf.Samples.SampleData">
-      <HintPath>..\..\..\..\..\..\..\..\Downloads\Xceed.Wpf.Samples.SampleData.dll</HintPath>
-    </Reference>
     <Reference Include="Xceed.Wpf.Toolkit, Version=3.5.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
       <HintPath>..\packages\Extended.Wpf.Toolkit.3.5.0\lib\net40\Xceed.Wpf.Toolkit.dll</HintPath>
     </Reference>
