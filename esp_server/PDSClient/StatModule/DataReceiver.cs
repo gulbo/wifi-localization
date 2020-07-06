@@ -313,7 +313,7 @@ namespace PDSClient.StatModule
             Axis xAxis = fiveMinutesChart.AxisX[0];
             Axis yAxis = fiveMinutesChart.AxisY[0];
             
-            if(fiveMinutesPhone.Count > 20)
+            if(fiveMinutesPhone.Count > 5)
             {
                 xAxis.MaxValue = fiveMinutesPhone.Count;
                 xAxis.MinValue = fiveMinutesPhone.Count - 5;

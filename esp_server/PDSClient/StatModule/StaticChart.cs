@@ -133,7 +133,7 @@ namespace PDSClient.StatModule
                 PointGeometry = DefaultGeometries.Diamond,
                 PointGeometrySize = 10,
                 StrokeThickness = 4,
-                Fill = System.Windows.Media.Brushes.Transparent,
+                Fill = Brushes.Transparent,
             });
 
             if (!macToIndex.ContainsKey(mac))
@@ -145,10 +145,10 @@ namespace PDSClient.StatModule
 
             _movement.Series[macToIndex[mac]].Configuration = Mappers.Xy<DatiDispositivo>().X(b => b.Posizione.Ascissa).Y(b => b.Posizione.Ordinata);
             _movement.Series[macToIndex[mac]].Values = new ChartValues<DatiDispositivo>(scatter);
-            _movement.AxisX[0].MinValue = minX - 0.1;
-            _movement.AxisX[0].MaxValue = maxX + 0.1;
-            _movement.AxisY[0].MinValue = minY - 0.1;
-            _movement.AxisY[0].MaxValue = maxY + 0.1;
+            _movement.AxisX[0].MinValue = minX - 5;
+            _movement.AxisX[0].MaxValue = maxX + 5;
+            _movement.AxisY[0].MinValue = minY - 5;
+            _movement.AxisY[0].MaxValue = maxY + 5;
         }
 
         //rimuove la serie del mac passato dal chart di movimento dei MAC
