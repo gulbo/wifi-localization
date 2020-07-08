@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace WifiLocalization.ConnectionManager
+namespace WifiLocalization.Utilities
 {
     public class Scheda
     {

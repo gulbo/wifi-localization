@@ -15,14 +15,15 @@ using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using System.Globalization;
 using System.Collections.ObjectModel;
-using WifiLocalization.StatModule;
+using WifiLocalization.Utilities;
+using WifiLocalization.ConnectionManager;
 
-namespace WifiLocalization.ConnectionManager
+namespace WifiLocalization.Graphic
 {
     /// <summary>
-    /// Interaction logic for EspConfig.xaml
+    /// Interaction logic for Configuration.xaml
     /// </summary>
-    public partial class EspConfig : Window
+    public partial class Configuration : Window
     {
 
         private ObservableCollection<Scheda> Boards;
@@ -31,7 +32,7 @@ namespace WifiLocalization.ConnectionManager
         public int NBoards { get; private set; }
         private DBConnect _dbConnection { get; set; }
 
-        public EspConfig()
+        public Configuration()
         {
 
             //created and managed by Windows Forms designer and it defines everything you see on the form
@@ -44,7 +45,7 @@ namespace WifiLocalization.ConnectionManager
             boards.ItemsSource = Boards;
             DataTemplate dataTemplate = Boards_box.ItemTemplate;
         }
-        public EspConfig(List<Scheda> Boards, DBConnect DBConnection)
+        public Configuration(List<Scheda> Boards, DBConnect DBConnection)
         {
             //Load the compiled page of a component.(because we use XAML)
             InitializeComponent();
@@ -172,7 +173,7 @@ namespace WifiLocalization.ConnectionManager
                 _dbConnection.RimuoviPacchetti();
                 _dbConnection.RimuoviPosizioni();
             }
-            MainWindow mw = new MainWindow(_dbConnection, boards);
+            MainWind mw = new MainWind(_dbConnection, boards);
 
             this.Close();
             mw.Show();

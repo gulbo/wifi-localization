@@ -5,8 +5,9 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.NetworkInformation;
+using WifiLocalization.ConnectionManager;
 
-namespace WifiLocalization.ConnectionManager
+namespace WifiLocalization.Utilities
 {
     public class Pacchetto
     {

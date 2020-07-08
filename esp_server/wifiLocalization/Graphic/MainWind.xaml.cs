@@ -1,6 +1,9 @@
-using WifiLocalization.ConnectionManager;
+
 using System.Windows.Controls;
-using WifiLocalization.StatModule;
+using WifiLocalization.ConnectionManager;
+using WifiLocalization.Utilities;
+using WifiLocalization.ChartManager;
+using WifiLocalization.Graphic;
 using System.Windows.Input;
 using System;
 using System.Collections.Generic;
@@ -9,13 +12,13 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-namespace WifiLocalization
+namespace WifiLocalization.Graphic
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for MainWind.xaml
     /// </summary>
     /// 
-    public partial class MainWindow 
+    public partial class MainWind 
     {
 
         private List<Scheda> _boards { get; set; }
@@ -27,7 +30,7 @@ namespace WifiLocalization
         EspServer espServer;
         DataReceiver dr;
 
-        public MainWindow(DBConnect DBConnection, List<Scheda> boards)
+        public MainWind(DBConnect DBConnection, List<Scheda> boards)
         {
             InitializeComponent();
 
