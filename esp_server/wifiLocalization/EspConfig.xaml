@@ -114,7 +114,7 @@
                     RenderTransformOrigin="0.463,0.451"
                     CanVerticallyScroll="True">
 
-                    <TextBlock x:Name="lbl_Title" Text="Inserire nuova scheda" FontSize =" 16" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <TextBlock x:Name="lbl_Title" Text="Inserire nuova scheda" FontSize =" 16" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     <Button x:Name="btn_add" Background="{x:Null}" BorderBrush="{x:Null}" Width="25" Height="25" Margin="50,0,20,0" Click="ButtonAdd" Padding="0">
                         <materialDesign:PackIcon Kind="PLus" Width="25" Height="25"  Foreground="Orange"  />
                     </Button>
