@@ -1,18 +1,20 @@
 ﻿using LiveCharts;
 using LiveCharts.Configurations;
 using LiveCharts.Wpf;
-using WifiLocalization.ConnectionManager;
+using WifiLocalization.Utilities;
+using WifiLocalization.ChartManager;
+using WifiLocalization.Graphic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows.Threading;
 
-namespace WifiLocalization.StatModule
+namespace WifiLocalization.ConnectionManager
 {
     public class DataReceiver
     {
-        private MainWindow _window;
+        private MainWind _window;
         private int _nBoards;
         private EspServer _esp_server;
         private StatCalc _statCalc;
@@ -34,7 +36,7 @@ namespace WifiLocalization.StatModule
 
         public List<DatiDispositivo> DatiDispositivi { get { return dati_Dispositivi; } }
 
-        public DataReceiver(MainWindow window,int nBoards, EspServer esp_client, DBConnect dbC, CartesianChart scatterChart, CartesianChart fiveMinutesChart, Action errorAction)
+        public DataReceiver(MainWind window,int nBoards, EspServer esp_client, DBConnect dbC, CartesianChart scatterChart, CartesianChart fiveMinutesChart, Action errorAction)
         {
             _window = window;
             _nBoards = nBoards;

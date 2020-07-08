@@ -1,4 +1,4 @@
-﻿using WifiLocalization.StatModule;
+﻿using WifiLocalization.Utilities;
 
 namespace WifiLocalization.ConnectionManager
 {

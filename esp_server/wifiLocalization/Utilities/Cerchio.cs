@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 
-namespace WifiLocalization.ConnectionManager
+namespace WifiLocalization.Utilities
 {
     public class Cerchio
     {

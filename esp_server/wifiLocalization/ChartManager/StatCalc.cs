@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using WifiLocalization.Utilities;
 using WifiLocalization.ConnectionManager;
 
-namespace WifiLocalization.StatModule
+namespace WifiLocalization.ChartManager
 {
     class MyTuple {
        public int Count { get; set; }
