@@ -10,9 +10,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using WifiLocalization.Utilities;
 
-
-namespace WifiLocalization.StatModule
+namespace WifiLocalization.ChartManager
 {
 
     class StaticChart
@@ -47,9 +47,10 @@ namespace WifiLocalization.StatModule
             maxX = maxY = 0;
             //colori delle barre
             barsColor = new List<SolidColorBrush>();
-            barsColor.Add(Utils.orange);
-            barsColor.Add(Utils.purple);
-            barsColor.Add(Utils.green);
+            barsColor.Add(Utilities.Utils.orange);
+            barsColor.Add(Utilities.Utils.purple);
+            barsColor.Add(Utilities.Utils.green);
+
 
             for (int i = 0; i < 3; i++)
             {
@@ -129,7 +130,7 @@ namespace WifiLocalization.StatModule
             }
             _movement.Series.Add(new LineSeries()
             {
-                Title = Utils.Formatta_MAC_Address(mac),
+                Title = Utilities.Utils.Formatta_MAC_Address(mac),
                 PointGeometry = DefaultGeometries.Diamond,
                 PointGeometrySize = 10,
                 StrokeThickness = 4,
@@ -201,7 +202,7 @@ namespace WifiLocalization.StatModule
         {
             _temporalDistribution.Series.Add(new StackedRowSeries()
             {
-                Title =Utils.Formatta_MAC_Address(mac),
+                Title = Utilities.Utils.Formatta_MAC_Address(mac),
                 Values = values,
                 StackMode = StackMode.Values,
                 DataLabels = true,

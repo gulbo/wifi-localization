@@ -2,7 +2,7 @@
 using System.Windows.Media;
 using System.Text.RegularExpressions;
 
-namespace WifiLocalization.StatModule
+namespace WifiLocalization.Utilities
 {
     class Utils
     {

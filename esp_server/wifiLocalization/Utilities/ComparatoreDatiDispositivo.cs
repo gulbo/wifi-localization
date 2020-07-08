@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using WifiLocalization.ConnectionManager;
 
-namespace WifiLocalization.ConnectionManager
+namespace WifiLocalization.Utilities
 {
     class ComparatoreDatiDispositivo : IEqualityComparer<DatiDispositivo>
     {

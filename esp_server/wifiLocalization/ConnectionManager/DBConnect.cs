@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using MySql.Data.MySqlClient;
+using WifiLocalization.Utilities;
 
 namespace WifiLocalization.ConnectionManager
 {

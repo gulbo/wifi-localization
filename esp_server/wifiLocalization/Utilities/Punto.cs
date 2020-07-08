@@ -1,4 +1,4 @@
-﻿namespace WifiLocalization.ConnectionManager
+﻿namespace WifiLocalization.Utilities
 {
     public class Punto
     {

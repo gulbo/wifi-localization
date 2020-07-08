@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Net.Sockets;
 using System.Net;
+using WifiLocalization.Utilities;
+using WifiLocalization.Graphic;
 
 namespace WifiLocalization.ConnectionManager
 {
@@ -20,10 +22,10 @@ namespace WifiLocalization.ConnectionManager
         private CancellationTokenSource cancellation_token_source_;     /** generatore di Tokens per fermare i threads in esecuzione */
         private int boards_number_;                                     /** numbero di boards presenti */
         private List<Thread> board_handlers_;                           /** lista dei threads che gestiscono le connessioni con le boards */
-        private MainWindow mainWindow;                                  /** MainWindow chiamante*/
+        private MainWind mainWindow;                                  /** MainWindow chiamante*/
         private bool is_running_;                                      
 
-        public EspServer(int boards_number, DBConnect DBConnection, Action ConnectionErrorAction, MainWindow caller)
+        public EspServer(int boards_number, DBConnect DBConnection, Action ConnectionErrorAction, MainWind caller)
         {
             boards_number_ = boards_number;
             mainWindow = caller;
