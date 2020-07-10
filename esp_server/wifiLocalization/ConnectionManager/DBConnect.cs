@@ -779,8 +779,6 @@ namespace WifiLocalization.ConnectionManager
                " AND ABS(y - " + p.Posizione.Ordinata.ToString(CultureInfo.InvariantCulture) + ") < " + threshold.ToString(CultureInfo.InvariantCulture) + 
                " AND MAC <> '" + p.MAC_Address + "'";
 
-            System.Diagnostics.Debug.WriteLine(query);
-
             using (MySqlConnection connessione = new MySqlConnection("Database=" + Database + ";" + "Server=" + Server + ";" + "Port=3306;" + "UID=" + Uid + ";" + "Password=" + Password + ";"))
             using (MySqlCommand cmd = connessione.CreateCommand())
             {
