@@ -2,7 +2,7 @@
 #include "esp_wifi.h"
 #include <iostream>
 
-Client::Client(uint8_t board_id, std::string server_ip, int16_t server_port){
+Client::Client(uint8_t board_id, std::string server_ip, int32_t server_port){
     board_id_ = board_id;
     server_ip_ = server_ip;
     server_port_ = server_port;

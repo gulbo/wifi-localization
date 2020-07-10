@@ -17,7 +17,7 @@ class Client
         static const size_t MAX_MESSAGE_LENGTH = 128;
         
         Client() = default;
-        Client(uint8_t board_id, std::string server_ip, int16_t server_port);
+        Client(uint8_t board_id, std::string server_ip, int32_t server_port);
 
         ~Client();
 
@@ -92,7 +92,7 @@ class Client
     private:
         uint8_t board_id_;
         std::string server_ip_;
-        int16_t server_port_;
+        int32_t server_port_;
         struct sockaddr_in server_address_;
         int16_t socket_ = -1;
         bool is_connected_ = false;
