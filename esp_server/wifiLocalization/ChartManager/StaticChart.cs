@@ -71,6 +71,7 @@ namespace WifiLocalization.ChartManager
         public void CreateListBox(long start, long end)
         {
             macList.Clear();
+            ClearSearchResults();
             animationStartTimestamp = start;
             animationCurrTimestamp = end;
 
