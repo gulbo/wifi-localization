@@ -139,6 +139,9 @@ namespace WifiLocalization.ConnectionManager
             catch (Exception ex)
             {
                 writeDebugLine_(ex.ToString());
+                Monitor.Enter(board_handlers_);
+                board_handlers_.Remove(thread);
+                Monitor.Exit(board_handlers_);
                 if (socket != null || socket.Connected)
                 {
                     socket.Close();
@@ -148,19 +151,11 @@ namespace WifiLocalization.ConnectionManager
                         signalBoardDisconnected_(board.getBoardID());
                     }
                 }
-                Monitor.Enter(board_handlers_);
-                board_handlers_.Remove(thread);
-                Monitor.Exit(board_handlers_);
             }
         }
 
         private void signalBoardDisconnected_(int board_id)
         {
-            //var dispatcher = System.Windows.Application.Current.Dispatcher;
-            //dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-            //{
-            //    System.Windows.MessageBox.Show("Board" + board_id + " disconnessa. Riconnettere!", "Alert", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
-            //}));
             mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
             new Thread(() => System.Windows.MessageBox.Show(
                                                     "Board" + board_id + " disconnessa. Riconnettere!",
@@ -174,11 +169,6 @@ namespace WifiLocalization.ConnectionManager
 
         private void signalBoardConnected_(int board_id)
         {
-            //var dispatcher = System.Windows.Application.Current.Dispatcher;
-            //dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-            //{
-            //    System.Windows.MessageBox.Show("Board" + board_id + " connessa.", "Info", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
-            //}));
             mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
             new Thread(() => System.Windows.MessageBox.Show(
                                                    "Board" + board_id + " connessa.",
