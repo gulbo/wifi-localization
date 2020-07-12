@@ -221,7 +221,7 @@ namespace WifiLocalization.ConnectionManager
 
             int correlatedPhones = 0;
             int totalHiddenPhones;
-            double error;
+            double error= 0;
 
 
             List<DatiDispositivo> hiddenMacs = new List<DatiDispositivo>();
@@ -287,6 +287,7 @@ namespace WifiLocalization.ConnectionManager
             }
             correlatedPhones = countedMacs.Count;
             totalHiddenPhones = hiddenMacs.Count;
+            if (totalHiddenPhones == 0) error = 0;
             error =(double) 1 - (double)correlatedPhones / (double)totalHiddenPhones;
 
             _window.UpdateTextBlocks(totalHiddenPhones,correlatedPhones,error);
