@@ -387,7 +387,7 @@
                                     Click="SearchRange" FontSize="12" />
                 </Grid>
                 
-                <lvc:CartesianChart Name="temporalDistribution" LegendLocation="None" Grid.Row="1" Margin="10" />
+                <lvc:CartesianChart x:Name="temporalDistribution" LegendLocation="None" Grid.Row="1" Margin="10" />
                 
                
             </Grid>
