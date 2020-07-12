@@ -222,7 +222,6 @@ namespace WifiLocalization.ConnectionManager
             int correlatedPhones = 0;
             int totalHiddenPhones;
             double error;
-            int maxSet = 0;
 
 
             List<DatiDispositivo> hiddenMacs = new List<DatiDispositivo>();
@@ -278,18 +277,13 @@ namespace WifiLocalization.ConnectionManager
             //calcolo dell'errore di correlazione tra dispositivi nascosti ipotizzando la presenza di un solo dispositivo
             foreach(DatiDispositivo phone in hiddenMacs)
             {
-                                List<String> res = CountCorrelatedPhones(phone, 0.6,hiddenMacs);
-                if(hiddenMacs.Count == 1)
+                List<String> res = CountCorrelatedPhones(phone, 0.6,hiddenMacs);
+                if (res.Count > 1)
                 {
-                    countedMacs.Add(phone.MAC_Address);
-                }
-                if (res.Count > maxSet)
-                {
-                    maxSet = res.Count;
                     foreach (String mac in res)
                         if (!countedMacs.Contains(mac))
                             countedMacs.Add(mac);
-                }
+                }                             
             }
             correlatedPhones = countedMacs.Count;
             totalHiddenPhones = hiddenMacs.Count;
