@@ -31,61 +31,133 @@ namespace WifiLocalization.Graphic
 
         public int NBoards { get; private set; }
         private DBConnect _dbConnection { get; set; }
-
+        /**costruttore di Default*/
         public Configuration()
         {
-
+            //osservable collection for the list of board
+            this.Boards = new ObservableCollection<Scheda>();
+            ListView boardsBox;
+            DataTemplate boardDataTemplate;
             //created and managed by Windows Forms designer and it defines everything you see on the form
             InitializeComponent();
             //connection to database DBConnect(string server, string uid, string password) + pair key/value thread safe accessible from more thread at the same time for saving boards
-            _dbConnection = new DBConnect("localhost", "root", "");
-            //osservable collection for the list of board
-            this.Boards = new ObservableCollection<Scheda>();
-            ListView boards = Boards_box;
-            boards.ItemsSource = Boards;
-            DataTemplate dataTemplate = Boards_box.ItemTemplate;
+            _dbConnection = new DBConnect("localhost", "root", "");          
+            boardsBox = Boards_box;
+            boardsBox.ItemsSource = Boards;
+            boardDataTemplate = Boards_box.ItemTemplate;
         }
-        public Configuration(List<Scheda> Boards, DBConnect DBConnection)
+        
+        /// <summary>
+        /// controlla se ci sono schede con la stessa posizione 
+        /// </summary>
+        /// <param name="boards">lista delle schede</param>
+        /// <returns>true nessuna scheda nella stessa posizione false altrimenti</returns>
+        private bool CheckPosition(List<Scheda> boardsList)
         {
-            //Load the compiled page of a component.(because we use XAML)
-            InitializeComponent();
-            if (Boards.Count > 0)
-            {
-                this.Boards = new ObservableCollection<Scheda>(Boards);
-                ListView boards = Boards_box;
-                boards.ItemsSource = this.Boards;
-                
-            }
-            else
-            {
-                System.Windows.MessageBox.Show("No boards found in database.",
-                        "Empty board list",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-            }
-            this._dbConnection = DBConnection;
-        }
 
-       
-        private bool ValidPos(List<Scheda> boards)
-        {
-            HashSet<Tuple<double, double>> boardPos = new HashSet<Tuple<double, double>>();
-
-            foreach (Scheda b in boards)
+            HashSet<Tuple<double, double>> boardsPositions = new HashSet<Tuple<double, double>>();
+            foreach (Scheda board in boardsList)
             {
-                if (boardPos.Contains(new Tuple<double, double>(b.Punto.Ascissa, b.Punto.Ordinata)))
+                if (boardsPositions.Contains(new Tuple<double, double>(board.Punto.Ascissa, board.Punto.Ordinata)))
                     return false;
                 else
-                    boardPos.Add(new Tuple<double, double>(b.Punto.Ascissa, b.Punto.Ordinata));
+                    boardsPositions.Add(new Tuple<double, double>(board.Punto.Ascissa, board.Punto.Ordinata));
             }
             return true;
-
+        }
+        private void WindowDrag(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
+        }
+        //gestisce il tasto "indietro", pulisce la lista di schede caricata in quella istanza e cambia ciò che viene visualizzato
+        private void StartConfiguration(object sender, RoutedEventArgs e)
+        {
+            startWindow.Visibility = Visibility.Hidden;
+            configurationGrid.Visibility = Visibility.Visible;
         }
         private void backButton(object sender, System.Windows.RoutedEventArgs e)
         {
             Boards.Clear();
             startWindow.Visibility = Visibility.Visible;
             configurationGrid.Visibility = Visibility.Hidden;
+        }
+
+        //esegue una serie di controlli prima dell'invio dei dati
+        private void ButtonOk(object sender, RoutedEventArgs e)
+        {
+            HashSet<int> BoardsIdList = new HashSet<int>();
+            List<Scheda> boards = new List<Scheda>();
+            bool DBresult;
+            MainWind mainWindow;
+
+            //controllo: lista vuota
+            if (Boards == null)
+            {
+                MessageBox.Show("Lista di schede vuota, impossibile procedere all'invio.",
+                    "Lista vuota",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            foreach (Scheda board in Boards_box.Items)
+            {
+                //controllo: duplicati
+                if (BoardsIdList.Contains(board.ID_scheda))
+                {
+                    MessageBox.Show("Presenti schede duplicate, eliminare i duplicati",
+                        " ID schede duplicati",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+                BoardsIdList.Add(board.ID_scheda);
+                boards.Add(board);
+            }
+            //controllo: posizioni condivise
+            if (!CheckPosition(boards))
+            {
+                System.Windows.MessageBox.Show("Due o più schede nella stessa posizione",
+                       "posizione schede condivisa",
+                       MessageBoxButton.OK,
+                       MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                DBresult = _dbConnection.RimuoviSchede();
+                if (DBresult)
+                {
+                    DBresult = _dbConnection.InserisciScheda(boards);                                    
+                }
+                if (!DBresult)
+                {
+                    MessageBox.Show("Impossibile connettersi al Database.",
+                        "errore di connessione",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    return;
+                }
+            }
+            catch (MySqlException)
+            {
+                MessageBox.Show("Impossibile connettersi al Database.",
+                    "errore di connessione",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                return;
+            }
+            if ((bool)trunkateCheckBox.IsChecked)
+            {
+                _dbConnection.RimuoviPacchetti();
+                _dbConnection.RimuoviPosizioni();
+            }
+
+            mainWindow = new MainWind(_dbConnection, boards);
+            this.Close();
+            mainWindow.Show();
+
         }
 
         private void closeButton(object sender, System.Windows.RoutedEventArgs e)
@@ -96,104 +168,71 @@ namespace WifiLocalization.Graphic
             Environment.Exit(Environment.ExitCode);
         }
 
-        private void ButtonAdd(object sender, RoutedEventArgs e)
+        private void ButtonAddBoard(object sender, RoutedEventArgs e)
         {
             Scheda newBoard =new Scheda();
             Boards.Add(newBoard);
             
             return;
         }
-
-        private void ButtonOk(object sender, RoutedEventArgs e)
+        private void ButtonLoad(object sender, RoutedEventArgs e)
         {
-            HashSet<int> idBoards = new HashSet<int>();
-            
-            if(Boards == null)
-            {
-                System.Windows.MessageBox.Show("Invalid parameter(s) inserted.",
-                    "Invalid parameters",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return;
-            }
             List<Scheda> boards = new List<Scheda>();
-            foreach (Scheda board in Boards_box.Items)
-            {
-                if (idBoards.Contains(board.ID_scheda))
-                {
-                    System.Windows.MessageBox.Show("Duplicate id not allowed. Please check your configuration.",
-                        "Conflict with ids detected",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    return;
-                }
-                idBoards.Add(board.ID_scheda);
-                boards.Add(board);
-            }
-            if (!ValidPos(boards)) {
-                System.Windows.MessageBox.Show("Boards in the same position are not allowed",
-                       "Conflict with position detected",
-                       MessageBoxButton.OK,
-                       MessageBoxImage.Warning);
-                return;
-            }
-
             try
             {
-                bool res = _dbConnection.RimuoviSchede();
-                if (!res)
+                boards = _dbConnection.SelezionaSchede();
+
+                if (boards == null)
                 {
-                    System.Windows.MessageBox.Show("Unable to connect to database.",
-                        "Database error",
+                    MessageBox.Show("Impossibile connettersi al Database.",
+                        "errore di connessione",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
                     return;
                 }
-                res = _dbConnection.InserisciScheda(boards);
-                if (!res)
+                else if (boards.Count == 0)
                 {
-                    System.Windows.MessageBox.Show("Unable to insert boards' information to the database. Please check the connection and retry.",
-                        "Database error",
+                    MessageBox.Show("Nessuna scheda salvata.",
+                        "Lista vuota",
                         MessageBoxButton.OK,
-                        MessageBoxImage.Error);
+                        MessageBoxImage.Warning);
                     return;
                 }
             }
             catch (MySqlException)
             {
-                System.Windows.MessageBox.Show("Unable to connect to database. Please check the connection and retry.", 
-                    "Database Connection error", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Error);
+                MessageBox.Show("Impossibile connettersi al Database.",
+                        "errore di connessione",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
                 return;
             }
-            System.Diagnostics.Debug.WriteLine("Boards correctly inserted into db");
-            if ((bool) trunkateCheckBox.IsChecked)
+
+            foreach (Scheda b in boards)
             {
-                _dbConnection.RimuoviPacchetti();
-                _dbConnection.RimuoviPosizioni();
+                if (b.ID_scheda <= 0)
+                {
+                    MessageBox.Show("Id scheda non valido " + b.ID_scheda,
+                        "Id non valido",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    return;
+                }
+                if (!Boards.Contains(b))
+                {
+                    Boards.Add(b);
+                }
+
             }
-            MainWind mw = new MainWind(_dbConnection, boards);
-
-            this.Close();
-            mw.Show();
-            
         }
-
-        private void ButtonDelete(object sender, RoutedEventArgs e)
+        private void ButtonDeleteBoard(object sender, RoutedEventArgs e)
         {
             Button ClickedButton = (Button) sender;
             Scheda DeletedBoard = (Scheda) ClickedButton.DataContext;
             Boards.Remove(DeletedBoard);
             
         }
-
-        private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Left)
-                this.DragMove();
-        }
-
+     
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
             checkBlockText.Foreground = Utils.lightOrange;
@@ -203,62 +242,6 @@ namespace WifiLocalization.Graphic
         {
             checkBlockText.Foreground = Brushes.DarkGray;
         }
-
-        private void ButtonLoadFromDB(object sender, RoutedEventArgs e)
-        {
-            List<Scheda> boards = new List<Scheda>();
-            try
-            {
-                boards = _dbConnection.SelezionaSchede();
-                
-                if (boards == null)
-                {
-                    System.Windows.MessageBox.Show("Database error. Please check if the database is online",
-                        "Database connection error",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return;
-                }
-                else if (boards.Count == 0)
-                {
-                    System.Windows.MessageBox.Show("No boards found in database.",
-                        "Empty board list",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Warning);
-                    return;
-                }
-            }
-            catch (MySqlException)
-            {
-                System.Windows.MessageBox.Show("Error connecting with the database",
-                    "Database connection error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-                return;
-            }
-
-            foreach (Scheda b in boards)
-            {
-                if (b.ID_scheda <= 0)
-                {
-                    System.Windows.MessageBox.Show("Invalid board id found: " + b.ID_scheda,
-                        "Invalid board id",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Error);
-                    return;
-                }
-                if (!Boards.Contains(b))
-                {
-                    Boards.Add(b);
-                }  
-               
-            }          
-        }
-
-        private void StartConfiguration(object sender, RoutedEventArgs e)
-        {
-            startWindow.Visibility = Visibility.Hidden;
-            configurationGrid.Visibility = Visibility.Visible;
-        }
+        
     }
 }
