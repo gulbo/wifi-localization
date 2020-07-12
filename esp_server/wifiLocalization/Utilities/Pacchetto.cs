@@ -72,7 +72,7 @@ namespace WifiLocalization.Utilities
 
         public static bool CntrlGlobal(string mac)
         {
-            byte[] array = mac.Split(':').Select(x => Convert.ToByte(x, 16)).ToArray();
+            byte[] array = Utils.Formatta_MAC_Address(mac).Split(':').Select(x => Convert.ToByte(x, 16)).ToArray();
             return CntrlGlobal(array);
         }
 

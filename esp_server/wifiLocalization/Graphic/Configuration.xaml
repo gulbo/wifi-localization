@@ -11,7 +11,7 @@
         xmlns:dragablz="http://dragablz.net/winfx/xaml/dragablz"
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance local:MainWind}" WindowStyle="None" Visibility="Visible"  
-		ResizeMode="NoResize" MouseDown="Window_MouseDown"
+		ResizeMode="NoResize" MouseDown="WindowDrag"
         Title="ESP Board Configuration" Height="600" Width="500">
 
 
@@ -115,7 +115,7 @@
                     CanVerticallyScroll="True">
 
                     <TextBlock x:Name="lbl_Title" Text="Inserire nuova scheda" FontSize =" 16" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    <Button x:Name="btn_add" Background="{x:Null}" BorderBrush="{x:Null}" Width="25" Height="25" Margin="50,0,20,0" Click="ButtonAdd" Padding="0">
+                    <Button x:Name="btn_add" Background="{x:Null}" BorderBrush="{x:Null}" Width="25" Height="25" Margin="50,0,20,0" Click="ButtonAddBoard" Padding="0">
                         <materialDesign:PackIcon Kind="PLus" Width="25" Height="25"  Foreground="Orange"  />
                     </Button>
                                     <Button x:Name="btn_loadDB"
@@ -130,7 +130,7 @@
                         HorizontalAlignment="Right"
                         HorizontalContentAlignment="Center"
                         VerticalContentAlignment="Center"
-                        Click ="ButtonLoadFromDB"
+                        Click ="ButtonLoad"
                         >
                 </Button>
 
@@ -161,7 +161,7 @@
                                     <TextBox  Name ="x_box" Grid.Column="1" Text="{Binding Path=Punto.Ascissa}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
                                     <TextBlock Name ="y_text"  Grid.Column="1" Grid.Row="1" Text="y:" />
                                     <TextBox  Name ="y_box" Grid.Column="1" Grid.Row="1" Text="{Binding Path=Punto.Ordinata}" Margin="25,0,0,0" Height="30" Width="30"  TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Left"/>
-                                    <Button  Grid.Column="2" Name="Delete" Click="ButtonDelete"  Background="{x:Null}" BorderBrush="{x:Null}" Height="16" Margin="0,5,0,0" Width="26"  ToolTip="Close" >
+                                    <Button  Grid.Column="2" Name="Delete" Click="ButtonDeleteBoard"  Background="{x:Null}" BorderBrush="{x:Null}" Height="16" Margin="0,5,0,0" Width="26"  ToolTip="Close" >
                                         <materialDesign:PackIcon x:Name="btn_exit" Kind="CloseOutline" Height="13" Width="15" UseLayoutRounding="False" Foreground="black"/>
                                         <Button.Style>
                                             <Style>

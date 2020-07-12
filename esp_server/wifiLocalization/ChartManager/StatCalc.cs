@@ -35,14 +35,18 @@ namespace WifiLocalization.ChartManager
         {
             return DBConnection.CountLast5MinutesPhones(nBoards, 1);
         }
-
+        /// <summary>
+        /// data una lista di posizioni, raggruppa i Datidispositivi per MAC 
+        /// </summary>
+        /// <param name="nBoards"></param>
+        /// <param name="threshold"></param>
+        /// <returns>lista di DatiDispositivo per mac</returns>
         public List<DatiDispositivo> GetLastMinutePositions(int nBoards, int threshold = 0)
         {
             List<DatiDispositivo> list = DBConnection.GetLastMinuteData(nBoards, threshold);
 
             if(list == null)
             {
-                //return new List<PhoneInfo>();
                 return null;
             }
 
@@ -56,8 +60,11 @@ namespace WifiLocalization.ChartManager
                                                         item.Select(it => it.Global).First())).ToList();
 
         }
-
-        public List<Scheda> GetBoardsPosition() {
+        /// <summary>
+        /// preleva tutte le schede dal database dalla tabella Schede
+        /// </summary>
+        /// <returns>lista di schede</returns>
+        public List<Scheda> GetBoardsPosition() { 
             return DBConnection.SelezionaSchede();
         }
         //interfaccia per contattare il DB

@@ -540,7 +540,16 @@ namespace WifiLocalization.ConnectionManager
 
 
 
-        //calculate position of the phones received by all boards in the last minute and insert them in the table
+        /// <summary>
+        /// se abbiamo almeno 2 schede, ricerca nel database la tupla(Distinct) MAC,timestamp,global,hash, ID scheda i,RSSI scheda i 
+        /// all'interno di pacchetti in cui prendendo in considerazione dati di schede diverse riguardanti lo stesso MAC (i-esimo)
+        /// la cui differenza di timestamp (tra dati diversi) sia entro una certa soglia (si riferisca alla stessa lettura) e il cui
+        /// timestamp sia entro il minuto di ricerca , prese queste tuple calcola i punti di intersezione tramite i metodi dei cerchi
+        /// ed infine li aggiunge ad una lista 
+        /// </summary>
+        /// <param name="nBoards">numero di schede presenti</param>
+        /// <param name="threshold">soglia del timestamp tra dati diversi</param>
+        /// <returns>lista di punti di intersezione</returns>
         public List<DatiDispositivo> GetLastMinuteData(int nBoards, int threshold = 0)
         {
             try
@@ -684,10 +693,7 @@ namespace WifiLocalization.ConnectionManager
             for (int i = 1; i < nBoards; i++)
                 builder.Append(" AND P").Append(i).Append(".MAC = P").Append(i + 1).Append(".MAC");
             //HASH 
-            //builder.Append(" AND P1.hash = P2.hash AND P1.hash <> 00000000");
-            //MAC
-            for (int i = 1; i < nBoards; i++)
-                builder.Append(" AND P").Append(i).Append(".MAC = P").Append(i + 1).Append(".MAC");
+            //builder.Append(" AND P1.hash = P2.hash AND P1.hash <> 00000000");         
             builder.Append(" AND P1.timestamp > ").Append(timestamp);
             return builder.ToString();
 

@@ -12,7 +12,7 @@ using System.Windows.Threading;
 
 namespace WifiLocalization.ConnectionManager
 {
-    public class DataReceiver
+    public class chartDataHandler
     {
         private MainWind _window;
         private int _nBoards;
@@ -36,7 +36,7 @@ namespace WifiLocalization.ConnectionManager
 
         public List<DatiDispositivo> DatiDispositivi { get { return dati_Dispositivi; } }
 
-        public DataReceiver(MainWind window,int nBoards, EspServer esp_client, DBConnect dbC, CartesianChart scatterChart, CartesianChart fiveMinutesChart, Action errorAction)
+        public chartDataHandler(MainWind window,int nBoards, EspServer esp_client, DBConnect dbC, CartesianChart scatterChart, CartesianChart fiveMinutesChart, Action errorAction)
         {
             _window = window;
             _nBoards = nBoards;
@@ -222,14 +222,22 @@ namespace WifiLocalization.ConnectionManager
             int correlatedPhones = 0;
             int totalHiddenPhones;
             double error;
+            int maxSet = 0;
+
 
             List<DatiDispositivo> hiddenMacs = new List<DatiDispositivo>();
             HashSet<String> countedMacs = new HashSet<String>();
 
+            //cancellazione dei precedenti dati tra una chiamata ed un altra
+            boardsPos.Clear();
+            phonePos.Clear();
+            hiddenPhonePos.Clear();
+            selectedPhonePos.Clear();
+
             minX = maxX = schede.First().Punto.Ascissa;
             minY = maxY = schede.First().Punto.Ordinata;
 
-            boardsPos.Clear();
+            //resizse del grafico in base alle schede
             foreach (Scheda scheda in schede)
             {
                 if (minX > scheda.Punto.Ascissa)
@@ -243,9 +251,7 @@ namespace WifiLocalization.ConnectionManager
 
                 boardsPos.Add(scheda);
             }
-            phonePos.Clear();
-            hiddenPhonePos.Clear();
-            selectedPhonePos.Clear();
+            //resize del grafico in base alla posizione dei dispositivi ed aggiunta dei dispositivi nel contenitore opportuno
             foreach (DatiDispositivo p in dati_Dispositivi)
             {
                 if (p.Posizione.Ascissa > maxX)
@@ -269,17 +275,25 @@ namespace WifiLocalization.ConnectionManager
                 }
             }
 
+            //calcolo dell'errore di correlazione tra dispositivi nascosti ipotizzando la presenza di un solo dispositivo
             foreach(DatiDispositivo phone in hiddenMacs)
             {
-                List<String> res = _statCalc.Connection.CountHiddenPhones(phone, 0.6);
-  
+                                List<String> res = CountCorrelatedPhones(phone, 0.6,hiddenMacs);
+                if(hiddenMacs.Count == 1)
+                {
+                    countedMacs.Add(phone.MAC_Address);
+                }
+                if (res.Count > maxSet)
+                {
+                    maxSet = res.Count;
                     foreach (String mac in res)
-                        if (!countedMacs.Contains(mac)) 
+                        if (!countedMacs.Contains(mac))
                             countedMacs.Add(mac);
+                }
             }
             correlatedPhones = countedMacs.Count;
             totalHiddenPhones = hiddenMacs.Count;
-            error =(double) 1 -  correlatedPhones / totalHiddenPhones;
+            error =(double) 1 - (double)correlatedPhones / (double)totalHiddenPhones;
 
             _window.UpdateTextBlocks(totalHiddenPhones,correlatedPhones,error);
 
@@ -291,6 +305,29 @@ namespace WifiLocalization.ConnectionManager
             scatterChart.AxisY[0].MinValue = minY - 1;
             scatterChart.AxisY[0].MaxValue = maxY + 1;
 
+        }
+        /// <summary>
+        /// per il mac passato controllo se ci sono dispositivi a lui correlati, in base alla soglia passata, all'interno della lista dei dispositivi (se stesso è correlato a lui)
+        /// </summary>
+        /// <param name="device">dispositivo da controllare</param>
+        /// <param name="distThreshold">distanza massima</param>
+        /// <param name="hiddenDevices">dispositivi totali</param>
+        /// <returns></returns>
+        private List<String>  CountCorrelatedPhones(DatiDispositivo device, Double distThreshold, List<DatiDispositivo> hiddenDevices)
+        {
+            List<String> correlatedMacs = new List<string>();
+
+            foreach (DatiDispositivo dev in hiddenDevices)
+            {
+                Double distX = Math.Abs(dev.Posizione.Ascissa - device.Posizione.Ascissa);
+                Double disty = Math.Abs(dev.Posizione.Ascissa - device.Posizione.Ascissa);
+                Double devicesDistance = Math.Sqrt((distX*distX) + (disty*disty));
+                if (devicesDistance < distThreshold)
+                {
+                    correlatedMacs.Add(dev.MAC_Address);                   
+                }
+            }
+            return correlatedMacs;
         }
 
         private void DrawFiveMinutesChart(List<DatiDispositivo> dati_Dispositivi)
@@ -400,6 +437,7 @@ namespace WifiLocalization.ConnectionManager
                         {
                             hiddenPhonePos.Remove(p);
                             selectedPhonePos.Add(p);
+                            break;
                         }
                     }
                 }
@@ -412,6 +450,7 @@ namespace WifiLocalization.ConnectionManager
                         {
                             phonePos.Remove(p);
                             selectedPhonePos.Add(p);
+                            break;
                         }
                     }
                 }
