@@ -15,7 +15,7 @@ using WifiLocalization.Utilities;
 namespace WifiLocalization.ChartManager
 {
 
-    class StaticChart
+    class chartsManager
     {
         CartesianChart _movement;
         CartesianChart _temporalDistribution;
@@ -24,14 +24,14 @@ namespace WifiLocalization.ChartManager
         ChartValues<int>[] occurenceCounter;
         StatCalc _statCalc;
         ObservableCollection<DatiDispositivo> macList;
-        Dictionary<string, List<int>> map;
+        Dictionary<string, List<int>> MacOccurenceMap;
         Dictionary<string, int> macToIndex;
         public long animationCurrTimestamp { get; set; }
         public long animationStartTimestamp { get; set; }
         double minX, maxX, minY, maxY;
         List<SolidColorBrush> barsColor;
 
-        public StaticChart(DBConnect dbC, ListBox lb, CartesianChart mv, CartesianChart td)
+        public chartsManager(DBConnect dbC, ListBox lb, CartesianChart mv, CartesianChart td)
         {
             _listBox = lb;
             _movement = mv;
@@ -40,7 +40,7 @@ namespace WifiLocalization.ChartManager
             macList = new ObservableCollection<DatiDispositivo>();
             scatter = new ChartValues<DatiDispositivo>();
             occurenceCounter = new ChartValues<int>[3];
-            map = new Dictionary<string, List<int>>();
+            MacOccurenceMap = new Dictionary<string, List<int>>();
             macToIndex = new Dictionary<string, int>();
             animationStartTimestamp = animationCurrTimestamp;
             minX = minY = 0;
@@ -215,6 +215,8 @@ namespace WifiLocalization.ChartManager
         public void CreatePercentualChart(int start, int end)
         {
             DateTime dStart = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(start);
+            Double d;
+            int nIntervals = 0;
 
             for (int i = 0; i < 3; i++)
             {
@@ -228,7 +230,7 @@ namespace WifiLocalization.ChartManager
             });
             //se le date sono valide cerco i 3 MAC più ricorrenti
             List<DatiDispositivo> mostFreq = (start == -1 && end == -1) ? new List<DatiDispositivo>() : _statCalc.MostFrequentPhones(3, start, end);
-            map.Clear();
+            MacOccurenceMap.Clear();
 
             if (start == -1 && end == -1)
             {
@@ -251,13 +253,13 @@ namespace WifiLocalization.ChartManager
             //conta le occorrenze per MAC
             foreach (DatiDispositivo ph in mostFreq)
             {
-                if (map.ContainsKey(ph.MAC_Address))
+                if (MacOccurenceMap.ContainsKey(ph.MAC_Address))
                 {
-                    map[ph.MAC_Address].Add(ph.Timestamp);
+                    MacOccurenceMap[ph.MAC_Address].Add(ph.Timestamp);
                 }
                 else
                 {
-                    map.Add(ph.MAC_Address, new List<int> { ph.Timestamp });
+                    MacOccurenceMap.Add(ph.MAC_Address, new List<int> { ph.Timestamp });
                 }
             }
 
@@ -281,14 +283,72 @@ namespace WifiLocalization.ChartManager
                 double size = (double)end - start;
                 if (size > 0)
                 {
-                    //se l'intervallo è di un'ora spaziamo di 5 minuti
-                    if (TimeSpan.FromSeconds(size).TotalHours < 1)
+                    //se intervallo è di max 3 min spazio di 10 s
+                    if (TimeSpan.FromSeconds(size).TotalMinutes < 3)
                     {
+                        d = (Double)1 / (Double)6;
+                        nIntervals = (int)(size / TimeSpan.FromSeconds(10).TotalSeconds);
+                        if ((size % TimeSpan.FromSeconds(10).TotalSeconds) > 0) nIntervals++;
+                        yAxis.Title = "Time[mm::ss]";
+                        yAxis.FontSize = 15;
 
-                        //int nIntervals = (int)(size / TimeSpan.FromMinutes(10).TotalSeconds) + 1;
-                        int nIntervals = 12;
+                        for (int i = 0; i < nIntervals; i++)
+                        {
+                            DateTime init = dStart.AddSeconds(i * 10);
+                            DateTime fin = dStart.AddSeconds(i*10 + 10);
+                            yAxisLabels.Add(init.Minute.ToString("00") + ":" +
+                                            init.Second.ToString("00") + " - " +
+                                            fin.Minute.ToString("00") + ":" +
+                                            fin.Second.ToString("00"));
+                        }
+                        yAxis.Labels = yAxisLabels;
+                    }
+                    //se intervallo è di max 5 min spazio di 20 s
+                    else if (TimeSpan.FromSeconds(size).TotalMinutes < 5)
+                    {
+                        d = (Double)1 / (Double)3;
+                        nIntervals = (int)(size / TimeSpan.FromSeconds(20).TotalSeconds) ;
+                        if ((size % TimeSpan.FromSeconds(20).TotalSeconds) > 0) nIntervals++;
+                        yAxis.Title = "Time[mm::ss]";
+                        yAxis.FontSize = 15;
 
-                        SetIntervals(5, start, end);
+                        for (int i = 0; i < nIntervals; i++)
+                        {
+                            DateTime init = dStart.AddSeconds(i * 20);
+                            DateTime fin = dStart.AddSeconds(i * 20 + 20);
+                            yAxisLabels.Add(init.Minute.ToString("00") + ":" +
+                                            init.Second.ToString("00") + " - " +
+                                            fin.Minute.ToString("00") + ":" +
+                                            fin.Second.ToString("00"));
+                        }
+                        yAxis.Labels = yAxisLabels;
+                    }
+                    //se intervallo è di max 20 min spazio di 1 minuto
+                    else if (TimeSpan.FromSeconds(size).TotalMinutes < 20)
+                    {
+                        d = 1;
+                        nIntervals = (int)(size / TimeSpan.FromMinutes(1).TotalSeconds);
+                        if ((size % TimeSpan.FromMinutes(1).TotalSeconds) > 0) nIntervals++;
+                        yAxis.Title = "Timehh:mm]";
+                        yAxis.FontSize = 15;
+
+                        for (int i = 0; i < nIntervals; i++)
+                        {
+                            DateTime init = dStart.AddMinutes(i );
+                            DateTime fin = dStart.AddMinutes(i + 1);
+                            yAxisLabels.Add(init.Minute.ToString("00") + ":" +
+                                             init.Second.ToString("00") + " - " +
+                                             fin.Minute.ToString("00") + ":" +
+                                             fin.Second.ToString("00"));
+                        }
+                        yAxis.Labels = yAxisLabels;
+                    }
+                    //se l'intervallo è di max 2 ora spaziamo di 5 minuti
+                    else if (TimeSpan.FromSeconds(size).TotalHours < 2)
+                    {
+                        d = 5;
+                        nIntervals = (int)(size / TimeSpan.FromMinutes(5).TotalSeconds);
+                        if ((size % TimeSpan.FromMinutes(5).TotalSeconds) > 0) nIntervals++;
                         yAxis.Title = "Time[hh:mm]";
                         yAxis.FontSize = 15;
 
@@ -303,19 +363,19 @@ namespace WifiLocalization.ChartManager
                         }
                         yAxis.Labels = yAxisLabels;
                     }
-                    //se l'intervallo è di 4 ore spaziamo di 20 minuti
+                    //se l'intervallo è di max 4 ore spaziamo di 10 minuti
                     else if (TimeSpan.FromSeconds(size).TotalHours < 4)
                     {
-
-                        int nIntervals = (int)(size / TimeSpan.FromMinutes(10).TotalSeconds) + 1;
-                        SetIntervals(20, start, end);
+                        d = 10;
+                        nIntervals = (int)(size / TimeSpan.FromMinutes(10).TotalSeconds);
+                        if ((size % TimeSpan.FromMinutes(10).TotalSeconds) > 0) nIntervals++;
                         yAxis.Title = "Time[hh:mm]";
                         yAxis.FontSize = 15;
 
                         for (int i = 0; i < nIntervals; i++)
                         {
-                            DateTime init = dStart.AddMinutes(i * 20);
-                            DateTime fin = dStart.AddMinutes(i * 20 + 20);
+                            DateTime init = dStart.AddMinutes(i * 10);
+                            DateTime fin = dStart.AddMinutes(i * 10 + 10);
                             yAxisLabels.Add(init.Hour.ToString("00") + ":" +
                                             init.Minute.ToString("00") + " - " +
                                             fin.Hour.ToString("00") + ":" +
@@ -323,11 +383,12 @@ namespace WifiLocalization.ChartManager
                         }
                         yAxis.Labels = yAxisLabels;
                     }
-                    //se l'intervallo è di 12 ore spaziamo di 1 ora
-                    else if (TimeSpan.FromSeconds(size).TotalHours < 12)
+                    //se l'intervallo è di max 24 ore spaziamo di 1 ora
+                    else if (TimeSpan.FromSeconds(size).TotalDays < 1)
                     {
-                        SetIntervals(60, start, end);
-                        int nIntervals = (int)((end - start) / TimeSpan.FromHours(1).TotalSeconds) + 1;
+                        d = 60;
+                        nIntervals = (int)((end - start) / TimeSpan.FromHours(1).TotalSeconds);
+                        if ((size % TimeSpan.FromHours(1).TotalSeconds) > 0) nIntervals++;
                         yAxis.Title = "Time[hh:mm]";
                         yAxis.FontSize = 15;
 
@@ -343,39 +404,19 @@ namespace WifiLocalization.ChartManager
                         yAxis.Labels = yAxisLabels;
 
                     }
-                    //se l'intervallo è di 24 ore spaziamo di 2 ora
-                    else if (TimeSpan.FromSeconds(size).TotalHours < 24)
+                    //se l'intervallo è di max 3 giorni spaziamo di 6 ore
+                    else if (TimeSpan.FromSeconds(size).TotalDays < 6)
                     {
-                        SetIntervals(120, start, end);
-                        int nIntervals = (int)((end - start) / TimeSpan.FromHours(2).TotalSeconds) + 1;
-                        yAxis.Title = "Time[hh:mm]";
-                        yAxis.FontSize = 15;
-
-                        for (int i = 0; i < nIntervals; i++)
-                        {
-                            DateTime init = dStart.AddHours(i);
-                            DateTime fin = dStart.AddHours(i + 2);
-                            yAxisLabels.Add(init.Hour.ToString("00") + ":" +
-                                            init.Minute.ToString("00") + " - " +
-                                            fin.Hour.ToString("00") + ":" +
-                                            fin.Minute.ToString("00"));
-                        }
-                        yAxis.Labels = yAxisLabels;
-
-                    }
-                    //se l'intervallo è di 3 giorni spaziamo di 6 ore
-                    else if (TimeSpan.FromSeconds(size).TotalDays < 3)
-                    {
-                        SetIntervals(360, start, end);
-
-                        int nIntervals = (int)((end - start) / TimeSpan.FromHours(6).TotalSeconds) + 1;
+                        d = 360;
+                        nIntervals = (int)((end - start) / TimeSpan.FromHours(6).TotalSeconds);
+                        if ((size % TimeSpan.FromHours(6).TotalSeconds) > 0 ) nIntervals++;
                         yAxis.Title = "Time[dd/mm hh:mm]";
                         yAxis.FontSize = 15;
 
                         for (int i = 0; i < nIntervals; i++)
                         {
-                            DateTime init = dStart.AddHours(i * 5);
-                            DateTime fin = dStart.AddHours(i * 5 + 5);
+                            DateTime init = dStart.AddHours(i * 6);
+                            DateTime fin = dStart.AddHours(i * 6 + 6);
                             yAxisLabels.Add(init.Day.ToString("00") + "/" +
                                             init.Month.ToString("00") + "  " +
                                             init.Hour.ToString("00") + ":" +
@@ -387,12 +428,12 @@ namespace WifiLocalization.ChartManager
                         }
                         yAxis.Labels = yAxisLabels;
                     }
-                    //se l'intervallo è di una settimana spaziamo di un giorno
-                    else if (TimeSpan.FromSeconds(size).TotalDays < 7)
+                    //se l'intervallo è di max una settimana spaziamo di un giorno
+                    else if (TimeSpan.FromSeconds(size).TotalDays <= 7)
                     {
-                        SetIntervals(1440, start, end);
-
-                        int nIntervals = (int)((end - start) / TimeSpan.FromDays(1).TotalSeconds) + 1;
+                        d = 1440;
+                        nIntervals = (int)((end - start) / TimeSpan.FromDays(1).TotalSeconds);
+                        if ((size % TimeSpan.FromDays(1).TotalSeconds) > 0) nIntervals++;
                         yAxis.Title = "Time[dd/mm/yyyy]";
                         yAxis.FontSize = 15;
 
@@ -413,9 +454,9 @@ namespace WifiLocalization.ChartManager
                     //se l'intervallo è di un mese spaziamo di una settimana
                     else if (TimeSpan.FromSeconds(size).TotalDays < 30)
                     {
-                        SetIntervals(10080, start, end);
-
-                        int nIntervals = (int)((end - start) / TimeSpan.FromDays(7).TotalSeconds) + 1;
+                        d = 10080;
+                        nIntervals = (int)((end - start) / TimeSpan.FromDays(7).TotalSeconds);
+                        if ((size % TimeSpan.FromDays(7).TotalSeconds) > 0) nIntervals++;
                         yAxis.Title = "Time[dd/mm/yyyy]";
                         yAxis.FontSize = 15;
 
@@ -435,9 +476,9 @@ namespace WifiLocalization.ChartManager
                     //se l'intervallo è di un anno spaziamo di un mese
                     else if (TimeSpan.FromSeconds(size).TotalDays < 365)
                     {
-                        SetIntervals(43200, start, end);
-
-                        int nIntervals = (int)((end - start) / TimeSpan.FromDays(30).TotalSeconds) + 1;
+                        d = 43200;
+                        nIntervals = (int)((end - start) / TimeSpan.FromDays(30).TotalSeconds);
+                        if ((size % TimeSpan.FromDays(30).TotalSeconds) > 0) nIntervals++;
                         yAxis.Title = "Time[dd/mm/yyyy]";
                         yAxis.FontSize = 15;
 
@@ -457,9 +498,11 @@ namespace WifiLocalization.ChartManager
                     //altrimenti spaziamo di un anno
                     else
                     {
-                        SetIntervals(525600, start, end);
+                        //  SetIntervals(525600, start, end);
 
-                        int nIntervals = (int)((end - start) / TimeSpan.FromDays(365).TotalSeconds) + 1;
+                        d = 525600;
+                        nIntervals = (int)((end - start) / TimeSpan.FromDays(365).TotalSeconds);
+                        if ((size % TimeSpan.FromDays(365).TotalSeconds) > 0) nIntervals++;
                         yAxis.Title = "Time[mm/yyyy]";
                         yAxis.FontSize = 15;
 
@@ -474,28 +517,26 @@ namespace WifiLocalization.ChartManager
                         }
                         yAxis.Labels = yAxisLabels;
                     }
+                    SetIntervals(nIntervals, d, start, end);
                 }
             });
         }
         //crea gli intervalli
-        private void SetIntervals(int minutes, int start, int end)
+        private void SetIntervals(int nIntervals, Double timeUnit, int start, int end)
         {
-            //trovo il numero di intervalli dividendo il mio intervallo di tempo per l'intervallo sceltoo +1 perchè abbiamo almeno 1 intervallo
-            int nIntervals = (int)((end - start) / TimeSpan.FromMinutes(minutes).TotalSeconds) + 1;
-
             int[] intervals = new int[nIntervals];
 
             int n = 0; //indice colonna (mac)
-            foreach (string s in map.Keys)
+            foreach (string mac in MacOccurenceMap.Keys)
             {
 
                 for (int i = 0; i < nIntervals; i++)
                     intervals[i] = 0;
-                //faccio il conteggio delle occorrenze del mac in quell'intervallo
-                foreach (int t in map[s])
+                //faccio il conteggio delle occorrenze del mac in quell'intervallo controllando il timestamp
+                foreach (int time in MacOccurenceMap[mac])
                 {
                     //incremento il contatore all'interno dell'intervallo opportuno
-                    intervals[(int)((t - start) / TimeSpan.FromMinutes(minutes).TotalSeconds)]++;
+                    intervals[(int)((time - start) / TimeSpan.FromMinutes(timeUnit).TotalSeconds)]++;
 
                 }
                 //carichiamo la lista delle occorrenze per ogni MAC
@@ -506,8 +547,9 @@ namespace WifiLocalization.ChartManager
                 // se è la prima volta che cerchiamo i MAC creo le series
                 if (_temporalDistribution.Series.Count < 3)
                 {
-                    AddTemporalSeries(s, barsColor[n], occurenceCounter[n]);
+                    AddTemporalSeries(mac, barsColor[n], occurenceCounter[n]);
                 }
+                //altrimenti aggiorno il valore
                 else
                 {
                     _temporalDistribution.Series[n].Values = occurenceCounter[n];

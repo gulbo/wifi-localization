@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
-
+using System.Text.RegularExpressions;
 
 namespace WifiLocalization.Graphic
 {
@@ -21,41 +21,42 @@ namespace WifiLocalization.Graphic
     public partial class MainWind 
     {
 
-        private List<Scheda> _boards { get; set; }
-        public bool ConnectionError { get; set; }
-        public Mutex ConnectionErrorMutex { get; set; }
+        private List<Scheda> boardsList { get; set; }
+        public bool ConnectionErr { get; set; }
+        public Mutex ConnectionErrMtx { get; set; }
 
         DBConnect DBConnection;
-        StaticChart sc;
+        chartsManager chartsManager;
         EspServer espServer;
-        DataReceiver dr;
+        chartDataHandler chartDataHandler;
 
         public MainWind(DBConnect DBConnection, List<Scheda> boards)
         {
+            Action connectionErrorAction;
+
             InitializeComponent();
+            this.ConnectionErrMtx = new Mutex(false);
+            this.ConnectionErr = false;
 
-            this.ConnectionErrorMutex = new Mutex(false);
-            this.ConnectionError = false;
-
-            Action connectionErrorAction = new Action(() =>
-            {
-                this.ConnectionErrorMutex.WaitOne();
-                if (!this.ConnectionError)
-                    this.ConnectionError = true;
+            connectionErrorAction = new Action(() =>
+            {             
+                this.ConnectionErrMtx.WaitOne();
+                if (!this.ConnectionErr)
+                    this.ConnectionErr = true;
                 else
                 {
-                    this.ConnectionErrorMutex.ReleaseMutex();
+                    this.ConnectionErrMtx.ReleaseMutex();
                     return;
                 }
-                this.ConnectionErrorMutex.ReleaseMutex();
+                this.ConnectionErrMtx.ReleaseMutex();
                 System.Windows.MessageBox.Show("Errore inviando/ricevendo pacchetti dalla scheda. Controlla la connessione e le schede infine riavvia il sistema.",
                     "Alert",
                     System.Windows.MessageBoxButton.OK,
                     System.Windows.MessageBoxImage.Error);
                 if (espServer != null)
                     espServer.stop();
-                if (dr != null)
-                    dr.Shutdown();
+                if (chartDataHandler != null)
+                    chartDataHandler.Shutdown();
 
                 Environment.Exit(Environment.ExitCode);
             });
@@ -69,19 +70,19 @@ namespace WifiLocalization.Graphic
 
                 if (espServer != null)
                     espServer.stop();
-                if (dr != null)
-                    dr.Shutdown();
+                if (chartDataHandler != null)
+                    chartDataHandler.Shutdown();
 
                 Environment.Exit(Environment.ExitCode);
             });
 
-            _boards = boards;
+            boardsList = boards;
             this.DBConnection = DBConnection;
 
-            espServer = new EspServer(_boards.Count, DBConnection, connectionErrorAction, this);
-            dr = new DataReceiver(this,_boards.Count, espServer, DBConnection, scatterplot, fiveMinutes, keyNotFoundAction);
-            sc = new StaticChart(DBConnection, CheckListbox,movement,temporalDistribution);
-            sc.animationCurrTimestamp = (DateTime.Now.Ticks - 621355968000000000) / 10000000;
+            espServer = new EspServer(boardsList.Count, DBConnection, connectionErrorAction, this);
+            chartDataHandler = new chartDataHandler(this, boardsList.Count, espServer, DBConnection, scatterplot, fiveMinutes, keyNotFoundAction);
+            chartsManager = new chartsManager(DBConnection, CheckListbox,movement,temporalDistribution);
+            chartsManager.animationCurrTimestamp = (DateTime.Now.Ticks - 621355968000000000) / 10000000;
             boardCounter.Text = espServer.getBoardsConnected().ToString();
             DataContext = this;
         }
@@ -93,8 +94,8 @@ namespace WifiLocalization.Graphic
 
             if (espServer != null)
                 espServer.stop();
-            if (dr != null)
-                dr.Shutdown();
+            if (chartDataHandler != null)
+                chartDataHandler.Shutdown();
 
             Environment.Exit(Environment.ExitCode);
 
@@ -116,14 +117,14 @@ namespace WifiLocalization.Graphic
         private void CheckBoxChecked(object sender, System.Windows.RoutedEventArgs e)
         {
            
-            long endRange = sc.animationCurrTimestamp;
-            long startRange = sc.animationStartTimestamp;
+            long endRange = chartsManager.animationCurrTimestamp;
+            long startRange = chartsManager.animationStartTimestamp;
             var checkBox = e.OriginalSource as CheckBox;
             DatiDispositivo ph = checkBox?.DataContext as DatiDispositivo;
 
             if (ph != null)
-            {               
-                sc.AddSeries(ph.MAC_Address);
+            {
+                chartsManager.AddSeries(ph.MAC_Address);
             }
         }
 
@@ -135,7 +136,7 @@ namespace WifiLocalization.Graphic
 
             if (ph != null)
             {
-                sc.RemoveSeries(ph.MAC_Address);
+                chartsManager.RemoveSeries(ph.MAC_Address);
             }
 
         }
@@ -162,7 +163,7 @@ namespace WifiLocalization.Graphic
             long startRange = endRange - (temporalRange * 60);
 
             //accoda la creazione della lista in un threadPool 
-            Task.Run(() => sc.CreateListBox(startRange, endRange));
+            Task.Run(() => chartsManager.CreateListBox(startRange, endRange));
         }
 
         private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
@@ -195,7 +196,7 @@ namespace WifiLocalization.Graphic
                 DateTime _endDate = (DateTime)eDate.Value;
                 int start = (Int32)(_startDate.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 int end = (Int32)(_endDate.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-                Task.Factory.StartNew(() => sc.CreatePercentualChart(start, end), TaskCreationOptions.LongRunning);
+                Task.Factory.StartNew(() => chartsManager.CreatePercentualChart(start, end), TaskCreationOptions.LongRunning);
             }
 
         }
@@ -209,28 +210,12 @@ namespace WifiLocalization.Graphic
             Button stopButton = (Button)FindMACGrid.FindName("stopButton");
             Grid MACTextBoxGrid = (Grid)FindMACGrid.FindName("MACTextBoxGrid");
             TextBox MACTextBox = (TextBox)MACTextBoxGrid.FindName("MAC");
-
-            if (MAC.Text != "") {
-                foreach (char c in MAC.Text.ToCharArray()) {
-                    if (c <= 'F' || (c >= '0' && c <= '9')){
-                    }
-                    else {
-                        invalid = true;
-                        errMsg = "L'indirizzo MAC contiene caratteri non validi!";
-                        break;
-                    }
-                }
-                if (MAC.Text.Length < 17)
-                {
-                    invalid = true;
-                    errMsg = "indirizzo MAC non valido";
-                }
-
-            }
-            else if(MAC.Text == "")
+            String pattern = "^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$";
+            Regex regex = new Regex(pattern);
+            if (!regex.IsMatch(Utils.Formatta_MAC_Address(MAC.Text)))
             {
                 invalid = true;
-                errMsg = "Nessun indirizzo MAC inserito";
+                errMsg = "indirizzo MAC non valido";
             }
             if (!invalid)
             {
@@ -238,6 +223,7 @@ namespace WifiLocalization.Graphic
                 startButton.Visibility = System.Windows.Visibility.Hidden;
                 stopButton.Visibility = System.Windows.Visibility.Visible;
                 MACTextBox.IsReadOnly = true;
+                chartDataHandler.SearchMac(MAC.Text);
             }
             else
                 System.Windows.MessageBox.Show(errMsg, "Attention ", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Exclamation);
@@ -255,7 +241,7 @@ namespace WifiLocalization.Graphic
             startButton.Visibility = System.Windows.Visibility.Visible;
             MACTextBox.IsReadOnly = false;
 
-            dr.RemoveSearch();   
+            chartDataHandler.RemoveSearch();   
         }
         private void EDateInitialized(object sender, EventArgs e)
         {
