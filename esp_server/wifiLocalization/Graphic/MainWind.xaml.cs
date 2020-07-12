@@ -194,6 +194,7 @@ namespace WifiLocalization.Graphic
                 }
                 DateTime _startDate = (DateTime)sDate.Value;
                 DateTime _endDate = (DateTime)eDate.Value;
+                temporalDistribution.Series.Clear();
                 int start = (Int32)(_startDate.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 int end = (Int32)(_endDate.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 Task.Factory.StartNew(() => chartsManager.CreatePercentualChart(start, end), TaskCreationOptions.LongRunning);
