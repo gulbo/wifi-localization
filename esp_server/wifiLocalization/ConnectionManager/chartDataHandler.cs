@@ -173,7 +173,7 @@ namespace WifiLocalization.ConnectionManager
                         break;
                     }
                     _esp_server.waitAllBoardsData();
-                    System.Threading.Thread.Sleep(5000);
+                    System.Threading.Thread.Sleep(1000);
 
                     dati_Dispositivi = _statCalc.GetLastMinutePositions(_nBoards, 1);
                     List<Scheda> boards = _statCalc.GetBoardsPosition();
@@ -291,9 +291,6 @@ namespace WifiLocalization.ConnectionManager
             error =(double) 1 - (double)correlatedPhones / (double)totalHiddenPhones;
 
             _window.UpdateTextBlocks(totalHiddenPhones,correlatedPhones,error);
-
-            if (selectedMAC != "")
-                SearchMac(selectedMAC);
 
             scatterChart.AxisX[0].MinValue = minX - 1;
             scatterChart.AxisX[0].MaxValue = maxX + 1;
@@ -457,12 +454,11 @@ namespace WifiLocalization.ConnectionManager
 
         public void RemoveSearch()
         {
-            if (selectedPhonePos.Count == 1)
+            if (selectedPhonePos.Count != 0)
             {
                 String cleanSelectedMAC = selectedMAC.Replace(":", "");
                 DatiDispositivo p = selectedPhonePos.First<DatiDispositivo>();
                 selectedPhonePos.Remove(p);
-
                 if (Pacchetto.CntrlGlobal(selectedMAC))
                 {
                     //hiddenPhone
