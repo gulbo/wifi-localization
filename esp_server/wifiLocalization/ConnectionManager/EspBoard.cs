@@ -79,6 +79,18 @@ namespace WifiLocalization.ConnectionManager
             board_id_ = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, 0));
             writeDebugLine_("ID board ottenuto");
 
+            // verifica che l'IDBoard sia valido
+            try
+            {
+                ManualResetEvent e = time_sync_events_[board_id_ - 1];
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                writeDebugLine_("ERRORE, IDBoard non corretto: " + board_id_);
+                socket_.Close();
+                return false;
+            }
+
             // ricevo MAC 6 bytes
             receiveBytes(buffer, 6);
 
