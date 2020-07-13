@@ -115,6 +115,15 @@ namespace WifiLocalization.ConnectionManager
             {
                 if (board.initialize())
                 {
+                    if (isBoardOnline(board.getBoardID()))
+                    {
+                        handleBoardError_("Board" + board.getBoardID() + " duplicata",
+                                          thread,
+                                          true);
+                        socket.Close();
+                        return;
+                    }
+
                     writeDebugLine_("Nuova board inizializzata");
                     thread.Name = "Board" + board.getBoardID();
                     signalBoardConnected_(board.getBoardID());
@@ -137,18 +146,14 @@ namespace WifiLocalization.ConnectionManager
                 }
                 else
                 {
-                    writeDebugLine_("Board" + board.getBoardID() + " inizializzatione fallita");
-                    Monitor.Enter(board_handlers_);
-                    board_handlers_.Remove(thread);
-                    Monitor.Exit(board_handlers_);
+                    handleBoardError_("Board" + board.getBoardID() + " inizializzazione fallita",
+                                      thread,
+                                      true);
                 }
             }
             catch (Exception ex)
             {
-                writeDebugLine_(ex.ToString());
-                Monitor.Enter(board_handlers_);
-                board_handlers_.Remove(thread);
-                Monitor.Exit(board_handlers_);
+                handleBoardError_(ex.ToString(), thread, false);
                 if (socket != null || socket.Connected)
                 {
                     socket.Close();
@@ -161,6 +166,23 @@ namespace WifiLocalization.ConnectionManager
             }
         }
 
+        private void handleBoardError_(String message, Thread board_handler, bool show_window)
+        {
+            writeDebugLine_(message);
+            if (show_window)
+            {
+                new Thread(() => System.Windows.MessageBox.Show(
+                                                message,
+                                                "Alert",
+                                                System.Windows.MessageBoxButton.OK,
+                                                System.Windows.MessageBoxImage.Error)
+                                        ).Start();
+            }
+            Monitor.Enter(board_handlers_);
+            board_handlers_.Remove(board_handler);
+            Monitor.Exit(board_handlers_);
+        }
+
         private void signalBoardDisconnected_(int board_id)
         {
             mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
@@ -170,8 +192,6 @@ namespace WifiLocalization.ConnectionManager
                                                     System.Windows.MessageBoxButton.OK,
                                                     System.Windows.MessageBoxImage.Error)
                                                 ).Start();
-            
-           
         }
 
         private void signalBoardConnected_(int board_id)
@@ -183,7 +203,6 @@ namespace WifiLocalization.ConnectionManager
                                                    System.Windows.MessageBoxButton.OK,
                                                    System.Windows.MessageBoxImage.Information)
                                                ).Start();
-            
         }
 
         /**
@@ -263,6 +282,21 @@ namespace WifiLocalization.ConnectionManager
             int connected_boards_count = board_handlers_.Count;
             Monitor.Exit(board_handlers_);
             return connected_boards_count;
+        }
+
+        public bool isBoardOnline(int board_id)
+        {
+            bool is_online = false;
+            Monitor.Enter(board_handlers_);
+            foreach (Thread board in board_handlers_)
+            {
+                if (board.Name == "Board" + board_id)
+                {
+                    is_online = true;
+                }
+            }
+            Monitor.Exit(board_handlers_);
+            return is_online;
         }
     }
 }
