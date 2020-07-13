@@ -135,6 +135,13 @@ namespace WifiLocalization.ConnectionManager
                         packets_ready_events[board.getBoardID() -1].Set();
                     }
                 }
+                else
+                {
+                    writeDebugLine_("Board" + board.getBoardID() + " inizializzatione fallita");
+                    Monitor.Enter(board_handlers_);
+                    board_handlers_.Remove(thread);
+                    Monitor.Exit(board_handlers_);
+                }
             }
             catch (Exception ex)
             {

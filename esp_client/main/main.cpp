@@ -53,7 +53,7 @@ void wifiSnifferHandler(void *buf, wifi_promiscuous_pkt_type_t type){
 
 	const wifi_promiscuous_pkt_t* wifi_pkt = (wifi_promiscuous_pkt_t*) buf;
     
-    // check that the SubType is "Reassociation response"
+    // check that the SubType is "Probe Request"
     uint16_t frameControl = ((uint16_t)wifi_pkt->payload[1] << 8) + wifi_pkt->payload[0];
     uint8_t frameSubType = (frameControl & 0b0000000011110000) >> 4;
     if(frameSubType != 4)
