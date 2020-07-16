@@ -131,7 +131,7 @@
             </StackPanel>
             <StackPanel Orientation="Horizontal" Grid.Row="1">
                 <TextBlock x:Name="boardCounter" Text="0" Margin="25, 10" Foreground="#FFFF9800"  FontFamily="Source Serif Pro DarkSlateGray" FontSize="22"/>
-                <TextBlock Text="Schede Connesse" Margin="20 20" Foreground="#FFFFCF89"/>
+                <TextBlock x:Name="boardsOnline" Text="Schede Connesse" Margin="20 20" Foreground="#FFFFCF89"/>
             </StackPanel>
         </Grid>
 

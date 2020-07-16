@@ -22,8 +22,9 @@ namespace WifiLocalization.ConnectionManager
         private CancellationTokenSource cancellation_token_source_;     /** generatore di Tokens per fermare i threads in esecuzione */
         private int boards_number_;                                     /** numbero di boards presenti */
         private List<Thread> board_handlers_;                           /** lista dei threads che gestiscono le connessioni con le boards */
-        private MainWind mainWindow;                                  /** MainWindow chiamante*/
-        private bool is_running_;                                      
+        private String[] boards_status_;                                 /** status delle boards **/
+        private MainWind mainWindow;                                    /** MainWindow chiamante*/
+        private bool is_running_;
 
         public EspServer(int boards_number, DBConnect DBConnection, Action ConnectionErrorAction, MainWind caller)
         {
@@ -38,10 +39,12 @@ namespace WifiLocalization.ConnectionManager
 
             time_sync_events_ = new ManualResetEvent[boards_number];
             packets_ready_events = new AutoResetEvent[boards_number];
+            boards_status_ = new String[boards_number_];
             for (int i = 0; i < boards_number; i++)
             {
                 time_sync_events_[i] = new ManualResetEvent(false);
                 packets_ready_events[i] = new AutoResetEvent(false);
+                boards_status_[i] = "Offline";
             }
 
             connection_handler_ = new Thread(this.connectionHandler);
@@ -109,7 +112,13 @@ namespace WifiLocalization.ConnectionManager
             Socket socket = ((Tuple<Socket,Thread>) arg).Item1;
             Thread thread = ((Tuple<Socket, Thread>)arg).Item2;
             CancellationToken token = cancellation_token_source_.Token;
-            EspBoard board = new EspBoard(socket, token, time_sync_events_);
+            Action<String,int> setBoardStatus = new Action<String, int>((String status, int board_id) =>
+             {
+                 boards_status_[board_id - 1] = status;
+                 mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardStatusTextBlock(boards_status_, boards_number_));
+
+             });
+            EspBoard board = new EspBoard(socket, token, time_sync_events_, setBoardStatus);
             
             try
             {
@@ -185,7 +194,8 @@ namespace WifiLocalization.ConnectionManager
 
         private void signalBoardDisconnected_(int board_id)
         {
-            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
+            boards_status_[board_id - 1] = "Offline";
+            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardStatusTextBlock(boards_status_, boards_number_));
             new Thread(() => System.Windows.MessageBox.Show(
                                                     "Board" + board_id + " disconnessa. Riconnettere!",
                                                     "Alert",
@@ -196,7 +206,8 @@ namespace WifiLocalization.ConnectionManager
 
         private void signalBoardConnected_(int board_id)
         {
-            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardCounterTextBlock(getBoardsConnected()));
+            boards_status_[board_id - 1] = "Online";
+            mainWindow.Dispatcher.Invoke(() => mainWindow.UpdateBoardStatusTextBlock(boards_status_, boards_number_));
             new Thread(() => System.Windows.MessageBox.Show(
                                                    "Board" + board_id + " connessa.",
                                                    "Info",

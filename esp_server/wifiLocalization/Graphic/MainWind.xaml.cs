@@ -261,9 +261,18 @@ namespace WifiLocalization.Graphic
             error.Text = (err * 100).ToString("0.00", CultureInfo.InvariantCulture) + " %";
         }
 
-        public void UpdateBoardCounterTextBlock (int boardCount)
+        public void UpdateBoardStatusTextBlock (String[] boards_status, int boards_number)
         {
-            boardCounter.Text = boardCount.ToString();
+            int boards_counter = 0;
+            String boards_online = "";
+            for (int i=0; i< boards_number; i++)
+            {
+                boards_online += "Board" + (i+1) + ":" + boards_status[i] + " ";
+                if (boards_status[i] != "Offline")
+                    boards_counter++;
+            }
+            boardCounter.Text = boards_counter.ToString();
+            boardsOnline.Text = boards_online;
         }
 
         //metodo per aprire il menù laterale
