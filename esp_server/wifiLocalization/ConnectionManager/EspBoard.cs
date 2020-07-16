@@ -17,12 +17,14 @@ namespace WifiLocalization.ConnectionManager
         private PhysicalAddress py_address_;
         private CancellationToken cancellation_token_;
         private ManualResetEvent[] time_sync_events_;
+        private Action<String,int> setBoardStatus_;
 
-        public EspBoard(Socket socket, CancellationToken token, ManualResetEvent[] time_sync_events)
+        public EspBoard(Socket socket, CancellationToken token, ManualResetEvent[] time_sync_events, Action<String, int> setBoardStatus)
         {
             socket_ = socket;
             cancellation_token_ = token;
             time_sync_events_ = time_sync_events;
+            setBoardStatus_ = setBoardStatus;
             board_id_ = -1;
         }
         
@@ -79,11 +81,12 @@ namespace WifiLocalization.ConnectionManager
             board_id_ = IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, 0));
             writeDebugLine_("ID board ottenuto");
 
-            // verifica che l'IDBoard sia valido
+            // segnalo board in inizializzazione
             try
             {
-                ManualResetEvent e = time_sync_events_[board_id_ - 1];
+                setBoardStatus_("Waiting", board_id_);
             }
+            // verifica che l'IDBoard sia valido
             catch (IndexOutOfRangeException ex)
             {
                 writeDebugLine_("ERRORE, IDBoard non corretto: " + board_id_);
@@ -207,10 +210,12 @@ namespace WifiLocalization.ConnectionManager
         private void waitForTimeSync_()
         {
             writeDebugLine_("Attendo di sincronizzarmi con le altre boards");
+            setBoardStatus_("Waiting", board_id_);
             time_sync_events_[board_id_ - 1].Set();
             ManualResetEvent.WaitAll(time_sync_events_);
             Thread.Sleep(1000); // sleep per 1 secondo, aspetto che gli altri threads si sveglino prima di fare reset
             time_sync_events_[board_id_ - 1].Reset();
+            setBoardStatus_("Online", board_id_);
             writeDebugLine_("Risvegliato dall'attesa");
         }
     }
