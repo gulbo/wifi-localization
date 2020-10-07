@@ -692,8 +692,9 @@ namespace WifiLocalization.ConnectionManager
             //MAC
             for (int i = 1; i < nBoards; i++)
                 builder.Append(" AND P").Append(i).Append(".MAC = P").Append(i + 1).Append(".MAC");
-            //HASH 
-            //builder.Append(" AND P1.hash = P2.hash AND P1.hash <> 00000000");         
+            //HASH
+            for (int i = 1; i< nBoards; i++)
+                builder.Append(" AND P").Append(i).Append(".hash = P").Append(i + 1).Append(".hash AND P1.hash <> 00000000");         
             builder.Append(" AND P1.timestamp > ").Append(timestamp);
             return builder.ToString();
 

@@ -11,7 +11,7 @@ namespace WifiLocalization.Utilities
         
         static double Converti_RSSI(int rssi)
         {
-            const double costante_propagazione = 3.3; 
+            const double costante_propagazione = 2; 
             const double potenza_segnale = -60; //dBm
             
             // Calcolo la distanza tra due nodi conoscendo il valore di RSSI ed i parametri sopra definiti 
