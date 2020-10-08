@@ -597,8 +597,15 @@ namespace WifiLocalization.ConnectionManager
                             Punto point = Cerchio.Intersezione(cerchi);
                             if(!(Double.IsNaN(point.Ascissa) || Double.IsNaN(point.Ordinata)))
                             {
-                                DatiDispositivo p = new DatiDispositivo(mac, timestamp, point, global);
-                                list.Add(p);
+                                if (point.isInside(schede))
+                                {
+                                    DatiDispositivo p = new DatiDispositivo(mac, timestamp, point, global);
+                                    list.Add(p);
+                                }
+                                else 
+                                {
+                                    System.Diagnostics.Debug.WriteLine("Geofence discarded: (" + point.Ascissa + "; " + point.Ordinata + ")");
+                                }
                             }
                         }
                     }
