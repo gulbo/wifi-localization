@@ -111,6 +111,16 @@ namespace WifiLocalization.Graphic
                         MessageBoxImage.Warning);
                     return;
                 }
+                int result;
+                //controllo: id valido
+                if (board.ID_scheda <= 0)
+                {
+                    MessageBox.Show("Id scheda non valido ",
+                        "Id non valido",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
                 BoardsIdList.Add(board.ID_scheda);
                 boards.Add(board);
             }
@@ -123,6 +133,7 @@ namespace WifiLocalization.Graphic
                        MessageBoxImage.Warning);
                 return;
             }
+           
 
             try
             {

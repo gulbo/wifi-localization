@@ -79,7 +79,6 @@ namespace WifiLocalization.ChartManager
 
             if (phoneInfo == null)
             {
-                //TODO messaggio di errore
                 System.Windows.MessageBox.Show("Errore con la connessione al database. Controllare che il database sia online.", "Database Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
@@ -92,7 +91,7 @@ namespace WifiLocalization.ChartManager
                     MessageBoxImage.Warning);
                 return;
             }
-
+            //solo a scopo visivo si crea una lista di mac da visualizzare
             foreach (DatiDispositivo ph in phoneInfo)
                 macList.Add(ph);
 

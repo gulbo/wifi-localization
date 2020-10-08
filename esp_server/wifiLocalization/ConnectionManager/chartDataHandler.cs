@@ -180,11 +180,9 @@ namespace WifiLocalization.ConnectionManager
 
                     if (dati_Dispositivi == null || boards == null)
                     {
-                        //TODO stampare messaggio di errore tramite testo rosso nella GUI
                         System.Windows.MessageBox.Show("Error when connecting to database. Please check that the database is online.", "Database error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
                         continue;
                     }
-                    //TODO rimuovere messaggio di errore tramite testo rosso
 
                     scatterChart.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
                     {
@@ -274,7 +272,7 @@ namespace WifiLocalization.ConnectionManager
                 }
             }
 
-            //calcolo dell'errore di correlazione tra dispositivi nascosti ipotizzando la presenza di un solo dispositivo
+            //calcolo dell'errore di correlazione tra dispositivi nascosti 
             foreach(DatiDispositivo phone in hiddenMacs)
             {
                 List<String> res = CountCorrelatedPhones(phone, 0.6,hiddenMacs);
@@ -288,6 +286,7 @@ namespace WifiLocalization.ConnectionManager
             correlatedPhones = countedMacs.Count;
             totalHiddenPhones = hiddenMacs.Count;
             if (totalHiddenPhones == 0) error = 0;
+            else
             error =(double) 1 - (double)correlatedPhones / (double)totalHiddenPhones;
 
             _window.UpdateTextBlocks(totalHiddenPhones,correlatedPhones,error);
